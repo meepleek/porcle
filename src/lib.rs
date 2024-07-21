@@ -9,6 +9,7 @@ use bevy::{
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
+use bevy_ecs_ldtk::prelude::*;
 
 pub struct AppPlugin;
 
@@ -45,7 +46,7 @@ impl Plugin for AppPlugin {
                     ..default()
                 })
                 // pixelart
-                .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+                .set(ImagePlugin::default_nearest())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
                         volume: Volume::new(0.3),
@@ -54,8 +55,11 @@ impl Plugin for AppPlugin {
                 }),
         );
 
-        // Add other plugins.
+        // Add project plugins.
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+
+        // Add external plugins
+        app.add_plugins(LdtkPlugin);
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
@@ -77,9 +81,13 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
+    let mut cam = Camera2dBundle::default();
+    cam.projection.scale = 0.5;
+    cam.transform.translation.x += 1280.0 / 4.0;
+    cam.transform.translation.y += 720.0 / 4.0;
     commands.spawn((
         Name::new("Camera"),
-        Camera2dBundle::default(),
+        cam,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
