@@ -7,10 +7,16 @@ pub(super) fn plugin(app: &mut App) {
         .register_ldtk_entity::<SnakeTailBundle>("SnakeTail");
 }
 
+#[derive(Default, Component)]
+pub struct SnakeHead;
+
 #[derive(Default, Bundle, LdtkEntity)]
 struct SnakeHeadBundle {
+    head: SnakeHead,
     #[sprite_sheet_bundle]
     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 
 #[derive(Default, Bundle, LdtkEntity)]

@@ -1,25 +1,19 @@
-//! Handle player input and translate it into movement.
-//! Note that the approach used here is simple for demonstration purposes.
-//! If you want to move the player in a smoother way,
-//! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/latest/examples/movement/physics_in_fixed_timestep.rs).
-
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::prelude::*;
+use bevy_ecs_ldtk::prelude::*;
 
 use crate::AppSet;
+
+use super::spawn::player::SnakeHead;
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
     app.register_type::<MovementController>();
-    app.add_systems(
-        Update,
-        record_movement_controller.in_set(AppSet::RecordInput),
-    );
+    app.add_systems(Update, process_input.in_set(AppSet::ProcessInput));
 
     // Apply movement based on controls.
-    app.register_type::<(Movement, WrapWithinWindow)>();
     app.add_systems(
         Update,
-        (apply_movement, wrap_within_window)
+        (translate_grid_coords_entities,)
             .chain()
             .in_set(AppSet::Update),
     );
@@ -27,70 +21,41 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Component, Reflect, Default)]
 #[reflect(Component)]
-pub struct MovementController(pub Vec2);
+pub struct MovementController(pub IVec2);
 
-fn record_movement_controller(
+fn process_input(
+    mut players: Query<&mut GridCoords, With<SnakeHead>>,
     input: Res<ButtonInput<KeyCode>>,
-    mut controller_query: Query<&mut MovementController>,
 ) {
-    // Collect directional input.
-    let mut intent = Vec2::ZERO;
-    if input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp) {
-        intent.y += 1.0;
-    }
-    if input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown) {
-        intent.y -= 1.0;
-    }
-    if input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft) {
-        intent.x -= 1.0;
-    }
-    if input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight) {
-        intent.x += 1.0;
-    }
+    let movement_direction =
+        if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::ArrowUp) {
+            GridCoords::new(0, 1)
+        } else if input.just_pressed(KeyCode::KeyA) || input.just_pressed(KeyCode::ArrowLeft) {
+            GridCoords::new(-1, 0)
+        } else if input.just_pressed(KeyCode::KeyS) || input.just_pressed(KeyCode::ArrowDown) {
+            GridCoords::new(0, -1)
+        } else if input.just_pressed(KeyCode::KeyD) || input.just_pressed(KeyCode::ArrowRight) {
+            GridCoords::new(1, 0)
+        } else {
+            return;
+        };
 
-    // Normalize so that diagonal movement has the same speed as
-    // horizontal and vertical movement.
-    let intent = intent.normalize_or_zero();
-
-    // Apply movement intent to controllers.
-    for mut controller in &mut controller_query {
-        controller.0 = intent;
+    for mut player_grid_coords in players.iter_mut() {
+        let destination = *player_grid_coords + movement_direction;
+        *player_grid_coords = destination;
     }
 }
 
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-pub struct Movement {
-    /// Since Bevy's default 2D camera setup is scaled such that
-    /// one unit is one pixel, you can think of this as
-    /// "How many pixels per second should the player move?"
-    /// Note that physics engines may use different unit/pixel ratios.
-    pub speed: f32,
-}
+// todo: tween
+// todo: move to new file
+const GRID_SIZE: i32 = 32;
 
-fn apply_movement(
-    time: Res<Time>,
-    mut movement_query: Query<(&MovementController, &Movement, &mut Transform)>,
+fn translate_grid_coords_entities(
+    mut grid_coords_entities: Query<(&mut Transform, &GridCoords), Changed<GridCoords>>,
 ) {
-    for (controller, movement, mut transform) in &mut movement_query {
-        let velocity = movement.speed * controller.0;
-        transform.translation += velocity.extend(0.0) * time.delta_seconds();
-    }
-}
-
-#[derive(Component, Reflect)]
-#[reflect(Component)]
-pub struct WrapWithinWindow;
-
-fn wrap_within_window(
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    mut wrap_query: Query<&mut Transform, With<WrapWithinWindow>>,
-) {
-    let size = window_query.single().size() + 256.0;
-    let half_size = size / 2.0;
-    for mut transform in &mut wrap_query {
-        let position = transform.translation.xy();
-        let wrapped = (position + half_size).rem_euclid(size) - half_size;
-        transform.translation = wrapped.extend(transform.translation.z);
+    for (mut transform, grid_coords) in grid_coords_entities.iter_mut() {
+        transform.translation =
+            bevy_ecs_ldtk::utils::grid_coords_to_translation(*grid_coords, IVec2::splat(GRID_SIZE))
+                .extend(transform.translation.z);
     }
 }

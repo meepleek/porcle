@@ -18,7 +18,7 @@ impl Plugin for AppPlugin {
         // Order new `AppStep` variants by adding them here:
         app.configure_sets(
             Update,
-            (AppSet::TickTimers, AppSet::RecordInput, AppSet::Update).chain(),
+            (AppSet::TickTimers, AppSet::ProcessInput, AppSet::Update).chain(),
         );
 
         // Spawn the main camera.
@@ -75,7 +75,7 @@ enum AppSet {
     /// Tick timers.
     TickTimers,
     /// Record player input.
-    RecordInput,
+    ProcessInput,
     /// Do everything else (consider splitting this into further variants).
     Update,
 }
