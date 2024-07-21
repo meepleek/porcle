@@ -19,14 +19,32 @@ struct SnakeHeadBundle {
     grid_coords: GridCoords,
 }
 
+#[derive(Default, Component)]
+pub struct NextPartIid(pub EntityIid);
+
 #[derive(Default, Bundle, LdtkEntity)]
 struct SnakeBodyBundle {
     #[sprite_sheet_bundle]
     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[with(get_next_iid_field)]
+    next_iid: NextPartIid,
+    #[grid_coords]
+    grid_coords: GridCoords,
 }
 
 #[derive(Default, Bundle, LdtkEntity)]
 struct SnakeTailBundle {
     #[sprite_sheet_bundle]
     sprite_sheet_bundle: LdtkSpriteSheetBundle,
+    #[with(get_next_iid_field)]
+    next_iid: NextPartIid,
+    #[grid_coords]
+    grid_coords: GridCoords,
+}
+
+pub fn get_next_iid_field(entity_instance: &EntityInstance) -> NextPartIid {
+    let iid = entity_instance
+        .get_entity_ref_field("next")
+        .expect("expected entity to have next entity ref field");
+    NextPartIid(EntityIid::new(iid.entity_iid.clone()))
 }

@@ -1,9 +1,9 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use bevy_ecs_ldtk::prelude::*;
 
 use crate::AppSet;
 
-use super::spawn::player::SnakeHead;
+use super::spawn::player::{NextPartIid, SnakeHead};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -24,8 +24,9 @@ pub(super) fn plugin(app: &mut App) {
 pub struct MovementController(pub IVec2);
 
 fn process_input(
-    mut players: Query<&mut GridCoords, With<SnakeHead>>,
+    mut heads: Query<(&mut GridCoords, &EntityIid), With<SnakeHead>>,
     input: Res<ButtonInput<KeyCode>>,
+    mut parts: Query<(&mut GridCoords, &EntityIid, &NextPartIid), Without<SnakeHead>>,
 ) {
     let movement_direction =
         if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::ArrowUp) {
@@ -40,9 +41,21 @@ fn process_input(
             return;
         };
 
-    for mut player_grid_coords in players.iter_mut() {
-        let destination = *player_grid_coords + movement_direction;
-        *player_grid_coords = destination;
+    let mut part_coords: HashMap<_, _> = parts
+        .iter()
+        .map(|(coords, iid, _)| (iid.clone(), coords.clone()))
+        .collect();
+
+    for (mut head_coords, iid) in heads.iter_mut() {
+        part_coords.insert(iid.clone(), head_coords.clone());
+        let destination = *head_coords + movement_direction;
+        *head_coords = destination;
+    }
+
+    for (mut coords, _, next_part_iid) in parts.iter_mut() {
+        if let Some(new_coords) = part_coords.get(&next_part_iid.0) {
+            *coords = new_coords.clone();
+        }
     }
 }
 
