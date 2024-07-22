@@ -7,17 +7,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, process_input.in_set(AppSet::ProcessInput));
 }
 
-#[derive(Component)]
-pub enum PartOrientation {
-    Horizontal,
-    Vertical,
-    TopRight,
-    BottomLeft,
-    BottomRight,
-    TopLeft,
-}
-
-fn process_input(input: Res<ButtonInput<KeyCode>>, mut cmd: Commands) {
+fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {
     // todo:
     // let movement_direction =
     //     if input.just_pressed(KeyCode::KeyW) || input.just_pressed(KeyCode::ArrowUp) {

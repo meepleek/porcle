@@ -10,14 +10,14 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(Update, process_score_raise_input);
 }
 
-fn process_score_raise_input(input: Res<ButtonInput<KeyCode>>) {
-    if let Some(score) = if input.just_pressed(KeyCode::NumpadAdd) {
-        Some(())
-    } else if input.just_pressed(KeyCode::NumpadSubtract) {
-        Some(())
-    } else {
-        None
-    } {
-        // todo
-    }
+fn process_score_raise_input(_input: Res<ButtonInput<KeyCode>>) {
+    // if let Some(_score) = if input.just_pressed(KeyCode::NumpadAdd) {
+    //     Some(())
+    // } else if input.just_pressed(KeyCode::NumpadSubtract) {
+    //     Some(())
+    // } else {
+    //     None
+    // } {
+    //     // todo
+    // }
 }

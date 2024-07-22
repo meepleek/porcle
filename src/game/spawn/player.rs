@@ -1,3 +1,3 @@
 use bevy::prelude::*;
 
-pub(super) fn plugin(app: &mut App) {}
+pub(super) fn plugin(_app: &mut App) {}
