@@ -9,7 +9,6 @@ use bevy::{
     audio::{AudioPlugin, Volume},
     prelude::*,
 };
-use bevy_ecs_ldtk::prelude::*;
 
 pub struct AppPlugin;
 
@@ -36,7 +35,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Ouroboros".to_string(),
+                        title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
                         prevent_default_event_handling: true,
@@ -59,7 +58,6 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
-        app.add_plugins(LdtkPlugin);
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
@@ -81,13 +79,9 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    let mut cam = Camera2dBundle::default();
-    cam.projection.scale = 0.5;
-    cam.transform.translation.x += 1280.0 / 4.0;
-    cam.transform.translation.y += 720.0 / 4.0;
     commands.spawn((
         Name::new("Camera"),
-        cam,
+        Camera2dBundle::default(),
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon

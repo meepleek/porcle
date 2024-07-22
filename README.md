@@ -1,6 +1,6 @@
-# Ouroboros
+# Porcle
 
-**Twists, turns & tails** - a game for [bevy jam 5](https://itch.io/jam/bevy-jam-5).
+a game for [bevy jam 5](https://itch.io/jam/bevy-jam-5).
 
 ## License
 

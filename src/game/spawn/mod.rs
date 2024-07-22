@@ -4,10 +4,9 @@
 
 use bevy::prelude::*;
 
-pub mod fruit;
 pub mod level;
 pub mod player;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((level::plugin, player::plugin, fruit::plugin));
+    app.add_plugins((level::plugin, player::plugin));
 }
