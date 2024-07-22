@@ -4,9 +4,10 @@
 
 use bevy::prelude::*;
 
+pub mod ball;
 pub mod level;
-pub mod player;
+pub mod paddle;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((level::plugin, player::plugin));
+    app.add_plugins((level::plugin, paddle::plugin, ball::plugin));
 }

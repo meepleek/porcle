@@ -28,7 +28,9 @@ fn spawn_paddle(
             b.spawn((
                 MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 100.0))),
-                    material: materials.add(Color::BLACK),
+                    material: materials.add(ColorMaterial::from_color(
+                        bevy::color::palettes::tailwind::SKY_400,
+                    )),
                     transform: Transform::from_xyz(285.0, 0.0, 1.0),
                     ..default()
                 },

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::AppSet;
 
-use super::{input::CursorCoords, spawn::player::PaddleRotation};
+use super::{input::CursorCoords, spawn::paddle::PaddleRotation};
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
@@ -20,7 +20,7 @@ fn rotate_paddle(
 ) {
     for mut t in rot_q.iter_mut() {
         if let Ok(dir) = Dir2::new(cursor.0) {
-            t.rotation = Quat::from_rotation_z(dir.rotation_from_x().as_radians());
+            t.rotation = Quat::from_rotation_z(dir.to_angle());
         }
     }
 }
