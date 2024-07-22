@@ -23,7 +23,7 @@
 
 ## MVP - v0.1.0
 
-- [ ] move paddle
+- [x] move paddle
 - [ ] move ball
 - [ ] reflect ball
 - [ ] lose when ball lost
