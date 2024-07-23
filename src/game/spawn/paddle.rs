@@ -4,6 +4,8 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
+use crate::screen::Screen;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
 }
@@ -38,6 +40,7 @@ fn spawn_paddle(
                 RigidBody::Kinematic,
                 Collider::capsule(23.0, 130.0),
                 Paddle,
+                StateScoped(Screen::Game),
             ));
         });
 }

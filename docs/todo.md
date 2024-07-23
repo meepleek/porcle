@@ -26,11 +26,14 @@
 - [x] move paddle
 - [x] move ball
 - [x] reflect ball
-- [ ] lose when ball lost
-- [ ] add score on reflect
-- [ ] add mult
-- [ ] increase mult on cycle
+- [x] add restart
+- [ ] add crawling enemies
+- [ ] destroy enemy on collision 
+- [ ] reload ball on cycle
 - [x] speed up ball on reflect
+- [ ] charge weapon on reflect
+- [ ] shoot weapon (just peashooter)
+- [ ] destroy enemy on death
 
 ## juiced up base - v0.2.0
 

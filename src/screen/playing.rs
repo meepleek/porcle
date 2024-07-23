@@ -10,13 +10,17 @@ use crate::game::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Playing), enter_playing);
-    app.add_systems(OnExit(Screen::Playing), exit_playing);
+    app.add_systems(OnEnter(Screen::Game), enter_playing);
+    app.add_systems(OnExit(Screen::Game), exit_playing);
+    app.add_systems(OnEnter(Screen::RestartGame), enter_restart);
 
     app.add_systems(
         Update,
-        return_to_title_screen
-            .run_if(in_state(Screen::Playing).and_then(input_just_pressed(KeyCode::Escape))),
+        (
+            return_to_title_screen
+                .run_if(in_state(Screen::Game).and_then(input_just_pressed(KeyCode::Escape))),
+            restart_game.run_if(in_state(Screen::Game).and_then(input_just_pressed(KeyCode::KeyR))),
+        ),
     );
 }
 
@@ -32,4 +36,12 @@ fn exit_playing(mut commands: Commands) {
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Title);
+}
+
+fn restart_game(mut next_screen: ResMut<NextState<Screen>>) {
+    next_screen.set(Screen::RestartGame);
+}
+
+fn enter_restart(mut next_screen: ResMut<NextState<Screen>>) {
+    next_screen.set(Screen::Game);
 }

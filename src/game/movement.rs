@@ -1,7 +1,7 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::AppSet;
+use crate::{ext::Vec2Ext, AppSet};
 
 use super::{
     input::CursorCoords,
@@ -38,9 +38,7 @@ fn rotate_paddle(
     cursor: Res<CursorCoords>,
 ) {
     for mut t in rot_q.iter_mut() {
-        if let Ok(dir) = Dir2::new(cursor.0) {
-            t.rotation = Quat::from_rotation_z(dir.to_angle());
-        }
+        t.rotation = cursor.0.to_quat();
     }
 }
 

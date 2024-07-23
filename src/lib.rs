@@ -1,5 +1,6 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
+mod ext;
 mod game;
 mod screen;
 mod ui;

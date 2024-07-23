@@ -29,5 +29,6 @@ pub enum Screen {
     Loading,
     Title,
     Credits,
-    Playing,
+    Game,
+    RestartGame,
 }
