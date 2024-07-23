@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use avian2d::prelude::*;
 use bevy::{
     prelude::*,
@@ -10,22 +12,40 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
 }
 
+pub const PADDLE_RADIUS: f32 = 240.0;
+
 #[derive(Event, Debug)]
 pub struct SpawnPaddle;
 
 #[derive(Component, Debug)]
 pub struct Paddle;
 
-#[derive(Component, Debug, Default)]
+#[derive(Component, Debug)]
 pub struct PaddleRotation {
     pub cw_start: f32,
     pub ccw_start: f32,
+    pub timer: Timer,
+    pub prev_rot: f32,
+}
+
+impl Default for PaddleRotation {
+    fn default() -> Self {
+        Self {
+            cw_start: 0.,
+            ccw_start: 0.,
+            timer: Timer::new(Duration::from_millis(50), TimerMode::Once),
+            prev_rot: 0.,
+        }
+    }
 }
 
 impl PaddleRotation {
     pub fn reset(&mut self, rotation: f32) {
         self.cw_start = rotation;
         self.ccw_start = rotation;
+        self.prev_rot = rotation;
+        self.timer.reset();
+        self.timer.unpause();
     }
 }
 
@@ -48,7 +68,7 @@ fn spawn_paddle(
                     material: materials.add(ColorMaterial::from_color(
                         bevy::color::palettes::tailwind::SKY_400,
                     )),
-                    transform: Transform::from_xyz(240.0, 0.0, 1.0),
+                    transform: Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
                     ..default()
                 },
                 RigidBody::Kinematic,

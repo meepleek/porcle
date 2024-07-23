@@ -11,7 +11,7 @@ use super::{
     spawn::{
         ball::{Ball, SpawnBall},
         enemy::Enemy,
-        paddle::{Paddle, PaddleRotation},
+        paddle::{Paddle, PaddleRotation, PADDLE_RADIUS},
     },
 };
 
@@ -22,6 +22,7 @@ pub(super) fn plugin(app: &mut App) {
         (
             process_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
+            reload_balls,
             reflect_ball,
             accumulate_angle,
         ),
@@ -42,14 +43,35 @@ impl Default for BallSpeed {
 fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
 
 fn rotate_paddle(
-    mut rot_q: Query<(&mut Transform, &mut PaddleRotation, &AccumulatedRotation)>,
+    mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
     cursor: Res<CursorCoords>,
-    mut cmd: Commands,
 ) {
     // todo: limit speed
-    for (mut t, mut paddle_rot, angle) in rot_q.iter_mut() {
-        let min_rot = 355.0f32.to_radians();
+    for mut t in rot_q.iter_mut() {
         t.rotation = cursor.0.to_quat();
+    }
+}
+
+fn reload_balls(
+    mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
+    mut cmd: Commands,
+    time: Res<Time>,
+    ball_q: Query<&GlobalTransform, With<Ball>>,
+) {
+    if !ball_q.is_empty()
+        && ball_q
+            .iter()
+            .any(|t| t.translation().length() < PADDLE_RADIUS * 1.1)
+    {
+        for (mut paddle_rot, angle) in rot_q.iter_mut() {
+            paddle_rot.reset(angle.rotation);
+        }
+        return;
+    }
+
+    // todo: limit speed
+    for (mut paddle_rot, angle) in rot_q.iter_mut() {
+        let min_rot = 355.0f32.to_radians();
 
         // CW (negative angle)
         if ((angle.rotation - paddle_rot.cw_start) <= -min_rot) ||
@@ -63,6 +85,19 @@ fn rotate_paddle(
         } else if angle.rotation < paddle_rot.ccw_start {
             paddle_rot.ccw_start = angle.rotation;
         }
+
+        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_seconds();
+        if delta < 1. {
+            // reset if rotation doesn't change for a while
+            paddle_rot.timer.tick(time.delta());
+            if paddle_rot.timer.just_finished() {
+                paddle_rot.reset(angle.rotation);
+            }
+        } else {
+            paddle_rot.timer.reset()
+        }
+
+        paddle_rot.prev_rot = angle.rotation;
     }
 }
 

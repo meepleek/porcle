@@ -60,8 +60,9 @@ fn spawn_enemy(
                         .with_rotation(ev.position.to_quat()),
                     ..default()
                 },
-                RigidBody::Kinematic,
+                // RigidBody::Kinematic,
                 Collider::triangle(a, b, c),
+                // Sensor,
                 LinearVelocity(-ev.position.normalize_or_zero() * 30.),
                 ev.enemy.clone(),
                 StateScoped(Screen::Game),

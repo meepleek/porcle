@@ -7,7 +7,10 @@ use bevy::{
 
 use crate::screen::Screen;
 
-use super::{ball::SpawnBall, paddle::SpawnPaddle};
+use super::{
+    ball::SpawnBall,
+    paddle::{SpawnPaddle, PADDLE_RADIUS},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
@@ -24,7 +27,9 @@ fn spawn_level(
 ) {
     commands.spawn((
         MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Annulus::new(230.0, 250.0))),
+            mesh: Mesh2dHandle(
+                meshes.add(Annulus::new(PADDLE_RADIUS - 10.0, PADDLE_RADIUS + 10.0)),
+            ),
             material: materials.add(ColorMaterial::from_color(
                 bevy::color::palettes::tailwind::INDIGO_200,
             )),
