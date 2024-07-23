@@ -55,6 +55,10 @@ fn spawn_paddle(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    let mat = materials.add(ColorMaterial::from_color(
+        bevy::color::palettes::tailwind::SKY_400,
+    ));
+
     commands
         .spawn((
             SpatialBundle::default(),
@@ -65,9 +69,7 @@ fn spawn_paddle(
             b.spawn((
                 MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 120.0))),
-                    material: materials.add(ColorMaterial::from_color(
-                        bevy::color::palettes::tailwind::SKY_400,
-                    )),
+                    material: mat.clone(),
                     transform: Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
                     ..default()
                 },
@@ -75,6 +77,22 @@ fn spawn_paddle(
                 Collider::capsule(23.0, 130.0),
                 Paddle,
                 StateScoped(Screen::Game),
-            ));
+            ))
+            .with_children(|b| {
+                b.spawn(MaterialMesh2dBundle {
+                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 10.0))),
+                    material: mat.clone(),
+                    transform: Transform::from_xyz(15., 0., 0.),
+                    ..default()
+                });
+
+                b.spawn(MaterialMesh2dBundle {
+                    mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 50.0))),
+                    material: mat,
+                    transform: Transform::from_xyz(40., 0., 0.)
+                        .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
+                    ..default()
+                });
+            });
         });
 }

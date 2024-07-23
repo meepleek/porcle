@@ -29,7 +29,7 @@
 - [x] add restart
 - [x] add crawling enemies
 - [x] destroy enemy on collision 
-- [ ] reload ball on cycle
+- [x] reload ball on cycle
 - [x] speed up ball on reflect
 - [ ] charge weapon on reflect
 - [ ] shoot weapon (just peashooter)
