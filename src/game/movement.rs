@@ -42,10 +42,6 @@ fn reflect_ball(
             if let Some(coll) = collisions.get(e, *colliding.0.iter().next().unwrap()) {
                 if let Some(contact) = coll.manifolds.first() {
                     vel.0 = contact.normal1 * -250.;
-                    info!(
-                        ?coll,
-                        "{:?} is colliding with the following entities: {:?}", e, colliding
-                    );
                 }
             }
         }
