@@ -1,13 +1,21 @@
+use std::time::Duration;
+
 use avian2d::prelude::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+    time::common_conditions::on_timer,
 };
+use rand::prelude::*;
 
 use crate::{ext::Vec2Ext, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
+    app.add_systems(
+        Update,
+        spawner.run_if(in_state(Screen::Game).and_then(on_timer(Duration::from_millis(500)))),
+    );
 }
 
 #[derive(Event, Debug)]
@@ -19,6 +27,14 @@ pub struct SpawnEnemy {
 #[derive(Component, Debug, Clone)]
 pub enum Enemy {
     Crawler,
+}
+
+fn spawner(mut cmd: Commands) {
+    let mut rng = thread_rng();
+    cmd.trigger(SpawnEnemy {
+        enemy: Enemy::Crawler,
+        position: Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0)).normalize() * 720.,
+    });
 }
 
 fn spawn_enemy(
@@ -46,7 +62,7 @@ fn spawn_enemy(
                 },
                 RigidBody::Kinematic,
                 Collider::triangle(a, b, c),
-                LinearVelocity(-ev.position.normalize_or_zero() * 50.),
+                LinearVelocity(-ev.position.normalize_or_zero() * 30.),
                 ev.enemy.clone(),
                 StateScoped(Screen::Game),
             ));

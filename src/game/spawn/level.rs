@@ -7,11 +7,7 @@ use bevy::{
 
 use crate::screen::Screen;
 
-use super::{
-    ball::SpawnBall,
-    enemy::{self, SpawnEnemy},
-    paddle::SpawnPaddle,
-};
+use super::{ball::SpawnBall, paddle::SpawnPaddle};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level);
@@ -40,8 +36,4 @@ fn spawn_level(
 
     commands.trigger(SpawnPaddle);
     commands.trigger(SpawnBall);
-    commands.trigger(SpawnEnemy {
-        enemy: enemy::Enemy::Crawler,
-        position: Vec2::new(400., 100.),
-    });
 }
