@@ -25,9 +25,13 @@ pub(super) fn plugin(app: &mut App) {
             reload_balls,
             reflect_ball,
             accumulate_angle,
+            apply_velocity,
         ),
     );
 }
+
+#[derive(Component, Debug)]
+pub struct Velocity(pub Vec2);
 
 pub const BALL_BASE_SPEED: f32 = 250.;
 
@@ -37,6 +41,12 @@ pub struct BallSpeed(f32);
 impl Default for BallSpeed {
     fn default() -> Self {
         Self(BALL_BASE_SPEED)
+    }
+}
+
+fn apply_velocity(mut move_q: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+    for (mut t, vel) in &mut move_q {
+        t.translation += (vel.0 * time.delta_seconds()).extend(0.);
     }
 }
 

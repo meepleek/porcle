@@ -31,6 +31,7 @@ fn spawn_ball(
         cmd.entity(e).despawn_recursive();
     }
 
+    // todo: switch to shapecaster instead?
     cmd.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Circle { radius: 30.0 })),

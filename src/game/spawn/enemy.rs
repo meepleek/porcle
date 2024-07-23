@@ -8,7 +8,7 @@ use bevy::{
 };
 use rand::prelude::*;
 
-use crate::{ext::Vec2Ext, screen::Screen};
+use crate::{ext::Vec2Ext, game::movement::Velocity, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
@@ -63,7 +63,7 @@ fn spawn_enemy(
                 // RigidBody::Kinematic,
                 Collider::triangle(a, b, c),
                 // Sensor,
-                LinearVelocity(-ev.position.normalize_or_zero() * 30.),
+                Velocity(-ev.position.normalize_or_zero() * 30.),
                 ev.enemy.clone(),
                 StateScoped(Screen::Game),
             ));
