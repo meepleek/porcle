@@ -12,3 +12,13 @@ impl Vec2Ext for Vec2 {
         }
     }
 }
+
+pub trait QuatExt {
+    fn to_rot2(self) -> Rot2;
+}
+
+impl QuatExt for Quat {
+    fn to_rot2(self) -> Rot2 {
+        Rot2::radians(self.to_scaled_axis().z)
+    }
+}

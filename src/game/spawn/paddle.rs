@@ -4,7 +4,7 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::screen::Screen;
+use crate::{game::movement::AccumulatedRotation, screen::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
@@ -26,7 +26,11 @@ fn spawn_paddle(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands
-        .spawn((SpatialBundle::default(), PaddleRotation))
+        .spawn((
+            SpatialBundle::default(),
+            PaddleRotation,
+            AccumulatedRotation::default(),
+        ))
         .with_children(|b| {
             b.spawn((
                 MaterialMesh2dBundle {

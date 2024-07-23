@@ -1,7 +1,10 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
-use crate::{ext::Vec2Ext, AppSet};
+use crate::{
+    ext::{QuatExt, Vec2Ext},
+    AppSet,
+};
 
 use super::{
     input::CursorCoords,
@@ -20,6 +23,7 @@ pub(super) fn plugin(app: &mut App) {
             process_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
             reflect_ball,
+            accumulate_angle,
         ),
     );
 }
@@ -38,11 +42,30 @@ impl Default for BallSpeed {
 fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
 
 fn rotate_paddle(
-    mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
+    mut rot_q: Query<(&mut Transform, &AccumulatedRotation), With<PaddleRotation>>,
     cursor: Res<CursorCoords>,
 ) {
-    for mut t in rot_q.iter_mut() {
+    // todo: limit speed
+    for (mut t, angle) in rot_q.iter_mut() {
         t.rotation = cursor.0.to_quat();
+
+        info!(angle = angle.rotation.to_degrees());
+    }
+}
+
+#[derive(Component, Debug, Default)]
+pub struct AccumulatedRotation {
+    prev: Option<Rot2>,
+    rotation: f32,
+}
+
+fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Changed<Transform>>) {
+    for (mut acc, t) in &mut acc_q {
+        let rot = t.rotation.to_rot2();
+        if let Some(prev) = acc.prev {
+            acc.rotation += prev.angle_between(rot);
+        }
+        acc.prev = Some(rot);
     }
 }
 
