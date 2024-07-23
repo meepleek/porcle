@@ -38,7 +38,7 @@ fn spawn_enemy(
                 MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Triangle2d::new(a, b, c))),
                     material: materials.add(ColorMaterial::from_color(
-                        bevy::color::palettes::tailwind::RED_400,
+                        bevy::color::palettes::tailwind::PURPLE_400,
                     )),
                     transform: Transform::from_translation(ev.position.extend(0.1))
                         .with_rotation(ev.position.to_quat()),

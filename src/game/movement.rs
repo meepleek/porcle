@@ -5,7 +5,11 @@ use crate::{ext::Vec2Ext, AppSet};
 
 use super::{
     input::CursorCoords,
-    spawn::{ball::Ball, paddle::PaddleRotation},
+    spawn::{
+        ball::Ball,
+        enemy::Enemy,
+        paddle::{Paddle, PaddleRotation},
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -52,15 +56,23 @@ fn reflect_ball(
         ),
         With<Ball>,
     >,
+    paddle_q: Query<(), With<Paddle>>,
+    enemy_q: Query<(), With<Enemy>>,
     collisions: Res<Collisions>,
+    mut cmd: Commands,
 ) {
     for (e, colliding, mut vel, mut speed) in &mut coll_q {
         if !colliding.is_empty() {
-            if let Some(coll) = collisions.get(e, *colliding.0.iter().next().unwrap()) {
-                if let Some(contact) = coll.manifolds.first() {
-                    speed.0 += 5.;
-                    vel.0 = contact.normal1 * -speed.0;
+            let colliding_e = *colliding.0.iter().next().unwrap();
+            if paddle_q.contains(colliding_e) {
+                if let Some(coll) = collisions.get(e, colliding_e) {
+                    if let Some(contact) = coll.manifolds.first() {
+                        speed.0 += 5.;
+                        vel.0 = contact.normal1 * -speed.0;
+                    }
                 }
+            } else if enemy_q.contains(colliding_e) {
+                cmd.entity(colliding_e).despawn_recursive();
             }
         }
     }
