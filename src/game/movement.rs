@@ -11,7 +11,7 @@ use super::{
     spawn::{
         ball::{Ball, SpawnBall},
         enemy::Enemy,
-        paddle::{Paddle, PaddleRotation, PADDLE_RADIUS},
+        paddle::{Paddle, PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
     },
 };
 
@@ -127,7 +127,7 @@ fn reflect_ball(
         ),
         With<Ball>,
     >,
-    paddle_q: Query<(), With<Paddle>>,
+    mut paddle_q: Query<&mut PaddleAmmo, With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
     collisions: Res<Collisions>,
     mut cmd: Commands,
@@ -135,11 +135,13 @@ fn reflect_ball(
     for (e, colliding, mut vel, mut speed) in &mut coll_q {
         if !colliding.is_empty() {
             let colliding_e = *colliding.0.iter().next().unwrap();
-            if paddle_q.contains(colliding_e) {
+            if let Ok(mut ammo) = paddle_q.get_mut(colliding_e) {
                 if let Some(coll) = collisions.get(e, colliding_e) {
                     if let Some(contact) = coll.manifolds.first() {
                         speed.0 += 5.;
                         vel.0 = contact.normal1 * -speed.0;
+                        ammo.0 += 1;
+                        info!(?ammo, "ammo");
                     }
                 }
             } else if enemy_q.contains(colliding_e) {

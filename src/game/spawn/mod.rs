@@ -8,7 +8,14 @@ pub mod ball;
 pub mod enemy;
 pub mod level;
 pub mod paddle;
+pub mod projectile;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((level::plugin, paddle::plugin, ball::plugin, enemy::plugin));
+    app.add_plugins((
+        level::plugin,
+        paddle::plugin,
+        ball::plugin,
+        enemy::plugin,
+        projectile::plugin,
+    ));
 }

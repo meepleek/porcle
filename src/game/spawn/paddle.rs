@@ -49,6 +49,9 @@ impl PaddleRotation {
     }
 }
 
+#[derive(Component, Debug, Default)]
+pub struct PaddleAmmo(pub usize);
+
 fn spawn_paddle(
     _trigger: Trigger<SpawnPaddle>,
     mut commands: Commands,
@@ -76,6 +79,7 @@ fn spawn_paddle(
                 RigidBody::Kinematic,
                 Collider::capsule(23.0, 130.0),
                 Paddle,
+                PaddleAmmo::default(),
                 StateScoped(Screen::Game),
             ))
             .with_children(|b| {

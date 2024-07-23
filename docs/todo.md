@@ -31,8 +31,8 @@
 - [x] destroy enemy on collision 
 - [x] reload ball on cycle
 - [x] speed up ball on reflect
-- [ ] charge weapon on reflect
-- [ ] shoot weapon (just peashooter)
+- [x] charge weapon on reflect
+- [x] shoot weapon (just peashooter)
 - [ ] destroy enemy when shot
 
 ## juiced up base - v0.2.0
