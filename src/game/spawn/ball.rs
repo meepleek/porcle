@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::{
     color::palettes::tailwind,
     prelude::*,
@@ -24,9 +25,12 @@ fn spawn_ball(
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Circle { radius: 30.0 })),
             material: materials.add(ColorMaterial::from_color(tailwind::RED_400)),
-            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+            transform: Transform::from_xyz(0.0, 0.0, 0.9),
             ..default()
         },
+        RigidBody::Kinematic,
+        Collider::circle(28.0),
+        LinearVelocity(Vec2::X * 200.),
         Ball,
     ));
 }

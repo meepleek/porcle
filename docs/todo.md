@@ -24,8 +24,8 @@
 ## MVP - v0.1.0
 
 - [x] move paddle
-- [ ] move ball
-- [ ] reflect ball
+- [x] move ball
+- [x] reflect ball
 - [ ] lose when ball lost
 - [ ] add score on reflect
 - [ ] add mult

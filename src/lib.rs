@@ -58,6 +58,7 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
+        app.add_plugins(avian2d::PhysicsPlugins::default());
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]

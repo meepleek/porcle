@@ -1,3 +1,4 @@
+use avian2d::prelude::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
@@ -34,6 +35,8 @@ fn spawn_paddle(
                     transform: Transform::from_xyz(285.0, 0.0, 1.0),
                     ..default()
                 },
+                RigidBody::Kinematic,
+                Collider::capsule(23.0, 105.0),
                 Paddle,
             ));
         });
