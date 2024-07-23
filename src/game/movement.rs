@@ -9,7 +9,7 @@ use crate::{
 use super::{
     input::CursorCoords,
     spawn::{
-        ball::Ball,
+        ball::{Ball, SpawnBall},
         enemy::Enemy,
         paddle::{Paddle, PaddleRotation},
     },
@@ -42,14 +42,27 @@ impl Default for BallSpeed {
 fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
 
 fn rotate_paddle(
-    mut rot_q: Query<(&mut Transform, &AccumulatedRotation), With<PaddleRotation>>,
+    mut rot_q: Query<(&mut Transform, &mut PaddleRotation, &AccumulatedRotation)>,
     cursor: Res<CursorCoords>,
+    mut cmd: Commands,
 ) {
     // todo: limit speed
-    for (mut t, angle) in rot_q.iter_mut() {
+    for (mut t, mut paddle_rot, angle) in rot_q.iter_mut() {
+        let min_rot = 355.0f32.to_radians();
         t.rotation = cursor.0.to_quat();
 
-        info!(angle = angle.rotation.to_degrees());
+        // CW (negative angle)
+        if ((angle.rotation - paddle_rot.cw_start) <= -min_rot) ||
+            // CCW (positive angle)
+            ((angle.rotation - paddle_rot.ccw_start) >= min_rot)
+        {
+            paddle_rot.reset(angle.rotation);
+            cmd.trigger(SpawnBall);
+        } else if angle.rotation > paddle_rot.cw_start {
+            paddle_rot.cw_start = angle.rotation;
+        } else if angle.rotation < paddle_rot.ccw_start {
+            paddle_rot.ccw_start = angle.rotation;
+        }
     }
 }
 

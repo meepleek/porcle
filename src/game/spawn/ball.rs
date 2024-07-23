@@ -25,7 +25,12 @@ fn spawn_ball(
     mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    ball_q: Query<Entity, With<Ball>>,
 ) {
+    for e in &ball_q {
+        cmd.entity(e).despawn_recursive();
+    }
+
     cmd.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Circle { radius: 30.0 })),

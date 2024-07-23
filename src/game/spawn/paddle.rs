@@ -16,8 +16,18 @@ pub struct SpawnPaddle;
 #[derive(Component, Debug)]
 pub struct Paddle;
 
-#[derive(Component, Debug)]
-pub struct PaddleRotation;
+#[derive(Component, Debug, Default)]
+pub struct PaddleRotation {
+    pub cw_start: f32,
+    pub ccw_start: f32,
+}
+
+impl PaddleRotation {
+    pub fn reset(&mut self, rotation: f32) {
+        self.cw_start = rotation;
+        self.ccw_start = rotation;
+    }
+}
 
 fn spawn_paddle(
     _trigger: Trigger<SpawnPaddle>,
@@ -28,7 +38,7 @@ fn spawn_paddle(
     commands
         .spawn((
             SpatialBundle::default(),
-            PaddleRotation,
+            PaddleRotation::default(),
             AccumulatedRotation::default(),
         ))
         .with_children(|b| {
