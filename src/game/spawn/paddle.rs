@@ -28,15 +28,15 @@ fn spawn_paddle(
         .with_children(|b| {
             b.spawn((
                 MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 100.0))),
+                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 120.0))),
                     material: materials.add(ColorMaterial::from_color(
                         bevy::color::palettes::tailwind::SKY_400,
                     )),
-                    transform: Transform::from_xyz(285.0, 0.0, 1.0),
+                    transform: Transform::from_xyz(240.0, 0.0, 1.0),
                     ..default()
                 },
                 RigidBody::Kinematic,
-                Collider::capsule(23.0, 105.0),
+                Collider::capsule(23.0, 130.0),
                 Paddle,
             ));
         });

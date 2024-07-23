@@ -38,6 +38,7 @@ impl Plugin for AppPlugin {
                         title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
+                        resolution: Vec2::splat(1024.).into(),
                         prevent_default_event_handling: true,
                         ..default()
                     }

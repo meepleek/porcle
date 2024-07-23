@@ -5,6 +5,8 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
+use crate::game::movement::{BallSpeed, BALL_BASE_SPEED};
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_ball);
 }
@@ -30,7 +32,8 @@ fn spawn_ball(
         },
         RigidBody::Kinematic,
         Collider::circle(28.0),
-        LinearVelocity(Vec2::X * 200.),
+        LinearVelocity(Vec2::X * BALL_BASE_SPEED),
+        BallSpeed::default(),
         Ball,
     ));
 }

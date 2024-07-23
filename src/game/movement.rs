@@ -20,6 +20,17 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+pub const BALL_BASE_SPEED: f32 = 250.;
+
+#[derive(Component, Debug)]
+pub struct BallSpeed(f32);
+
+impl Default for BallSpeed {
+    fn default() -> Self {
+        Self(BALL_BASE_SPEED)
+    }
+}
+
 fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
 
 fn rotate_paddle(
@@ -34,14 +45,23 @@ fn rotate_paddle(
 }
 
 fn reflect_ball(
-    mut coll_q: Query<(Entity, &CollidingEntities, &mut LinearVelocity), With<Ball>>,
+    mut coll_q: Query<
+        (
+            Entity,
+            &CollidingEntities,
+            &mut LinearVelocity,
+            &mut BallSpeed,
+        ),
+        With<Ball>,
+    >,
     collisions: Res<Collisions>,
 ) {
-    for (e, colliding, mut vel) in &mut coll_q {
+    for (e, colliding, mut vel, mut speed) in &mut coll_q {
         if !colliding.is_empty() {
             if let Some(coll) = collisions.get(e, *colliding.0.iter().next().unwrap()) {
                 if let Some(contact) = coll.manifolds.first() {
-                    vel.0 = contact.normal1 * -250.;
+                    speed.0 += 5.;
+                    vel.0 = contact.normal1 * -speed.0;
                 }
             }
         }

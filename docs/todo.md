@@ -30,7 +30,7 @@
 - [ ] add score on reflect
 - [ ] add mult
 - [ ] increase mult on cycle
-- [ ] speed up ball on reflect
+- [x] speed up ball on reflect
 
 ## juiced up base - v0.2.0
 
