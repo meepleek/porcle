@@ -21,7 +21,7 @@
 - slowmo meter
 - add extra scoring ball (different color?) that scores but doesn't lose the game
 
-## MVP - v0.1.0
+## proto - v0.1.0
 
 - [x] move paddle
 - [x] move ball
@@ -35,7 +35,16 @@
 - [x] shoot weapon (just peashooter)
 - [ ] destroy enemy when shot
 
-## juiced up base - v0.2.0
+## MVP - v0.2.0
+- [ ] reflect based on paddle hit position
+- [ ] homing ball
+- [ ] ball is reflected off of edges
+- [ ] ball slows down when it hits an edge
+- [ ] add damping to a fired ball
+- [ ] auto despawn a very slow or stationary ball
+- [ ] crawlers take HP on core collision
+
+## juiced up base - v0.3.0
 
 - [ ] screen shake
 - [ ] paddle recoil on reflect
@@ -48,4 +57,15 @@
 - [ ] ball trail
 - [ ] paddle trail
 
-## upgrades - v0.3.0
+## enemies - v0.4.0
+
+- [ ] improve crawler
+- [ ] slower crawler that has to be hit by the ball
+- [ ] shooty enemy/turret
+- [ ] turret that has to be destroyed by the ball
+- [ ] paddle blocks enemy projectiles
+- [ ] ball destroys enemy projectiles
+
+## audio - v0.5.0
+
+## upgrades - v0.x.0
