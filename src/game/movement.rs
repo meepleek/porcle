@@ -51,9 +51,16 @@ fn apply_velocity(mut move_q: Query<(&mut Transform, &Velocity)>, time: Res<Time
     }
 }
 
-fn apply_damping(mut damping_q: Query<(&mut Velocity, &Damping)>, time: Res<Time>) {
-    for (mut vel, damping) in &mut damping_q {
-        vel.0 *= 1. - (damping.0 * time.delta_seconds());
+fn apply_damping(
+    mut damping_q: Query<(&mut Velocity, &Damping, Option<&mut BaseSpeed>)>,
+    time: Res<Time>,
+) {
+    for (mut vel, damping, speed) in &mut damping_q {
+        let mult = 1. - (damping.0 * time.delta_seconds());
+        vel.0 *= mult;
+        if let Some(mut speed) = speed {
+            speed.0 *= mult;
+        }
     }
 }
 
@@ -193,12 +200,10 @@ fn reflect_ball(
                     // ignore consecutive hits
                     continue;
                 }
-
                 speed.0 *= 0.7;
-                let v = vel.0.normalize_or_zero();
-                let reflect = v - (2.0 * v.dot(hit.normal1) * hit.normal1);
+                let dir = vel.0.normalize_or_zero();
+                let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 vel.0 = reflect * speed.0;
-                info!(?reflect, vel = ?vel.0, "wall bounce");
                 ball.last_reflection_time = time.elapsed_seconds();
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();

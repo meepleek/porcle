@@ -10,7 +10,8 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_ball);
+    app.observe(spawn_ball)
+        .add_systems(Update, despawn_stationary_balls);
 }
 
 pub const BALL_BASE_RADIUS: f32 = 30.;
@@ -67,4 +68,13 @@ fn spawn_ball(
         Ball::default(),
         StateScoped(Screen::Game),
     ));
+}
+
+fn despawn_stationary_balls(
+    mut cmd: Commands,
+    ball_q: Query<(Entity, &Velocity), (With<Ball>, Without<InsideCore>)>,
+) {
+    for (e, _) in ball_q.iter().filter(|(_, vel)| vel.0.length() < 10.) {
+        cmd.entity(e).despawn_recursive();
+    }
 }

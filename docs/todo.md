@@ -41,8 +41,8 @@
 - [x] ball is reflected off of edges
 - [x] ball slows down when it hits an edge
 - [x] add damping to a fired ball
-- [ ] auto despawn a very slow or stationary ball
-- [ ] crawlers take HP on core collision
+- [x] auto despawn a very slow or stationary ball
+- [ ] crawlers deal dmg on core collision
 
 ## juiced up base - v0.3.0
 
