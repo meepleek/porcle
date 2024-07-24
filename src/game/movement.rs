@@ -10,7 +10,7 @@ use crate::{
 use super::{
     input::CursorCoords,
     spawn::{
-        ball::{Ball, SpawnBall},
+        ball::{Ball, InsideCore, SpawnBall},
         enemy::Enemy,
         paddle::{Paddle, PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
     },
@@ -24,15 +24,20 @@ pub(super) fn plugin(app: &mut App) {
             process_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
             reload_balls,
+            balls_inside_core,
             reflect_ball,
             accumulate_angle,
             apply_velocity,
+            apply_damping,
         ),
     );
 }
 
 #[derive(Component, Debug)]
 pub struct Velocity(pub Vec2);
+
+#[derive(Component, Debug)]
+pub struct Damping(pub f32);
 
 pub const BALL_BASE_SPEED: f32 = 250.;
 
@@ -42,6 +47,12 @@ pub struct BaseSpeed(pub f32);
 fn apply_velocity(mut move_q: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut t, vel) in &mut move_q {
         t.translation += (vel.0 * time.delta_seconds()).extend(0.);
+    }
+}
+
+fn apply_damping(mut damping_q: Query<(&mut Velocity, &Damping)>, time: Res<Time>) {
+    for (mut vel, damping) in &mut damping_q {
+        vel.0 *= 1. - (damping.0 * time.delta_seconds());
     }
 }
 
@@ -57,17 +68,29 @@ fn rotate_paddle(
     }
 }
 
+fn balls_inside_core(
+    mut cmd: Commands,
+    ball_q: Query<(Entity, &GlobalTransform, Option<&InsideCore>), With<Ball>>,
+) {
+    for (e, t, inside) in &ball_q {
+        let inside_core = t.translation().length() < PADDLE_RADIUS * 1.1;
+        if inside_core && inside.is_none() {
+            cmd.entity(e).insert(InsideCore);
+            cmd.entity(e).remove::<Damping>();
+        } else if !inside_core && inside.is_some() {
+            cmd.entity(e).remove::<InsideCore>();
+            cmd.entity(e).insert(Damping(0.5));
+        }
+    }
+}
+
 fn reload_balls(
     mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
     mut cmd: Commands,
     time: Res<Time>,
-    ball_q: Query<&GlobalTransform, With<Ball>>,
+    ball_q: Query<Option<&InsideCore>, With<Ball>>,
 ) {
-    if !ball_q.is_empty()
-        && ball_q
-            .iter()
-            .any(|t| t.translation().length() < PADDLE_RADIUS * 1.1)
-    {
+    if !ball_q.is_empty() && ball_q.iter().any(|inside| inside.is_some()) {
         for (mut paddle_rot, angle) in rot_q.iter_mut() {
             paddle_rot.reset(angle.rotation);
         }
@@ -155,7 +178,7 @@ fn reflect_ball(
                     continue;
                 }
 
-                speed.0 *= 1.05;
+                speed.0 *= 1.15;
                 // let hit_point = paddle_t.transform_point(hit.point1.extend(0.));
                 // info!(/*?hit_point,*/ src = ?hit.point1, paddle = ?paddle_t.translation(), "paddle hit");
                 // todo: use hit.point1 to determine the angle

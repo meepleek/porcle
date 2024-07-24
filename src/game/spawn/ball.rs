@@ -24,6 +24,10 @@ pub struct Ball {
     pub last_reflection_time: f32,
 }
 
+#[derive(Component, Debug)]
+#[component(storage = "SparseSet")]
+pub struct InsideCore;
+
 impl Default for Ball {
     fn default() -> Self {
         Self {
