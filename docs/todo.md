@@ -37,7 +37,7 @@
 
 ## MVP - v0.2.0
 - [ ] reflect based on paddle hit position
-- [ ] homing ball
+- [x] homing ball
 - [x] ball is reflected off of edges
 - [x] ball slows down when it hits an edge
 - [x] add damping to a fired ball
@@ -49,6 +49,8 @@
 - [ ] screen shake
 - [ ] paddle recoil on reflect
 - [ ] freeze frames on reflect?
+- [ ] freeze frames on enemy kill
+- [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [ ] change color
 - [ ] add bloom (does it work on web yet?)
 - [ ] add vignette?

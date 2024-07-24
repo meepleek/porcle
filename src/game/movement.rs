@@ -87,8 +87,6 @@ fn apply_homing_velocity(
 
                 if angle > homing.max_angle {
                     continue;
-                } else {
-                    info!(angle, "homing");
                 }
 
                 closest_distance = distance;
