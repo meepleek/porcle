@@ -1,6 +1,6 @@
 //! Spawn the main level by triggering other observers.
 
-use avian2d::collision::Collider;
+use avian2d::prelude::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
@@ -19,6 +19,11 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
+
+#[derive(Component, Debug)]
+pub struct Core {
+    pub health: u8,
+}
 
 #[derive(Component, Debug)]
 pub struct Wall;
@@ -40,6 +45,9 @@ fn spawn_level(
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         },
+        Collider::circle(PADDLE_RADIUS),
+        RigidBody::Static,
+        Core { health: 2 },
         StateScoped(Screen::Game),
     ));
 

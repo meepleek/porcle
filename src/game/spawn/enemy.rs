@@ -64,9 +64,7 @@ fn spawn_enemy(
                         .with_rotation(ev.position.to_quat()),
                     ..default()
                 },
-                // RigidBody::Kinematic,
                 Collider::triangle(a, b, c),
-                // Sensor,
                 Velocity(-ev.position.normalize_or_zero() * 30.),
                 HomingTarget,
                 ev.enemy.clone(),

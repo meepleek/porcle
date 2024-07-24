@@ -43,6 +43,7 @@
 - [x] add damping to a fired ball
 - [x] auto despawn a very slow or stationary ball
 - [ ] crawlers deal dmg on core collision
+- [ ] reflecting increases an ammo mult which gets reset on ball reset
 
 ## juiced up base - v0.3.0
 
