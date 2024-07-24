@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    game::movement::{BaseSpeed, Damping, Velocity},
+    game::movement::{BaseSpeed, Damping, Homing, Velocity},
     screen::Screen,
 };
 
@@ -36,6 +36,7 @@ fn spawn_projectile(
     let y = 40.;
     let speed = 3000.;
     cmd.spawn((
+        Name::new("Projectile"),
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
             material: materials.add(ColorMaterial::from_color(tailwind::RED_400)),
@@ -49,6 +50,11 @@ fn spawn_projectile(
         BaseSpeed(speed),
         Projectile {
             size: Vec2::new(x, y),
+        },
+        Homing {
+            max_distance: 100.,
+            max_factor: 50.,
+            factor_decay: 1.0,
         },
         StateScoped(Screen::Game),
     ));

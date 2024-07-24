@@ -29,6 +29,7 @@ pub(super) fn plugin(app: &mut App) {
             reflect_ball,
             accumulate_angle,
             apply_velocity,
+            apply_homing_velocity,
             apply_damping,
         ),
     );
@@ -45,9 +46,62 @@ pub const BALL_BASE_SPEED: f32 = 250.;
 #[derive(Component, Debug)]
 pub struct BaseSpeed(pub f32);
 
-fn apply_velocity(mut move_q: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
+#[derive(Component, Debug)]
+pub struct Homing {
+    pub max_distance: f32,
+    pub max_factor: f32,
+    pub factor_decay: f32,
+}
+
+#[derive(Component, Debug)]
+pub struct HomingTarget;
+
+fn apply_velocity(
+    mut move_q: Query<(&mut Transform, &Velocity), Without<Homing>>,
+    time: Res<Time>,
+) {
     for (mut t, vel) in &mut move_q {
         t.translation += (vel.0 * time.delta_seconds()).extend(0.);
+    }
+}
+
+fn apply_homing_velocity(
+    mut move_q: Query<(&mut Transform, &mut Velocity, &Homing)>,
+    time: Res<Time>,
+    target_q: Query<&GlobalTransform, With<HomingTarget>>,
+) {
+    for (mut homing_t, mut vel, homing) in &mut move_q {
+        let mut closest_distance = f32::MAX;
+        let mut closest_target = None;
+
+        for target_t in target_q.iter() {
+            let distance = homing_t.translation.distance(target_t.translation());
+            if distance < closest_distance && distance <= homing.max_distance {
+                closest_distance = distance;
+                closest_target = Some(target_t);
+            }
+        }
+
+        if let Some(target_t) = closest_target {
+            // Exponential decay to make homing effect stronger
+            let distance_factor = (1.0 - (closest_distance / homing.max_distance))
+                .powf(homing.factor_decay)
+                * homing.max_factor
+                * time.delta_seconds();
+            let dir = vel.0.normalize_or_zero();
+            let target_dir = (target_t.translation() - homing_t.translation)
+                .normalize()
+                .truncate();
+            let homing_dir =
+                (dir * (1.0 - distance_factor) + target_dir * distance_factor).normalize_or_zero();
+            let speed = vel.0.length();
+            vel.0 = homing_dir * speed;
+
+            // todo: use if rotation is ever needed
+            // homing_t.rotation = homing_dir.to_quat();
+        }
+
+        homing_t.translation += (vel.0 * time.delta_seconds()).extend(0.);
     }
 }
 
@@ -85,9 +139,15 @@ fn balls_inside_core(
         if inside_core && inside.is_none() {
             cmd.entity(e).insert(InsideCore);
             cmd.entity(e).remove::<Damping>();
+            cmd.entity(e).remove::<Homing>();
         } else if !inside_core && inside.is_some() {
             cmd.entity(e).remove::<InsideCore>();
             cmd.entity(e).insert(Damping(0.5));
+            cmd.entity(e).insert(Homing {
+                max_distance: 300.,
+                max_factor: 5.,
+                factor_decay: 3.0,
+            });
         }
     }
 }
