@@ -76,7 +76,6 @@ fn spawn_paddle(
                     transform: Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
                     ..default()
                 },
-                RigidBody::Kinematic,
                 Collider::capsule(23.0, 130.0),
                 Paddle,
                 PaddleAmmo::default(),
