@@ -1,6 +1,10 @@
 //! The screen state for the main game loop.
 
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy::{
+    input::common_conditions::input_just_pressed,
+    prelude::*,
+    window::{CursorGrabMode, PrimaryWindow},
+};
 
 use super::Screen;
 use crate::game::{
@@ -24,14 +28,18 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn enter_playing(mut commands: Commands) {
+fn enter_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
     commands.trigger(SpawnLevel);
     // commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
+    let mut win = window_q.single_mut();
+    win.cursor.grab_mode = CursorGrabMode::Confined;
 }
 
-fn exit_playing(mut commands: Commands) {
+fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
     // We could use [`StateScoped`] on the sound playing entites instead.
     commands.trigger(PlaySoundtrack::Disable);
+    let mut win = window_q.single_mut();
+    win.cursor.grab_mode = CursorGrabMode::None;
 }
 
 fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {

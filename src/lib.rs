@@ -9,7 +9,6 @@ use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
     prelude::*,
-    window::Cursor,
 };
 
 pub struct AppPlugin;
@@ -42,11 +41,6 @@ impl Plugin for AppPlugin {
                         fit_canvas_to_parent: true,
                         resolution: Vec2::splat(1024.).into(),
                         prevent_default_event_handling: true,
-                        cursor: Cursor {
-                            // todo: lock only during gameplay
-                            grab_mode: bevy::window::CursorGrabMode::Confined,
-                            ..default()
-                        },
                         ..default()
                     }
                     .into(),
