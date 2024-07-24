@@ -40,7 +40,7 @@
 - [ ] homing ball
 - [ ] ball is reflected off of edges
 - [ ] ball slows down when it hits an edge
-- [ ] add damping to a fired ball
+- [x] add damping to a fired ball
 - [ ] auto despawn a very slow or stationary ball
 - [ ] crawlers take HP on core collision
 

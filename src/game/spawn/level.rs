@@ -1,11 +1,12 @@
 //! Spawn the main level by triggering other observers.
 
+use avian2d::collision::Collider;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::screen::Screen;
+use crate::{screen::Screen, WINDOW_SIZE};
 
 use super::{
     ball::SpawnBall,
@@ -19,13 +20,16 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
 
+#[derive(Component, Debug)]
+pub struct Wall;
+
 fn spawn_level(
     _trigger: Trigger<SpawnLevel>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    commands.spawn((
+    cmd.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(
                 meshes.add(Annulus::new(PADDLE_RADIUS - 10.0, PADDLE_RADIUS + 10.0)),
@@ -39,6 +43,22 @@ fn spawn_level(
         StateScoped(Screen::Game),
     ));
 
-    commands.trigger(SpawnPaddle);
-    commands.trigger(SpawnBall);
+    cmd.trigger(SpawnPaddle);
+    cmd.trigger(SpawnBall);
+
+    let half_size = WINDOW_SIZE / 2.;
+
+    for (a, b) in [
+        (Vec2::new(-1., 1.), Vec2::ONE),
+        (Vec2::ONE, Vec2::new(1., -1.)),
+        (Vec2::new(1., -1.), Vec2::NEG_ONE),
+        (Vec2::NEG_ONE, Vec2::new(-1., 1.)),
+    ] {
+        cmd.spawn((
+            // TransformBundle::default(),
+            Collider::segment(a * -half_size, b * half_size),
+            Wall,
+            StateScoped(Screen::Game),
+        ));
+    }
 }

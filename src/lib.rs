@@ -13,6 +13,8 @@ use bevy::{
 
 pub struct AppPlugin;
 
+pub const WINDOW_SIZE: f32 = 1024.;
+
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         // Order new `AppStep` variants by adding them here:
@@ -39,7 +41,7 @@ impl Plugin for AppPlugin {
                         title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
-                        resolution: Vec2::splat(1024.).into(),
+                        resolution: Vec2::splat(WINDOW_SIZE).into(),
                         prevent_default_event_handling: true,
                         ..default()
                     }
