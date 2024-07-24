@@ -256,7 +256,8 @@ fn reflect_ball(
                     continue;
                 }
 
-                speed.0 *= 1.15;
+                // clamp to min speed in case the ball has come back to core
+                speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
                 // let hit_point = paddle_t.transform_point(hit.point1.extend(0.));
                 // info!(/*?hit_point,*/ src = ?hit.point1, paddle = ?paddle_t.translation(), "paddle hit");
                 // todo: use hit.point1 to determine the angle
