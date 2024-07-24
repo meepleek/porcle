@@ -125,7 +125,7 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
 fn reflect_ball(
     phys_spatial: SpatialQuery,
     mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BaseSpeed)>,
-    mut paddle_q: Query<&mut PaddleAmmo, With<Paddle>>,
+    mut paddle_q: Query<(&mut PaddleAmmo, &GlobalTransform), With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
     mut cmd: Commands,
     time: Res<Time>,
@@ -149,13 +149,15 @@ fn reflect_ball(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok(mut ammo) = paddle_q.get_mut(hit_e) {
+            if let Ok((mut ammo, _paddle_t)) = paddle_q.get_mut(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits
                     continue;
                 }
 
                 speed.0 *= 1.05;
+                // let hit_point = paddle_t.transform_point(hit.point1.extend(0.));
+                // info!(/*?hit_point,*/ src = ?hit.point1, paddle = ?paddle_t.translation(), "paddle hit");
                 // todo: use hit.point1 to determine the angle
                 // todo: also never reflect the ball out even when hitting an edge
                 vel.0 = hit.normal1 * speed.0;

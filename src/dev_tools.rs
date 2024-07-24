@@ -7,8 +7,8 @@ use crate::screen::Screen;
 pub(super) fn plugin(app: &mut App) {
     // Print state transitions in dev builds
     app.add_systems(Update, log_transitions::<Screen>)
-        .add_systems(Update, process_score_raise_input);
-    app.add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
+        .add_systems(Update, process_score_raise_input)
+        .add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
 }
 
 fn process_score_raise_input(_input: Res<ButtonInput<KeyCode>>) {
