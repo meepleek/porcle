@@ -1,8 +1,16 @@
 //! Spawn the main level by triggering other observers.
 
+use avian2d::prelude::*;
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
+
+use crate::{screen::Screen, WINDOW_SIZE};
+
+use super::{
+    ball::SpawnBall,
+    paddle::{SpawnPaddle, PADDLE_RADIUS},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -12,34 +20,53 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
 
-const X_EXTENT: f32 = 400.;
+#[derive(Component, Debug)]
+pub struct Core {
+    pub health: u8,
+}
+
+#[derive(Component, Debug)]
+pub struct Wall;
 
 fn spawn_level(
     _trigger: Trigger<SpawnLevel>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let shapes = [
-        Mesh2dHandle(meshes.add(Circle { radius: 30.0 })),
-        Mesh2dHandle(meshes.add(Annulus::new(280.0, 300.0))),
-        Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 100.0))),
-    ];
-    let num_shapes = shapes.len();
-    for (i, shape) in shapes.into_iter().enumerate() {
-        // Distribute colors evenly across the rainbow.
-        let color = Color::hsl(360. * i as f32 / num_shapes as f32, 0.95, 0.7);
-
-        commands.spawn(MaterialMesh2dBundle {
-            mesh: shape,
-            material: materials.add(color),
-            transform: Transform::from_xyz(
-                // Distribute shapes from -X_EXTENT/2 to +X_EXTENT/2.
-                -X_EXTENT / 2. + i as f32 / (num_shapes - 1) as f32 * X_EXTENT,
-                0.0,
-                0.0,
+    cmd.spawn((
+        MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(
+                meshes.add(Annulus::new(PADDLE_RADIUS - 10.0, PADDLE_RADIUS + 10.0)),
             ),
+            material: materials.add(ColorMaterial::from_color(
+                bevy::color::palettes::tailwind::INDIGO_200,
+            )),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
-        });
+        },
+        Collider::circle(PADDLE_RADIUS),
+        RigidBody::Static,
+        Core { health: 5 },
+        StateScoped(Screen::Game),
+    ));
+
+    cmd.trigger(SpawnPaddle);
+    cmd.trigger(SpawnBall);
+
+    let half_size = WINDOW_SIZE / 2.;
+
+    for (a, b) in [
+        (Vec2::new(-1., 1.), Vec2::ONE),
+        (Vec2::ONE, Vec2::new(1., -1.)),
+        (Vec2::new(1., -1.), Vec2::NEG_ONE),
+        (Vec2::NEG_ONE, Vec2::new(-1., 1.)),
+    ] {
+        cmd.spawn((
+            // TransformBundle::default(),
+            Collider::segment(a * -half_size, b * half_size),
+            Wall,
+            StateScoped(Screen::Game),
+        ));
     }
 }

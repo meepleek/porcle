@@ -21,28 +21,63 @@
 - slowmo meter
 - add extra scoring ball (different color?) that scores but doesn't lose the game
 
-## MVP - v0.1.0
+## proto - v0.1.0
 
-- [ ] move paddle
-- [ ] move ball
-- [ ] reflect ball
-- [ ] lose when ball lost
-- [ ] add score on reflect
-- [ ] add mult
-- [ ] increase mult on cycle
-- [ ] speed up ball on reflect
+- [x] move paddle
+- [x] move ball
+- [x] reflect ball
+- [x] add restart
+- [x] add crawling enemies
+- [x] destroy enemy on collision 
+- [x] reload ball on cycle
+- [x] speed up ball on reflect
+- [x] charge weapon on reflect
+- [x] shoot weapon (just peashooter)
+- [x] destroy enemy when shot
 
-## juiced up base - v0.2.0
+## MVP - v0.2.0
+- [ ] reflect based on paddle hit position
+- [x] homing ball
+- [x] ball is reflected off of edges
+- [x] ball slows down when it hits an edge
+- [x] add damping to a fired ball
+- [x] auto despawn a very slow or stationary ball
+- [x] crawlers deal dmg on core collision
+- [x] reflecting increases an ammo mult which gets reset on ball reset
+- [x] add basic UI showing ammo & health
+
+## juiced up base - v0.3.0
 
 - [ ] screen shake
 - [ ] paddle recoil on reflect
+- [ ] move gun barrel on shot
+- [ ] tween stuff
+- [ ] enemy death particles
+- [ ] enemy death flash
+- [ ] enemy shockwave
+- [ ] reflect particles
+- [ ] reflect shockwave
 - [ ] freeze frames on reflect?
+- [ ] freeze frames on enemy kill
+- [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [ ] change color
 - [ ] add bloom (does it work on web yet?)
 - [ ] add vignette?
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed
+- [ ] circle/anullus transition
 - [ ] ball trail
 - [ ] paddle trail
 
-## upgrades - v0.3.0
+## enemies - v0.4.0
+
+- [ ] improve crawler
+- [ ] slower crawler that has to be hit by the ball (shielded)
+- [ ] shooty enemy/turret
+- [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] paddle blocks enemy projectiles
+- [ ] ball destroys enemy projectiles
+
+## audio - v0.5.0
+
+## upgrades - v0.x.0

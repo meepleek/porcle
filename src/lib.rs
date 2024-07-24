@@ -1,5 +1,6 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
+mod ext;
 mod game;
 mod screen;
 mod ui;
@@ -11,6 +12,8 @@ use bevy::{
 };
 
 pub struct AppPlugin;
+
+pub const WINDOW_SIZE: f32 = 1024.;
 
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
@@ -38,6 +41,7 @@ impl Plugin for AppPlugin {
                         title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
+                        resolution: Vec2::splat(WINDOW_SIZE).into(),
                         prevent_default_event_handling: true,
                         ..default()
                     }
@@ -58,6 +62,7 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
+        app.add_plugins(avian2d::PhysicsPlugins::default());
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
