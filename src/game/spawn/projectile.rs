@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    game::movement::{BaseSpeed, Damping, Homing, Velocity},
+    game::movement::{BaseSpeed, Damping, Velocity},
     screen::Screen,
 };
 
@@ -50,11 +50,6 @@ fn spawn_projectile(
         BaseSpeed(speed),
         Projectile {
             size: Vec2::new(x, y),
-        },
-        Homing {
-            max_distance: 100.,
-            max_factor: 50.,
-            factor_decay: 1.0,
         },
         StateScoped(Screen::Game),
     ));

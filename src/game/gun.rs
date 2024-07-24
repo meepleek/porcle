@@ -45,8 +45,9 @@ fn handle_collisions(
     time: Res<Time>,
 ) {
     for (e, t, projectile, vel, speed) in &ball_q {
-        if vel.0 == Vec2::ZERO {
-            // stationary             continue;
+        if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
+            // stationary
+            continue;
         }
 
         for hit in phys_spatial.shape_hits(

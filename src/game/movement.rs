@@ -51,6 +51,7 @@ pub struct Homing {
     pub max_distance: f32,
     pub max_factor: f32,
     pub factor_decay: f32,
+    pub max_angle: f32,
 }
 
 #[derive(Component, Debug)]
@@ -71,27 +72,36 @@ fn apply_homing_velocity(
     target_q: Query<&GlobalTransform, With<HomingTarget>>,
 ) {
     for (mut homing_t, mut vel, homing) in &mut move_q {
+        let dir = vel.0.normalize_or_zero();
         let mut closest_distance = f32::MAX;
-        let mut closest_target = None;
+        let mut homing_target_dir = None;
 
         for target_t in target_q.iter() {
             let distance = homing_t.translation.distance(target_t.translation());
+
             if distance < closest_distance && distance <= homing.max_distance {
+                let target_dir = (target_t.translation() - homing_t.translation)
+                    .normalize()
+                    .truncate();
+                let angle = dir.angle_between(target_dir).to_degrees().abs();
+
+                if angle > homing.max_angle {
+                    continue;
+                } else {
+                    info!(angle, "homing");
+                }
+
                 closest_distance = distance;
-                closest_target = Some(target_t);
+                homing_target_dir = Some(target_dir);
             }
         }
 
-        if let Some(target_t) = closest_target {
+        if let Some(target_dir) = homing_target_dir {
             // Exponential decay to make homing effect stronger
             let distance_factor = (1.0 - (closest_distance / homing.max_distance))
                 .powf(homing.factor_decay)
                 * homing.max_factor
                 * time.delta_seconds();
-            let dir = vel.0.normalize_or_zero();
-            let target_dir = (target_t.translation() - homing_t.translation)
-                .normalize()
-                .truncate();
             let homing_dir =
                 (dir * (1.0 - distance_factor) + target_dir * distance_factor).normalize_or_zero();
             let speed = vel.0.length();
@@ -145,8 +155,9 @@ fn balls_inside_core(
             cmd.entity(e).insert(Damping(0.5));
             cmd.entity(e).insert(Homing {
                 max_distance: 300.,
-                max_factor: 5.,
-                factor_decay: 3.0,
+                max_factor: 10.,
+                factor_decay: 2.0,
+                max_angle: 25.,
             });
         }
     }
