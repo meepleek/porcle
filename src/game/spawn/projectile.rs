@@ -5,7 +5,10 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::screen::Screen;
+use crate::{
+    game::movement::{BaseSpeed, Velocity},
+    screen::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_projectile);
@@ -18,7 +21,9 @@ pub struct SpawnProjectile {
 }
 
 #[derive(Component, Debug)]
-pub struct Projectile;
+pub struct Projectile {
+    pub size: Vec2,
+}
 
 fn spawn_projectile(
     trigger: Trigger<SpawnProjectile>,
@@ -29,6 +34,7 @@ fn spawn_projectile(
     let ev = trigger.event();
     let x = 15.;
     let y = 40.;
+    let speed = 1100.;
     cmd.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
@@ -38,8 +44,11 @@ fn spawn_projectile(
         },
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        LinearVelocity(ev.dir.as_vec2() * 1100.),
-        Projectile,
+        Velocity(ev.dir.as_vec2() * speed),
+        BaseSpeed(speed),
+        Projectile {
+            size: Vec2::new(x, y),
+        },
         StateScoped(Screen::Game),
     ));
 }

@@ -5,7 +5,7 @@ use bevy::{
 };
 
 use crate::{
-    game::movement::{BallSpeed, Velocity, BALL_BASE_SPEED},
+    game::movement::{BaseSpeed, Velocity, BALL_BASE_SPEED},
     screen::Screen,
 };
 
@@ -59,7 +59,7 @@ fn spawn_ball(
             ..default()
         },
         Velocity(dir * BALL_BASE_SPEED),
-        BallSpeed::default(),
+        BaseSpeed(BALL_BASE_SPEED),
         Ball::default(),
         StateScoped(Screen::Game),
     ));

@@ -33,7 +33,7 @@
 - [x] speed up ball on reflect
 - [x] charge weapon on reflect
 - [x] shoot weapon (just peashooter)
-- [ ] destroy enemy when shot
+- [x] destroy enemy when shot
 
 ## MVP - v0.2.0
 - [ ] reflect based on paddle hit position
@@ -60,9 +60,9 @@
 ## enemies - v0.4.0
 
 - [ ] improve crawler
-- [ ] slower crawler that has to be hit by the ball
+- [ ] slower crawler that has to be hit by the ball (shielded)
 - [ ] shooty enemy/turret
-- [ ] turret that has to be destroyed by the ball
+- [ ] turret that has to be destroyed by the ball (shielded)
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
 

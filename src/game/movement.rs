@@ -37,13 +37,7 @@ pub struct Velocity(pub Vec2);
 pub const BALL_BASE_SPEED: f32 = 250.;
 
 #[derive(Component, Debug)]
-pub struct BallSpeed(f32);
-
-impl Default for BallSpeed {
-    fn default() -> Self {
-        Self(BALL_BASE_SPEED)
-    }
-}
+pub struct BaseSpeed(pub f32);
 
 fn apply_velocity(mut move_q: Query<(&mut Transform, &Velocity)>, time: Res<Time>) {
     for (mut t, vel) in &mut move_q {
@@ -130,7 +124,7 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
 
 fn reflect_ball(
     phys_spatial: SpatialQuery,
-    mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BallSpeed)>,
+    mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BaseSpeed)>,
     mut paddle_q: Query<&mut PaddleAmmo, With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
     mut cmd: Commands,
