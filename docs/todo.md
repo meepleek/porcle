@@ -50,6 +50,13 @@
 
 - [ ] screen shake
 - [ ] paddle recoil on reflect
+- [ ] move gun barrel on shot
+- [ ] tween stuff
+- [ ] enemy death particles
+- [ ] enemy death flash
+- [ ] enemy shockwave
+- [ ] reflect particles
+- [ ] reflect shockwave
 - [ ] freeze frames on reflect?
 - [ ] freeze frames on enemy kill
 - [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
@@ -58,6 +65,7 @@
 - [ ] add vignette?
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed
+- [ ] circle/anullus transition
 - [ ] ball trail
 - [ ] paddle trail
 
