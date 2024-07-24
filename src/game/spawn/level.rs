@@ -47,7 +47,7 @@ fn spawn_level(
         },
         Collider::circle(PADDLE_RADIUS),
         RigidBody::Static,
-        Core { health: 2 },
+        Core { health: 5 },
         StateScoped(Screen::Game),
     ));
 

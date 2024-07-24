@@ -10,7 +10,7 @@ use crate::{
 use super::{
     input::CursorCoords,
     spawn::{
-        ball::{Ball, InsideCore, SpawnBall},
+        ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
@@ -224,7 +224,13 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
 
 fn reflect_ball(
     phys_spatial: SpatialQuery,
-    mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BaseSpeed)>,
+    mut ball_q: Query<(
+        &GlobalTransform,
+        &mut Ball,
+        &mut Velocity,
+        &mut BaseSpeed,
+        &mut PaddleReflectionCount,
+    )>,
     mut paddle_q: Query<(&mut PaddleAmmo, &GlobalTransform), With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
     wall_q: Query<(), With<Wall>>,
@@ -232,7 +238,7 @@ fn reflect_ball(
     time: Res<Time>,
     // mut gizmos: Gizmos,
 ) {
-    for (t, mut ball, mut vel, mut speed) in &mut ball_q {
+    for (t, mut ball, mut vel, mut speed, mut paddle_reflection_count) in &mut ball_q {
         if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
@@ -263,8 +269,15 @@ fn reflect_ball(
                 // todo: use hit.point1 to determine the angle
                 // todo: also never reflect the ball out even when hitting an edge
                 vel.0 = hit.normal1 * speed.0;
-                ammo.0 += 1;
+                paddle_reflection_count.0 += 1;
+                ammo.0 += match paddle_reflection_count.0 {
+                    0 => 0,
+                    1..=2 => 1,
+                    3..=5 => 2,
+                    _ => 3,
+                };
                 ball.last_reflection_time = time.elapsed_seconds();
+                info!(ammo=?ammo.0, "added ammo");
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits

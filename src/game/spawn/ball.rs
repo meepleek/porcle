@@ -26,6 +26,9 @@ pub struct Ball {
 }
 
 #[derive(Component, Debug)]
+pub struct PaddleReflectionCount(pub usize);
+
+#[derive(Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct InsideCore;
 
@@ -66,6 +69,7 @@ fn spawn_ball(
         Velocity(dir * BALL_BASE_SPEED),
         BaseSpeed(BALL_BASE_SPEED),
         Ball::default(),
+        PaddleReflectionCount(0),
         StateScoped(Screen::Game),
     ));
 }

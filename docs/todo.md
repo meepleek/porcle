@@ -42,8 +42,9 @@
 - [x] ball slows down when it hits an edge
 - [x] add damping to a fired ball
 - [x] auto despawn a very slow or stationary ball
-- [ ] crawlers deal dmg on core collision
-- [ ] reflecting increases an ammo mult which gets reset on ball reset
+- [x] crawlers deal dmg on core collision
+- [x] reflecting increases an ammo mult which gets reset on ball reset
+- [x] add basic UI showing ammo & health
 
 ## juiced up base - v0.3.0
 
