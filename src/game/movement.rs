@@ -1,4 +1,5 @@
 use avian2d::prelude::*;
+// use bevy::color::palettes::tailwind;
 use bevy::prelude::*;
 
 use crate::{
@@ -128,34 +129,46 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
 }
 
 fn reflect_ball(
-    mut coll_q: Query<
-        (
-            Entity,
-            &CollidingEntities,
-            &mut LinearVelocity,
-            &mut BallSpeed,
-        ),
-        With<Ball>,
-    >,
+    phys_spatial: SpatialQuery,
+    mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BallSpeed)>,
     mut paddle_q: Query<&mut PaddleAmmo, With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
-    collisions: Res<Collisions>,
     mut cmd: Commands,
+    time: Res<Time>,
+    // mut gizmos: Gizmos,
 ) {
-    for (e, colliding, mut vel, mut speed) in &mut coll_q {
-        if !colliding.is_empty() {
-            let colliding_e = *colliding.0.iter().next().unwrap();
-            if let Ok(mut ammo) = paddle_q.get_mut(colliding_e) {
-                if let Some(coll) = collisions.get(e, colliding_e) {
-                    if let Some(contact) = coll.manifolds.first() {
-                        speed.0 += 5.;
-                        vel.0 = contact.normal1 * -speed.0;
-                        ammo.0 += 1;
-                        info!(?ammo, "ammo");
-                    }
+    for (t, mut ball, mut vel, mut speed) in &mut ball_q {
+        if vel.0 == Vec2::ZERO {
+            // stationary ball
+            continue;
+        }
+        // gizmos.circle_2d(t.translation().truncate(), ball.0, tailwind::AMBER_600);
+
+        for hit in phys_spatial.shape_hits(
+            &Collider::circle(ball.radius),
+            t.translation().truncate(),
+            0.,
+            Dir2::new(vel.0).expect("Non zero velocity"),
+            (speed.0 * 1.05) * time.delta_seconds(),
+            100,
+            false,
+            SpatialQueryFilter::default(),
+        ) {
+            let hit_e = hit.entity;
+            if let Ok(mut ammo) = paddle_q.get_mut(hit_e) {
+                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
+                    // ignore consecutive hits
+                    continue;
                 }
-            } else if enemy_q.contains(colliding_e) {
-                cmd.entity(colliding_e).despawn_recursive();
+
+                speed.0 *= 1.05;
+                // todo: use hit.point1 to determine the angle
+                // todo: also never reflect the ball out even when hitting an edge
+                vel.0 = hit.normal1 * speed.0;
+                ammo.0 += 1;
+                ball.last_reflection_time = time.elapsed_seconds();
+            } else if enemy_q.contains(hit_e) {
+                cmd.entity(hit_e).despawn_recursive();
             }
         }
     }
