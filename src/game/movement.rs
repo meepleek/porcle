@@ -12,6 +12,7 @@ use super::{
     spawn::{
         ball::{Ball, InsideCore, SpawnBall},
         enemy::Enemy,
+        level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
     },
 };
@@ -150,12 +151,13 @@ fn reflect_ball(
     mut ball_q: Query<(&GlobalTransform, &mut Ball, &mut Velocity, &mut BaseSpeed)>,
     mut paddle_q: Query<(&mut PaddleAmmo, &GlobalTransform), With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
+    wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
     // mut gizmos: Gizmos,
 ) {
     for (t, mut ball, mut vel, mut speed) in &mut ball_q {
-        if vel.0 == Vec2::ZERO {
+        if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
         }
@@ -186,8 +188,22 @@ fn reflect_ball(
                 vel.0 = hit.normal1 * speed.0;
                 ammo.0 += 1;
                 ball.last_reflection_time = time.elapsed_seconds();
+            } else if wall_q.contains(hit_e) {
+                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
+                    // ignore consecutive hits
+                    continue;
+                }
+
+                speed.0 *= 0.7;
+                let v = vel.0.normalize_or_zero();
+                let reflect = v - (2.0 * v.dot(hit.normal1) * hit.normal1);
+                vel.0 = reflect * speed.0;
+                info!(?reflect, vel = ?vel.0, "wall bounce");
+                ball.last_reflection_time = time.elapsed_seconds();
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
+
+                // todo: try - boost speed on hit
             }
         }
     }

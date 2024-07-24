@@ -38,8 +38,8 @@
 ## MVP - v0.2.0
 - [ ] reflect based on paddle hit position
 - [ ] homing ball
-- [ ] ball is reflected off of edges
-- [ ] ball slows down when it hits an edge
+- [x] ball is reflected off of edges
+- [x] ball slows down when it hits an edge
 - [x] add damping to a fired ball
 - [ ] auto despawn a very slow or stationary ball
 - [ ] crawlers take HP on core collision
