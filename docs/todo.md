@@ -59,8 +59,8 @@
 - [x] screen shake
 - [x] paddle recoil on reflect
 - [x] move gun barrel on shot
-- [ ] tween stuff
-- [ ] enemy death particles
+- [x] tween stuff
+- [x] enemy death particles
 - [ ] enemy death flash
 - [ ] enemy shockwave
 - [ ] reflect particles
@@ -69,7 +69,7 @@
 - [ ] freeze frames on enemy kill
 - [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [ ] change color
-- [ ] add bloom (does it work on web yet?)
+- [x] add bloom (does it work on web yet?)
 - [ ] add vignette?
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed

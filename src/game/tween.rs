@@ -5,7 +5,10 @@ use bevy_tweening::*;
 use std::time::Duration;
 
 #[derive(Component)]
-pub struct DespawnOnTweenCompleted;
+pub enum DespawnOnTweenCompleted {
+    Itself,
+    Entity(Entity),
+}
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins(TweeningPlugin).add_systems(
@@ -20,11 +23,15 @@ pub(super) fn plugin(app: &mut App) {
 fn despawn_after_tween(
     mut cmd: Commands,
     mut ev_r: EventReader<TweenCompleted>,
-    despawn_q: Query<(), With<DespawnOnTweenCompleted>>,
+    despawn_q: Query<&DespawnOnTweenCompleted>,
 ) {
     for ev in ev_r.read() {
-        if despawn_q.contains(ev.entity) {
-            cmd.entity(ev.entity).despawn_recursive();
+        if let Ok(despawn) = despawn_q.get(ev.entity) {
+            let e = match despawn {
+                DespawnOnTweenCompleted::Itself => ev.entity,
+                DespawnOnTweenCompleted::Entity(e) => *e,
+            };
+            cmd.entity(e).despawn_recursive();
         }
     }
 }

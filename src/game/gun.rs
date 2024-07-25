@@ -5,18 +5,20 @@ use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, Delay, EaseFunction};
 use std::time::Duration;
 
-use crate::{ext::Vec2Ext, game::spawn::projectile::SpawnProjectile};
+use crate::{
+    ext::Vec2Ext, game::spawn::projectile::SpawnProjectile, game::tween::get_relative_scale_anim,
+};
 
 use super::{
     assets::ParticleAssets,
-    movement::{BaseSpeed, Velocity},
+    movement::{BaseSpeed, Damping, Velocity},
     spawn::{
         enemy::Enemy,
         paddle::{Paddle, PaddleAmmo},
         projectile::Projectile,
     },
     time::{process_cooldown, Cooldown},
-    tween::get_relative_translation_tween,
+    tween::{get_relative_translation_tween, DespawnOnTweenCompleted},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -99,7 +101,8 @@ fn fire_gun(
 
                 let barrel_pos = t.translation() + t.right() * 80.;
                 cmd.spawn((
-                    particles.gun_particles(
+                    particles.particle_spawner(
+                        particles.gun.clone(),
                         Transform::from_translation(barrel_pos)
                             .with_rotation(t.to_scale_rotation_translation().1),
                     ),
@@ -118,9 +121,10 @@ fn fire_gun(
 fn handle_collisions(
     phys_spatial: SpatialQuery,
     ball_q: Query<(Entity, &GlobalTransform, &Projectile, &Velocity, &BaseSpeed)>,
-    enemy_q: Query<(), With<Enemy>>,
+    enemy_q: Query<(&GlobalTransform, &Enemy)>,
     mut cmd: Commands,
     time: Res<Time>,
+    particles: Res<ParticleAssets>,
 ) {
     for (e, t, projectile, vel, speed) in &ball_q {
         if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
@@ -139,9 +143,32 @@ fn handle_collisions(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if enemy_q.contains(hit.entity) {
-                cmd.entity(hit_e).despawn_recursive();
-                cmd.entity(e).despawn_recursive();
+            if let Ok((enemy_t, enemy)) = enemy_q.get(hit.entity) {
+                cmd.entity(e).insert(Damping(30.));
+                cmd.entity(projectile.mesh_e).insert((
+                    get_relative_scale_anim(
+                        Vec2::ZERO.extend(1.),
+                        80,
+                        Some(EaseFunction::QuadraticOut),
+                    ),
+                    DespawnOnTweenCompleted::Entity(e),
+                ));
+                cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
+                cmd.entity(enemy.mesh_e).insert((
+                    get_relative_scale_anim(
+                        Vec2::ZERO.extend(1.),
+                        150,
+                        Some(EaseFunction::BounceIn),
+                    ),
+                    DespawnOnTweenCompleted::Entity(hit_e),
+                ));
+                cmd.spawn((
+                    particles.particle_spawner(
+                        particles.enemy.clone(),
+                        Transform::from_translation(enemy_t.translation()),
+                    ),
+                    OneShot::Despawn,
+                ));
             }
         }
     }

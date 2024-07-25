@@ -23,6 +23,7 @@ pub struct SpawnProjectile {
 #[derive(Component, Debug)]
 pub struct Projectile {
     pub size: Vec2,
+    pub mesh_e: Entity,
 }
 
 fn spawn_projectile(
@@ -35,14 +36,16 @@ fn spawn_projectile(
     let x = 15.;
     let y = 35.;
     let speed = 1800.;
-    cmd.spawn((
-        Name::new("Projectile"),
-        MaterialMesh2dBundle {
+    let mesh_e = cmd
+        .spawn(MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
             material: materials.add(ColorMaterial::from_color(tailwind::RED_400)),
-            transform: ev.transform,
             ..default()
-        },
+        })
+        .id();
+    cmd.spawn((
+        Name::new("Projectile"),
+        SpatialBundle::from_transform(ev.transform),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
         Velocity(ev.dir.as_vec2() * speed),
@@ -50,7 +53,9 @@ fn spawn_projectile(
         BaseSpeed(speed),
         Projectile {
             size: Vec2::new(x, y),
+            mesh_e,
         },
         StateScoped(Screen::Game),
-    ));
+    ))
+    .add_child(mesh_e);
 }

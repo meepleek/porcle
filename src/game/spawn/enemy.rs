@@ -24,19 +24,24 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemy {
-    pub enemy: Enemy,
+    pub kind: EnemyKind,
     pub position: Vec2,
 }
 
 #[derive(Component, Debug, Clone)]
-pub enum Enemy {
+pub struct Enemy {
+    pub mesh_e: Entity,
+}
+
+#[derive(Debug, Clone)]
+pub enum EnemyKind {
     Crawler,
 }
 
 fn spawner(mut cmd: Commands) {
     let mut rng = thread_rng();
     cmd.trigger(SpawnEnemy {
-        enemy: Enemy::Crawler,
+        kind: EnemyKind::Crawler,
         position: Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0)).normalize() * 720.,
     });
 }
@@ -48,28 +53,35 @@ fn spawn_enemy(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let ev = trigger.event();
-    match ev.enemy {
-        Enemy::Crawler => {
+    match ev.kind {
+        EnemyKind::Crawler => {
             let size = 30.;
             let a = Vec2::Y * size;
             let b = Vec2::new(-size, -size);
             let c = Vec2::new(size, -size);
-            cmd.spawn((
-                MaterialMesh2dBundle {
+
+            let mesh_e = cmd
+                .spawn(MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Triangle2d::new(a, b, c))),
                     material: materials.add(ColorMaterial::from_color(
                         bevy::color::palettes::tailwind::PURPLE_400,
                     )),
-                    transform: Transform::from_translation(ev.position.extend(0.1))
-                        .with_rotation(ev.position.to_quat()),
                     ..default()
-                },
+                })
+                .id();
+
+            cmd.spawn((
+                SpatialBundle::from_transform(
+                    Transform::from_translation(ev.position.extend(0.1))
+                        .with_rotation(ev.position.to_quat()),
+                ),
                 Collider::triangle(a, b, c),
                 Velocity(-ev.position.normalize_or_zero() * 30.),
                 HomingTarget,
-                ev.enemy.clone(),
+                Enemy { mesh_e },
                 StateScoped(Screen::Game),
-            ));
+            ))
+            .add_child(mesh_e);
         }
     }
 }

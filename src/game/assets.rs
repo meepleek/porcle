@@ -101,15 +101,17 @@ impl<K: AssetKey> HandleMap<K> {
 pub struct ParticleAssets {
     pub circle_mat: Handle<SpriteParticle2dMaterial>,
     pub gun: Handle<Particle2dEffect>,
+    pub enemy: Handle<Particle2dEffect>,
 }
 
 impl ParticleAssets {
-    pub fn gun_particles(
+    pub fn particle_spawner(
         &self,
+        effect: Handle<Particle2dEffect>,
         transform: Transform,
     ) -> ParticleSpawnerBundle<SpriteParticle2dMaterial> {
         ParticleSpawnerBundle {
-            effect: self.gun.clone(),
+            effect,
             material: self.circle_mat.clone(),
             transform,
             ..default()
@@ -129,5 +131,6 @@ fn setup_particles(
             SpriteParticle2dMaterial::new(ass.load("particles/circle.png"), 1, 1),
         ),
         gun: ass.load("particles/gun.particle.ron"),
+        enemy: ass.load("particles/enemy.particle.ron"),
     });
 }
