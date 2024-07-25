@@ -46,28 +46,54 @@ pub fn delay_tween<T: 'static>(tween: Tween<T>, delay_ms: u64) -> Sequence<T> {
 
 relative_tween_fns!(
     translation,
+    Animator,
     Transform,
     TransformRelativePositionLens,
     Vec3,
     Vec3
 );
 
-relative_tween_fns!(scale, Transform, TransformRelativeScaleLens, Vec3, Vec3);
+relative_tween_fns!(
+    scale,
+    Animator,
+    Transform,
+    TransformRelativeScaleLens,
+    Vec3,
+    Vec3
+);
 
 relative_tween_fns!(
     rotation,
+    Animator,
     Transform,
     TransformRelativeRotationLens,
     Quat,
     Quat
 );
 
-relative_tween_fns!(text_color, Text, TextRelativeColorLens, Vec<Color>, Color);
+relative_tween_fns!(
+    text_color,
+    Animator,
+    Text,
+    TextRelativeColorLens,
+    Vec<Color>,
+    Color
+);
 
 relative_tween_fns!(
     ui_bg_color,
+    Animator,
     BackgroundColor,
     UiBackgroundColorLens,
+    Color,
+    Color
+);
+
+relative_tween_fns!(
+    color_material_color,
+    AssetAnimator,
+    ColorMaterial,
+    ColorMaterialRelativeColorLens,
     Color,
     Color
 );
@@ -146,6 +172,7 @@ impl Lens<Text> for TextRelativeColorLens {
 
 color_lens!(Sprite, SpriteRelativeColorLens, color);
 color_lens!(BackgroundColor, UiBackgroundColorLens, 0);
+color_lens!(ColorMaterial, ColorMaterialRelativeColorLens, color);
 
 fn lerp_color(from: Color, to: Color, ratio: f32) -> Color {
     let start = from.to_linear().to_vec4();
@@ -235,7 +262,7 @@ macro_rules! relative_lens {
 pub(super) use relative_lens;
 
 macro_rules! relative_tween_fns {
-    ($name:ident, $component:ty, $lens:ty, $value_start:ty, $value_end:ty) => {
+    ($name:ident, $animator: ty, $component:ty, $lens:ty, $value_start:ty, $value_end:ty) => {
         paste::paste! {
             pub fn [<get_absolute_ $name _tween>](
                 start: $value_start,
@@ -269,8 +296,8 @@ macro_rules! relative_tween_fns {
                 end: $value_end,
                 duration_ms: u64,
                 ease: Option<EaseFunction>,
-            ) -> Animator<$component> {
-                Animator::new([<get_absolute_ $name _tween>](
+            ) -> $animator<$component> {
+                $animator::new([<get_absolute_ $name _tween>](
                     start,
                     end,
                     duration_ms,
@@ -282,8 +309,8 @@ macro_rules! relative_tween_fns {
                 end: $value_end,
                 duration_ms: u64,
                 ease: Option<EaseFunction>,
-            ) -> Animator<$component> {
-                Animator::new([<get_relative_ $name _tween>](
+            ) -> $animator<$component> {
+                $animator::new([<get_relative_ $name _tween>](
                     end,
                     duration_ms,
                     ease,
@@ -295,14 +322,13 @@ macro_rules! relative_tween_fns {
                 end: $value_end,
                 duration_ms: u64,
                 ease: EaseFunction,
-            ) -> Animator<$component> {
-                Animator::new([<get_ $name _tween>](
+            ) -> $animator<$component> {
+                $animator::new([<get_ $name _tween>](
                     start,
                     end,
                     duration_ms,
                     ease,
                 ))
-
             }
 
             pub fn [<get_ $name _tween>](
