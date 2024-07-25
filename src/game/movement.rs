@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     ext::{QuatExt, Vec2Ext},
+    game::spawn::paddle::PADDLE_COLL_HEIGHT,
     AppSet,
 };
 
@@ -256,19 +257,30 @@ fn reflect_ball(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((mut ammo, _paddle_t)) = paddle_q.get_mut(hit_e) {
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
+            if let Ok((mut ammo, paddle_t)) = paddle_q.get_mut(hit_e) {
+                if time.elapsed_seconds() < ball.last_reflection_time + 0.2 {
                     // ignore consecutive hits
                     continue;
                 }
 
                 // clamp to min speed in case the ball has come back to core
                 speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
-                // let hit_point = paddle_t.transform_point(hit.point1.extend(0.));
-                // info!(/*?hit_point,*/ src = ?hit.point1, paddle = ?paddle_t.translation(), "paddle hit");
-                // todo: use hit.point1 to determine the angle
-                // todo: also never reflect the ball out even when hitting an edge
-                vel.0 = hit.normal1 * speed.0;
+                let hit_point_local = paddle_t
+                    .affine()
+                    .inverse()
+                    .transform_point(hit.point1.extend(0.));
+
+                // limit upper treshold to 1 to account for the collider rounding
+                let angle_factor = (hit_point_local.y / (PADDLE_COLL_HEIGHT / 2.)).min(1.0);
+                let angle = angle_factor * -30.0;
+                debug!(angle_factor, angle, "paddle hit");
+                // aim the ball based on where it landed on the paddle
+                // the further it lands from the center, the greater the reflection angle
+                // if x is positive, then the hit is from outside => this aims the new dir back into the core
+                let new_dir = (Quat::from_rotation_z(angle.to_radians()) * -paddle_t.right())
+                    .truncate()
+                    .normalize_or_zero();
+                vel.0 = new_dir * speed.0;
                 paddle_reflection_count.0 += 1;
                 ammo.0 += match paddle_reflection_count.0 {
                     0 => 0,
@@ -277,7 +289,7 @@ fn reflect_ball(
                     _ => 3,
                 };
                 ball.last_reflection_time = time.elapsed_seconds();
-                info!(ammo=?ammo.0, "added ammo");
+                debug!(ammo=?ammo.0, "added ammo");
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits

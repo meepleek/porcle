@@ -47,9 +47,10 @@
 
 ## MVPier - v0.3.0
 
-- [ ] reflect based on paddle hit position
-- [ ] limit reflection angle
-- [ ] never reflect behind paddle, always in front (mirror regular reflection angle)
+- [x] reflect based on paddle hit position
+- [x] limit reflection angle
+- [x] never reflect behind paddle, always in front (mirror regular reflection angle)
+- [ ] limit paddle movement speed (angular vel)
 - [ ] allow catching ball to aim it
 - [ ] add reflection/aim prediction UI
 
