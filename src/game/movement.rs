@@ -16,7 +16,7 @@ use super::{
         ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
         enemy::Enemy,
         level::Wall,
-        paddle::{Paddle, PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
+        paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation, PADDLE_RADIUS},
     },
 };
 
@@ -34,6 +34,7 @@ pub(super) fn plugin(app: &mut App) {
             apply_velocity,
             apply_homing_velocity,
             apply_damping,
+            follow,
         ),
     );
 }
@@ -60,6 +61,12 @@ pub struct Homing {
 
 #[derive(Component, Debug)]
 pub struct HomingTarget;
+
+#[derive(Component, Debug)]
+pub struct Follow {
+    pub offset: Vec2,
+    pub entity: Entity,
+}
 
 fn apply_velocity(
     mut move_q: Query<(&mut Transform, &Velocity), Without<Homing>>,
@@ -130,7 +137,44 @@ fn apply_damping(
     }
 }
 
-fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
+fn follow(mut follow_q: Query<(&mut Transform, &Follow)>, followed_q: Query<&GlobalTransform>) {
+    for (mut t, follow) in &mut follow_q {
+        if let Ok(followed_t) = followed_q.get(follow.entity) {
+            t.translation = followed_t.translation() + follow.offset.extend(0.);
+        }
+    }
+}
+
+fn process_input(
+    input: Res<ButtonInput<MouseButton>>,
+    mut paddle_mode_q: Query<(&mut PaddleMode, &GlobalTransform)>,
+    mut cmd: Commands,
+    ball_q: Query<&BaseSpeed, With<Ball>>,
+) {
+    if input.just_pressed(MouseButton::Right) {
+        for (mut pm, paddle_t) in &mut paddle_mode_q {
+            *pm = match *pm {
+                PaddleMode::Reflect => PaddleMode::Capture,
+                PaddleMode::Capture => PaddleMode::Reflect,
+                PaddleMode::Captured {
+                    shoot_rotation: rotation,
+                    ball_e,
+                } => {
+                    if let Ok(speed) = ball_q.get(ball_e) {
+                        let dir = (Quat::from_rotation_z(rotation.as_radians())
+                            * -paddle_t.right())
+                        .truncate()
+                        .normalize_or_zero();
+                        cmd.entity(ball_e)
+                            .remove_parent_in_place()
+                            .insert(Velocity(dir * speed.0));
+                    }
+                    PaddleMode::Reflect
+                }
+            };
+        }
+    }
+}
 
 fn rotate_paddle(
     mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
@@ -241,20 +285,31 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
 fn reflect_ball(
     phys_spatial: SpatialQuery,
     mut ball_q: Query<(
+        Entity,
         &GlobalTransform,
+        &mut Transform,
         &mut Ball,
         &mut Velocity,
         &mut BaseSpeed,
         &mut PaddleReflectionCount,
     )>,
-    mut paddle_q: Query<(&mut PaddleAmmo, &GlobalTransform), With<Paddle>>,
+    mut paddle_q: Query<(Entity, &mut PaddleAmmo, &GlobalTransform, &mut PaddleMode), With<Paddle>>,
     enemy_q: Query<(), With<Enemy>>,
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
     // mut gizmos: Gizmos,
 ) {
-    for (t, mut ball, mut vel, mut speed, mut paddle_reflection_count) in &mut ball_q {
+    for (
+        ball_e,
+        ball_t,
+        mut ball_local_t,
+        mut ball,
+        mut vel,
+        mut speed,
+        mut paddle_reflection_count,
+    ) in &mut ball_q
+    {
         if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
@@ -263,7 +318,7 @@ fn reflect_ball(
 
         for hit in phys_spatial.shape_hits(
             &Collider::circle(ball.radius),
-            t.translation().truncate(),
+            ball_t.translation().truncate(),
             0.,
             Dir2::new(vel.0).expect("Non zero velocity"),
             (speed.0 * 1.05) * time.delta_seconds(),
@@ -272,39 +327,56 @@ fn reflect_ball(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((mut ammo, paddle_t)) = paddle_q.get_mut(hit_e) {
+            if let Ok((paddle_e, mut ammo, paddle_t, mut paddle_mode)) = paddle_q.get_mut(hit_e) {
+                if let PaddleMode::Captured { .. } = *paddle_mode {
+                    continue;
+                }
+
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.2 {
                     // ignore consecutive hits
                     continue;
                 }
 
-                // clamp to min speed in case the ball has come back to core
-                speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
                 let hit_point_local = paddle_t
                     .affine()
                     .inverse()
                     .transform_point(hit.point1.extend(0.));
-
                 // limit upper treshold to 1 to account for the collider rounding
                 let angle_factor = (hit_point_local.y / (PADDLE_COLL_HEIGHT / 2.)).min(1.0);
                 let angle = angle_factor * -30.0;
                 debug!(angle_factor, angle, "paddle hit");
-                // aim the ball based on where it landed on the paddle
-                // the further it lands from the center, the greater the reflection angle
-                // if x is positive, then the hit is from outside => this aims the new dir back into the core
-                let new_dir = (Quat::from_rotation_z(angle.to_radians()) * -paddle_t.right())
-                    .truncate()
-                    .normalize_or_zero();
-                vel.0 = new_dir * speed.0;
-                paddle_reflection_count.0 += 1;
-                ammo.0 += match paddle_reflection_count.0 {
-                    0 => 0,
-                    1..=2 => 1,
-                    3..=5 => 2,
-                    _ => 3,
-                };
-                ball.last_reflection_time = time.elapsed_seconds();
-                debug!(ammo=?ammo.0, "added ammo");
+
+                if let PaddleMode::Capture = *paddle_mode {
+                    *paddle_mode = PaddleMode::Captured {
+                        shoot_rotation: Rot2::radians(angle.to_radians()),
+                        ball_e,
+                    };
+                    cmd.entity(ball_e).set_parent(paddle_e).remove::<Velocity>();
+                    ball_local_t.translation = paddle_t
+                        .affine()
+                        .inverse()
+                        .transform_point(ball_t.translation());
+                } else {
+                    // clamp to min speed in case the ball has come back to core
+                    speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
+                    // aim the ball based on where it landed on the paddle
+                    // the further it lands from the center, the greater the reflection angle
+                    // if x is positive, then the hit is from outside => this aims the new dir back into the core
+                    let new_dir = (Quat::from_rotation_z(angle.to_radians()) * -paddle_t.right())
+                        .truncate()
+                        .normalize_or_zero();
+                    vel.0 = new_dir * speed.0;
+                    paddle_reflection_count.0 += 1;
+                    ammo.0 += match paddle_reflection_count.0 {
+                        0 => 0,
+                        1..=2 => 1,
+                        3..=5 => 2,
+                        _ => 3,
+                    };
+
+                    ball.last_reflection_time = time.elapsed_seconds();
+                    debug!(ammo=?ammo.0, "added ammo");
+                }
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits

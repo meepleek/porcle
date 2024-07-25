@@ -23,6 +23,16 @@ pub struct SpawnPaddle;
 pub struct Paddle;
 
 #[derive(Component, Debug)]
+pub enum PaddleMode {
+    Reflect,
+    Capture,
+    Captured {
+        shoot_rotation: Rot2,
+        ball_e: Entity,
+    },
+}
+
+#[derive(Component, Debug)]
 pub struct PaddleRotation {
     pub cw_start: f32,
     pub ccw_start: f32,
@@ -81,6 +91,7 @@ fn spawn_paddle(
                 },
                 Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
                 Paddle,
+                PaddleMode::Reflect,
                 PaddleAmmo::default(),
             ))
             .with_children(|b| {

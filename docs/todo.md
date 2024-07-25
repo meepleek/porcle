@@ -52,8 +52,7 @@
 - [x] never reflect behind paddle, always in front (mirror regular reflection angle)
 - [x] limit paddle movement speed (angular vel)
 - [x] make the core an aim dead zone
-- [ ] allow catching ball to aim it
-- [ ] add reflection/aim prediction UI
+- [x] allow catching ball to aim it
 
 ## Juiiiice - v0.4.0
 
@@ -75,6 +74,7 @@
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed
 - [ ] circle/anullus transition
+- [ ] add reflection/aim prediction UI
 - [ ] ball trail
 - [ ] paddle trail
 
