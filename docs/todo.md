@@ -56,7 +56,7 @@
 
 ## Juiiiice - v0.4.0
 
-- [ ] screen shake
+- [x] screen shake
 - [ ] paddle recoil on reflect
 - [ ] move gun barrel on shot
 - [ ] tween stuff
