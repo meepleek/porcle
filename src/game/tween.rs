@@ -234,24 +234,26 @@ macro_rules! relative_tween_fns {
                 start: $value_start,
                 end: $value_end,
                 duration_ms: u64,
+                ease: Option<EaseFunction>,
             ) -> Tween<$component> {
                 [<get_ $name _tween>](
                     Some(start),
                     end,
                     duration_ms,
-                    EaseFunction::QuadraticInOut,
+                    ease.unwrap_or(EaseFunction::QuadraticInOut),
                 )
             }
 
             pub fn [<get_relative_ $name _tween>](
                 end: $value_end,
                 duration_ms: u64,
+                ease: Option<EaseFunction>,
             ) -> Tween<$component> {
                 [<get_ $name _tween>](
                     None,
                     end,
                     duration_ms,
-                    EaseFunction::QuadraticInOut,
+                    ease.unwrap_or(EaseFunction::QuadraticInOut),
                 )
             }
 
@@ -259,21 +261,25 @@ macro_rules! relative_tween_fns {
                 start: $value_start,
                 end: $value_end,
                 duration_ms: u64,
+                ease: Option<EaseFunction>,
             ) -> Animator<$component> {
                 Animator::new([<get_absolute_ $name _tween>](
                     start,
                     end,
                     duration_ms,
+                    ease,
                 ))
             }
 
             pub fn [<get_relative_ $name _anim>](
                 end: $value_end,
                 duration_ms: u64,
+                ease: Option<EaseFunction>,
             ) -> Animator<$component> {
                 Animator::new([<get_relative_ $name _tween>](
                     end,
                     duration_ms,
+                    ease,
                 ))
             }
 

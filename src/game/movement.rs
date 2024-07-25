@@ -4,10 +4,11 @@ use avian2d::prelude::*;
 // use bevy::color::palettes::tailwind;
 use bevy::prelude::*;
 use bevy_trauma_shake::Shakes;
+use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
     ext::{QuatExt, Vec2Ext},
-    game::spawn::paddle::PADDLE_COLL_HEIGHT,
+    game::{spawn::paddle::PADDLE_COLL_HEIGHT, tween::get_relative_translation_tween},
     AppSet,
 };
 
@@ -300,7 +301,13 @@ fn handle_ball_collisions(
         &mut BaseSpeed,
         &mut PaddleReflectionCount,
     )>,
-    mut paddle_q: Query<(Entity, &mut PaddleAmmo, &GlobalTransform, &mut PaddleMode), With<Paddle>>,
+    mut paddle_q: Query<(
+        Entity,
+        &mut PaddleAmmo,
+        &GlobalTransform,
+        &Paddle,
+        &mut PaddleMode,
+    )>,
     enemy_q: Query<(), With<Enemy>>,
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
@@ -333,7 +340,9 @@ fn handle_ball_collisions(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((paddle_e, mut ammo, paddle_t, mut paddle_mode)) = paddle_q.get_mut(hit_e) {
+            if let Ok((paddle_e, mut ammo, paddle_t, paddle, mut paddle_mode)) =
+                paddle_q.get_mut(hit_e)
+            {
                 if let PaddleMode::Captured { .. } = *paddle_mode {
                     continue;
                 }
@@ -353,6 +362,7 @@ fn handle_ball_collisions(
                 debug!(angle_factor, angle, "paddle hit");
 
                 if let PaddleMode::Capture = *paddle_mode {
+                    // catching ball
                     *paddle_mode = PaddleMode::Captured {
                         shoot_rotation: Rot2::radians(angle.to_radians()),
                         ball_e,
@@ -363,6 +373,7 @@ fn handle_ball_collisions(
                         .inverse()
                         .transform_point(ball_t.translation());
                 } else {
+                    // reflecting ball
                     shake.add_trauma(
                         0.15 + 0.15 * speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 2.0),
                     );
@@ -371,10 +382,11 @@ fn handle_ball_collisions(
                     // aim the ball based on where it landed on the paddle
                     // the further it lands from the center, the greater the reflection angle
                     // if x is positive, then the hit is from outside => this aims the new dir back into the core
-                    let new_dir = (Quat::from_rotation_z(angle.to_radians()) * -paddle_t.right())
-                        .truncate()
-                        .normalize_or_zero();
+                    let rot = Quat::from_rotation_z(angle.to_radians());
+                    let new_dir = (rot * -paddle_t.right()).truncate().normalize_or_zero();
                     vel.0 = new_dir * speed.0;
+
+                    // ammo
                     paddle_reflection_count.0 += 1;
                     ammo.0 += match paddle_reflection_count.0 {
                         0 => 0,
@@ -382,9 +394,22 @@ fn handle_ball_collisions(
                         3..=5 => 2,
                         _ => 3,
                     };
-
                     ball.last_reflection_time = time.elapsed_seconds();
                     debug!(ammo=?ammo.0, "added ammo");
+
+                    // tween
+                    cmd.entity(paddle.mesh_e).insert(Animator::new(
+                        get_relative_translation_tween(
+                            ((rot / 3.) * Vec3::X) * 50.,
+                            60,
+                            Some(EaseFunction::SineOut),
+                        )
+                        .then(get_relative_translation_tween(
+                            Vec3::ZERO,
+                            110,
+                            Some(EaseFunction::BackOut),
+                        )),
+                    ));
                 }
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {

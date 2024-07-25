@@ -57,7 +57,7 @@
 ## Juiiiice - v0.4.0
 
 - [x] screen shake
-- [ ] paddle recoil on reflect
+- [x] paddle recoil on reflect
 - [ ] move gun barrel on shot
 - [ ] tween stuff
 - [ ] enemy death particles

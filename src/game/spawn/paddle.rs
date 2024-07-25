@@ -20,7 +20,9 @@ pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 10.;
 pub struct SpawnPaddle;
 
 #[derive(Component, Debug)]
-pub struct Paddle;
+pub struct Paddle {
+    pub mesh_e: Entity,
+}
 
 #[derive(Component, Debug)]
 pub enum PaddleMode {
@@ -66,7 +68,7 @@ pub struct PaddleAmmo(pub usize);
 
 fn spawn_paddle(
     _trigger: Trigger<SpawnPaddle>,
-    mut commands: Commands,
+    mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
@@ -74,41 +76,44 @@ fn spawn_paddle(
         bevy::color::palettes::tailwind::SKY_400,
     ));
 
-    commands
-        .spawn((
-            SpatialBundle::default(),
-            PaddleRotation::default(),
-            AccumulatedRotation::default(),
-            StateScoped(Screen::Game),
-        ))
+    let mesh_e = cmd
+        .spawn(MaterialMesh2dBundle {
+            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, PADDLE_HEIGHT))),
+            material: mat.clone(),
+            ..default()
+        })
         .with_children(|b| {
-            b.spawn((
-                MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, PADDLE_HEIGHT))),
-                    material: mat.clone(),
-                    transform: Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
-                    ..default()
-                },
-                Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
-                Paddle,
-                PaddleMode::Reflect,
-                PaddleAmmo::default(),
-            ))
-            .with_children(|b| {
-                b.spawn(MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 10.0))),
-                    material: mat.clone(),
-                    transform: Transform::from_xyz(15., 0., 0.),
-                    ..default()
-                });
-
-                b.spawn(MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 50.0))),
-                    material: mat,
-                    transform: Transform::from_xyz(40., 0., 0.)
-                        .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
-                    ..default()
-                });
+            b.spawn(MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 10.0))),
+                material: mat.clone(),
+                transform: Transform::from_xyz(15., 0., 0.),
+                ..default()
             });
-        });
+
+            b.spawn(MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 50.0))),
+                material: mat,
+                transform: Transform::from_xyz(40., 0., 0.)
+                    .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
+                ..default()
+            });
+        })
+        .id();
+
+    cmd.spawn((
+        SpatialBundle::default(),
+        PaddleRotation::default(),
+        AccumulatedRotation::default(),
+        StateScoped(Screen::Game),
+    ))
+    .with_children(|b| {
+        b.spawn((
+            SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
+            Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
+            Paddle { mesh_e },
+            PaddleMode::Reflect,
+            PaddleAmmo::default(),
+        ))
+        .add_child(mesh_e);
+    });
 }
