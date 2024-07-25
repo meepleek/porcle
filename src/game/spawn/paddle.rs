@@ -69,6 +69,7 @@ fn spawn_paddle(
             SpatialBundle::default(),
             PaddleRotation::default(),
             AccumulatedRotation::default(),
+            StateScoped(Screen::Game),
         ))
         .with_children(|b| {
             b.spawn((
@@ -81,7 +82,6 @@ fn spawn_paddle(
                 Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
                 Paddle,
                 PaddleAmmo::default(),
-                StateScoped(Screen::Game),
             ))
             .with_children(|b| {
                 b.spawn(MaterialMesh2dBundle {
