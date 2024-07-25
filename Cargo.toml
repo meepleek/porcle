@@ -8,6 +8,7 @@ edition = "2021"
 avian2d = "0.1.1"
 bevy = { version = "0.14", features = ["wayland"] }
 bevy-inspector-egui = { version = "0.25.1", optional = true }
+bevy_trauma_shake = "0.3.0"
 # Disable low-severity logs at compile time for performance.
 log = { version = "0.4", features = [
     "max_level_debug",

@@ -62,7 +62,10 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
-        app.add_plugins(avian2d::PhysicsPlugins::default());
+        app.add_plugins((
+            avian2d::PhysicsPlugins::default(),
+            bevy_trauma_shake::TraumaPlugin,
+        ));
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
@@ -94,5 +97,6 @@ fn spawn_camera(mut commands: Commands) {
         // [ui node outlines](https://bevyengine.org/news/bevy-0-14/#ui-node-outline-gizmos)
         // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
+        bevy_trauma_shake::Shake::default(),
     ));
 }

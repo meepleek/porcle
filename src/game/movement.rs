@@ -3,6 +3,7 @@ use std::f32::consts::TAU;
 use avian2d::prelude::*;
 // use bevy::color::palettes::tailwind;
 use bevy::prelude::*;
+use bevy_trauma_shake::Shakes;
 
 use crate::{
     ext::{QuatExt, Vec2Ext},
@@ -29,7 +30,7 @@ pub(super) fn plugin(app: &mut App) {
             rotate_paddle,
             reload_balls,
             balls_inside_core,
-            reflect_ball,
+            handle_ball_collisions,
             accumulate_angle,
             apply_velocity,
             apply_homing_velocity,
@@ -50,6 +51,12 @@ pub struct Damping(pub f32);
 
 #[derive(Component, Debug)]
 pub struct BaseSpeed(pub f32);
+
+impl BaseSpeed {
+    pub fn speed_factor(&self, min: f32, max: f32) -> f32 {
+        ((self.0 - min) / max).clamp(0., 1.)
+    }
+}
 
 #[derive(Component, Debug)]
 pub struct Homing {
@@ -282,7 +289,7 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
     }
 }
 
-fn reflect_ball(
+fn handle_ball_collisions(
     phys_spatial: SpatialQuery,
     mut ball_q: Query<(
         Entity,
@@ -298,7 +305,7 @@ fn reflect_ball(
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
-    // mut gizmos: Gizmos,
+    mut shake: Shakes,
 ) {
     for (
         ball_e,
@@ -315,7 +322,6 @@ fn reflect_ball(
             continue;
         }
         // gizmos.circle_2d(t.translation().truncate(), ball.0, tailwind::AMBER_600);
-
         for hit in phys_spatial.shape_hits(
             &Collider::circle(ball.radius),
             ball_t.translation().truncate(),
@@ -357,6 +363,9 @@ fn reflect_ball(
                         .inverse()
                         .transform_point(ball_t.translation());
                 } else {
+                    shake.add_trauma(
+                        0.15 + 0.15 * speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 2.0),
+                    );
                     // clamp to min speed in case the ball has come back to core
                     speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
                     // aim the ball based on where it landed on the paddle
@@ -382,13 +391,19 @@ fn reflect_ball(
                     // ignore consecutive hits
                     continue;
                 }
+
+                shake.add_trauma(
+                    0.05 + 0.1 * speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0),
+                );
                 speed.0 *= 0.7;
                 let dir = vel.0.normalize_or_zero();
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 vel.0 = reflect * speed.0;
                 ball.last_reflection_time = time.elapsed_seconds();
+                shake.add_trauma(0.2);
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
+                shake.add_trauma(0.135);
 
                 // todo: try - boost speed on hit
             }
