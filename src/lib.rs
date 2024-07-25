@@ -108,7 +108,7 @@ fn spawn_camera(mut commands: Commands) {
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
         BloomSettings {
-            intensity: 0.25,
+            intensity: 0.15,
             high_pass_frequency: 0.5,
             low_frequency_boost: 0.3,
             low_frequency_boost_curvature: 0.7,
