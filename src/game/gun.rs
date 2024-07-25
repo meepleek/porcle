@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{Animator, Delay, EaseFunction};
+use bevy_tweening::{Animator, AssetAnimator, Delay, EaseFunction};
 use std::time::Duration;
 
 use crate::{
@@ -14,11 +14,15 @@ use super::{
     movement::{BaseSpeed, Damping, Velocity},
     spawn::{
         enemy::Enemy,
+        level::Health,
         paddle::{Paddle, PaddleAmmo},
         projectile::Projectile,
     },
     time::{process_cooldown, Cooldown},
-    tween::{get_relative_translation_tween, DespawnOnTweenCompleted},
+    tween::{
+        delay_tween, get_relative_color_material_color_tween, get_relative_translation_tween,
+        DespawnOnTweenCompleted,
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -121,7 +125,7 @@ fn fire_gun(
 fn handle_collisions(
     phys_spatial: SpatialQuery,
     ball_q: Query<(Entity, &GlobalTransform, &Projectile, &Velocity, &BaseSpeed)>,
-    enemy_q: Query<(&GlobalTransform, &Enemy)>,
+    mut enemy_q: Query<(&GlobalTransform, &Enemy, &mut Health)>,
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
@@ -143,8 +147,8 @@ fn handle_collisions(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((enemy_t, enemy)) = enemy_q.get(hit.entity) {
-                cmd.entity(e).insert(Damping(30.));
+            if let Ok((enemy_t, enemy, mut enemy_hp)) = enemy_q.get_mut(hit.entity) {
+                cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
                 cmd.entity(projectile.mesh_e).insert((
                     get_relative_scale_anim(
                         Vec2::ZERO.extend(1.),
@@ -153,22 +157,43 @@ fn handle_collisions(
                     ),
                     DespawnOnTweenCompleted::Entity(e),
                 ));
-                cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
-                cmd.entity(enemy.mesh_e).insert((
-                    get_relative_scale_anim(
-                        Vec2::ZERO.extend(1.),
-                        150,
-                        Some(EaseFunction::BounceIn),
-                    ),
-                    DespawnOnTweenCompleted::Entity(hit_e),
-                ));
-                cmd.spawn((
-                    particles.particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(enemy_t.translation()),
-                    ),
-                    OneShot::Despawn,
-                ));
+                enemy_hp.0 -= 1;
+                if enemy_hp.0 == 0 {
+                    cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
+                    cmd.entity(enemy.mesh_e).insert((
+                        get_relative_scale_anim(
+                            Vec2::ZERO.extend(1.),
+                            150,
+                            Some(EaseFunction::BounceIn),
+                        ),
+                        DespawnOnTweenCompleted::Entity(hit_e),
+                    ));
+                    cmd.spawn((
+                        particles.particle_spawner(
+                            particles.enemy.clone(),
+                            Transform::from_translation(enemy_t.translation()),
+                        ),
+                        OneShot::Despawn,
+                    ));
+                } else {
+                    // flash
+                    cmd.entity(enemy.mesh_e).insert(AssetAnimator::new(
+                        get_relative_color_material_color_tween(
+                            Color::WHITE,
+                            50,
+                            Some(EaseFunction::QuadraticIn),
+                        )
+                        .then(delay_tween(
+                            get_relative_color_material_color_tween(
+                                enemy.color,
+                                50,
+                                Some(EaseFunction::QuadraticOut),
+                            ),
+                            150,
+                        )),
+                    ));
+                    // todo: kickback
+                }
             }
         }
     }

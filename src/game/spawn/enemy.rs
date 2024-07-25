@@ -14,6 +14,8 @@ use crate::{
     screen::Screen,
 };
 
+use super::level::Health;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
     app.add_systems(
@@ -31,6 +33,7 @@ pub struct SpawnEnemy {
 #[derive(Component, Debug, Clone)]
 pub struct Enemy {
     pub mesh_e: Entity,
+    pub color: Color,
 }
 
 #[derive(Debug, Clone)]
@@ -60,17 +63,17 @@ fn spawn_enemy(
             let b = Vec2::new(-size, -size);
             let c = Vec2::new(size, -size);
 
+            let color = bevy::color::palettes::tailwind::PURPLE_400;
             let mesh_e = cmd
                 .spawn(MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Triangle2d::new(a, b, c))),
-                    material: materials.add(ColorMaterial::from_color(
-                        bevy::color::palettes::tailwind::PURPLE_400,
-                    )),
+                    material: materials.add(ColorMaterial::from_color(color)),
                     ..default()
                 })
                 .id();
 
             cmd.spawn((
+                Name::new("Crawler"),
                 SpatialBundle::from_transform(
                     Transform::from_translation(ev.position.extend(0.1))
                         .with_rotation(ev.position.to_quat()),
@@ -78,7 +81,11 @@ fn spawn_enemy(
                 Collider::triangle(a, b, c),
                 Velocity(-ev.position.normalize_or_zero() * 30.),
                 HomingTarget,
-                Enemy { mesh_e },
+                Enemy {
+                    mesh_e,
+                    color: color.into(),
+                },
+                Health(3),
                 StateScoped(Screen::Game),
             ))
             .add_child(mesh_e);
