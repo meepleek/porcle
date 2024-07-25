@@ -48,6 +48,7 @@ fn fire_gun(
     mut cmd: Commands,
     mut shake: Shakes,
     ass: Res<AssetServer>,
+    mut materials: ResMut<Assets<SpriteParticle2dMaterial>>,
 ) {
     if input.just_pressed(MouseButton::Left) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
@@ -96,11 +97,16 @@ fn fire_gun(
                         )),
                 ));
 
+                let circle_mat = materials.add(
+                    // hframes and vframes define how the sprite sheet is divided for animations,
+                    // if you just want to bind a single texture, leave both at 1.
+                    SpriteParticle2dMaterial::new(ass.load("particles/circle.png"), 1, 1),
+                );
                 let barrel_pos = t.translation() + t.right() * 80.;
                 cmd.spawn((
                     ParticleSpawnerBundle {
                         effect: ass.load("particles/gun.particle.ron"),
-                        material: DEFAULT_MATERIAL,
+                        material: circle_mat,
                         transform: Transform::from_translation(barrel_pos)
                             .with_rotation(t.to_scale_rotation_translation().1),
                         ..default()
