@@ -3,15 +3,19 @@
 use bevy::{
     dev_tools::states::log_transitions, input::common_conditions::input_toggle_active, prelude::*,
 };
+
+#[cfg(not(target_family = "wasm"))]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::screen::Screen;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::KeyE)))
-        .add_systems(Update, log_transitions::<Screen>)
+    app.add_systems(Update, log_transitions::<Screen>)
         .add_systems(Update, process_score_raise_input)
         .add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
+
+    #[cfg(not(target_family = "wasm"))]
+    app.add_plugins(WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::KeyE)));
 }
 
 fn process_score_raise_input(_input: Res<ButtonInput<KeyCode>>) {
