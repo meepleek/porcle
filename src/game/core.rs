@@ -1,5 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_trauma_shake::Shakes;
 
 use crate::screen::Screen;
 
@@ -15,6 +16,7 @@ fn handle_collisions(
     enemy_q: Query<(), With<Enemy>>,
     mut cmd: Commands,
     mut next: ResMut<NextState<Screen>>,
+    mut shake: Shakes,
 ) {
     for (mut core, coll) in &mut core_q {
         for coll_e in coll.iter() {
@@ -24,7 +26,10 @@ fn handle_collisions(
                 info!("ouch!");
 
                 if core.health == 0 {
-                    next.set(Screen::GameOver)
+                    next.set(Screen::GameOver);
+                    shake.add_trauma(0.55);
+                } else {
+                    shake.add_trauma(0.3);
                 }
             }
         }
