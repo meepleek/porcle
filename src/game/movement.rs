@@ -402,7 +402,7 @@ fn handle_ball_collisions(
                         get_relative_translation_tween(
                             ((rot / 3.) * Vec3::X) * 50.,
                             60,
-                            Some(EaseFunction::SineOut),
+                            Some(EaseFunction::QuadraticOut),
                         )
                         .then(get_relative_translation_tween(
                             Vec3::ZERO,

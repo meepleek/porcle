@@ -58,7 +58,7 @@
 
 - [x] screen shake
 - [x] paddle recoil on reflect
-- [ ] move gun barrel on shot
+- [x] move gun barrel on shot
 - [ ] tween stuff
 - [ ] enemy death particles
 - [ ] enemy death flash

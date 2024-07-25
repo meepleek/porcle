@@ -1,13 +1,21 @@
+use std::time::Duration;
+
 use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_trauma_shake::Shakes;
+use bevy_tweening::{Animator, Delay, EaseFunction};
 
 use crate::{ext::Vec2Ext, game::spawn::projectile::SpawnProjectile};
 
 use super::{
     movement::{BaseSpeed, Velocity},
-    spawn::{enemy::Enemy, paddle::PaddleAmmo, projectile::Projectile},
+    spawn::{
+        enemy::Enemy,
+        paddle::{Paddle, PaddleAmmo},
+        projectile::Projectile,
+    },
     time::{process_cooldown, Cooldown},
+    tween::get_relative_translation_tween,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -29,6 +37,7 @@ fn fire_gun(
     mut ammo_q: Query<
         (
             Entity,
+            &Paddle,
             &mut PaddleAmmo,
             &GlobalTransform,
             Option<&Cooldown<NoAmmoShake>>,
@@ -40,7 +49,7 @@ fn fire_gun(
     mut shake: Shakes,
 ) {
     if input.just_pressed(MouseButton::Left) {
-        for (e, mut ammo, t, cooldown) in &mut ammo_q {
+        for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
             // todo: cooldown
             if ammo.0 > 0 {
                 let dir = Dir2::new(t.right().truncate()).unwrap();
@@ -56,6 +65,35 @@ fn fire_gun(
                 shake.add_trauma(0.125);
                 // todo: UI for shoot delay
                 cmd.entity(e).insert(Cooldown::<PaddleAmmo>::new(0.14));
+
+                // tween
+                // barrel
+                cmd.entity(paddle.barrel_e).insert(Animator::new(
+                    get_relative_translation_tween(
+                        Vec3::X * -40.,
+                        60,
+                        Some(EaseFunction::QuadraticOut),
+                    )
+                    .then(get_relative_translation_tween(
+                        Vec3::ZERO,
+                        110,
+                        Some(EaseFunction::BackOut),
+                    )),
+                ));
+                // paddle
+                cmd.entity(paddle.mesh_e).insert(Animator::new(
+                    Delay::new(Duration::from_millis(40))
+                        .then(get_relative_translation_tween(
+                            Vec3::X * -8.,
+                            40,
+                            Some(EaseFunction::QuadraticOut),
+                        ))
+                        .then(get_relative_translation_tween(
+                            Vec3::ZERO,
+                            60,
+                            Some(EaseFunction::BackOut),
+                        )),
+                ));
             } else if cooldown.is_none() {
                 shake.add_trauma(0.4);
                 cmd.entity(e).insert(Cooldown::<NoAmmoShake>::new(1.));

@@ -22,6 +22,7 @@ pub struct SpawnPaddle;
 #[derive(Component, Debug)]
 pub struct Paddle {
     pub mesh_e: Entity,
+    pub barrel_e: Entity,
 }
 
 #[derive(Component, Debug)]
@@ -76,6 +77,19 @@ fn spawn_paddle(
         bevy::color::palettes::tailwind::SKY_400,
     ));
 
+    let barrel_e = cmd
+        .spawn(SpatialBundle::default())
+        .with_children(|b| {
+            b.spawn(MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 70.0))),
+                material: mat.clone(),
+                transform: Transform::from_xyz(35., 0., 0.)
+                    .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
+                ..default()
+            });
+        })
+        .id();
+
     let mesh_e = cmd
         .spawn(MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, PADDLE_HEIGHT))),
@@ -88,15 +102,8 @@ fn spawn_paddle(
                 material: mat.clone(),
                 transform: Transform::from_xyz(15., 0., 0.),
                 ..default()
-            });
-
-            b.spawn(MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 50.0))),
-                material: mat,
-                transform: Transform::from_xyz(40., 0., 0.)
-                    .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
-                ..default()
-            });
+            })
+            .add_child(barrel_e);
         })
         .id();
 
@@ -110,7 +117,7 @@ fn spawn_paddle(
         b.spawn((
             SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
-            Paddle { mesh_e },
+            Paddle { mesh_e, barrel_e },
             PaddleMode::Reflect,
             PaddleAmmo::default(),
         ))
