@@ -8,6 +8,7 @@ mod ui;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
+    core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
     prelude::*,
 };
 
@@ -59,13 +60,13 @@ impl Plugin for AppPlugin {
         );
 
         // Add project plugins.
-        app.add_plugins((game::plugin, screen::plugin, ui::plugin ));
+        app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
         app.add_plugins((
             avian2d::PhysicsPlugins::default(),
             bevy_trauma_shake::TraumaPlugin,
-            bevy_enoki::EnokiPlugin
+            bevy_enoki::EnokiPlugin,
         ));
 
         // Enable dev tools for dev builds.
@@ -90,7 +91,14 @@ enum AppSet {
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
-        Camera2dBundle::default(),
+        Camera2dBundle {
+            camera: Camera {
+                hdr: true,
+                ..default()
+            },
+            tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
+            ..default()
+        },
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
@@ -99,5 +107,13 @@ fn spawn_camera(mut commands: Commands) {
         // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
+        BloomSettings {
+            intensity: 0.25,
+            high_pass_frequency: 0.5,
+            low_frequency_boost: 0.3,
+            low_frequency_boost_curvature: 0.7,
+            composite_mode: BloomCompositeMode::Additive,
+            ..default()
+        },
     ));
 }
