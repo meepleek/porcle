@@ -53,7 +53,8 @@ fn spawn_ball(
     }
 
     // todo: random
-    let dir = Dir2::new(-Vec2::X).unwrap();
+    let dir = Dir2::new(Vec2::X).unwrap();
+    // let dir = Dir2::new(-Vec2::Y).unwrap();
 
     // todo: switch to shapecaster instead?
     // or fix the collision weirdness

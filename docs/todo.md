@@ -36,7 +36,6 @@
 - [x] destroy enemy when shot
 
 ## MVP - v0.2.0
-- [ ] reflect based on paddle hit position
 - [x] homing ball
 - [x] ball is reflected off of edges
 - [x] ball slows down when it hits an edge
@@ -46,7 +45,16 @@
 - [x] reflecting increases an ammo mult which gets reset on ball reset
 - [x] add basic UI showing ammo & health
 
-## juiced up base - v0.3.0
+## MVPier - v0.3.0
+
+- [x] reflect based on paddle hit position
+- [x] limit reflection angle
+- [x] never reflect behind paddle, always in front (mirror regular reflection angle)
+- [x] limit paddle movement speed (angular vel)
+- [x] make the core an aim dead zone
+- [x] allow catching ball to aim it
+
+## Juiiiice - v0.4.0
 
 - [ ] screen shake
 - [ ] paddle recoil on reflect
@@ -66,10 +74,13 @@
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed
 - [ ] circle/anullus transition
+- [ ] add reflection/aim prediction UI
 - [ ] ball trail
 - [ ] paddle trail
 
-## enemies - v0.4.0
+## audio - v0.5.0
+
+## enemies - v0.6.0
 
 - [ ] improve crawler
 - [ ] slower crawler that has to be hit by the ball (shielded)
@@ -78,6 +89,5 @@
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
 
-## audio - v0.5.0
 
 ## upgrades - v0.x.0

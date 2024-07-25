@@ -13,12 +13,24 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub const PADDLE_RADIUS: f32 = 240.0;
+pub const PADDLE_HEIGHT: f32 = 120.0;
+pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 10.;
 
 #[derive(Event, Debug)]
 pub struct SpawnPaddle;
 
 #[derive(Component, Debug)]
 pub struct Paddle;
+
+#[derive(Component, Debug)]
+pub enum PaddleMode {
+    Reflect,
+    Capture,
+    Captured {
+        shoot_rotation: Rot2,
+        ball_e: Entity,
+    },
+}
 
 #[derive(Component, Debug)]
 pub struct PaddleRotation {
@@ -67,19 +79,20 @@ fn spawn_paddle(
             SpatialBundle::default(),
             PaddleRotation::default(),
             AccumulatedRotation::default(),
+            StateScoped(Screen::Game),
         ))
         .with_children(|b| {
             b.spawn((
                 MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 120.0))),
+                    mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, PADDLE_HEIGHT))),
                     material: mat.clone(),
                     transform: Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
                     ..default()
                 },
-                Collider::capsule(23.0, 130.0),
+                Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
                 Paddle,
+                PaddleMode::Reflect,
                 PaddleAmmo::default(),
-                StateScoped(Screen::Game),
             ))
             .with_children(|b| {
                 b.spawn(MaterialMesh2dBundle {
