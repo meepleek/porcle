@@ -33,8 +33,8 @@ fn spawn_projectile(
 ) {
     let ev = trigger.event();
     let x = 15.;
-    let y = 40.;
-    let speed = 3000.;
+    let y = 35.;
+    let speed = 1800.;
     cmd.spawn((
         Name::new("Projectile"),
         MaterialMesh2dBundle {
@@ -46,7 +46,7 @@ fn spawn_projectile(
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
         Velocity(ev.dir.as_vec2() * speed),
-        Damping(3.5),
+        Damping(2.5),
         BaseSpeed(speed),
         Projectile {
             size: Vec2::new(x, y),

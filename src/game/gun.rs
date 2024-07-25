@@ -1,9 +1,9 @@
-use std::time::Duration;
-
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, Delay, EaseFunction};
+use std::time::Duration;
 
 use crate::{ext::Vec2Ext, game::spawn::projectile::SpawnProjectile};
 
@@ -47,6 +47,7 @@ fn fire_gun(
     input: Res<ButtonInput<MouseButton>>,
     mut cmd: Commands,
     mut shake: Shakes,
+    ass: Res<AssetServer>,
 ) {
     if input.just_pressed(MouseButton::Left) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
@@ -94,10 +95,21 @@ fn fire_gun(
                             Some(EaseFunction::BackOut),
                         )),
                 ));
+
+                let barrel_pos = t.translation() + t.right() * 80.;
+                cmd.spawn((
+                    ParticleSpawnerBundle {
+                        effect: ass.load("particles/gun.particle.ron"),
+                        material: DEFAULT_MATERIAL,
+                        transform: Transform::from_translation(barrel_pos)
+                            .with_rotation(t.to_scale_rotation_translation().1),
+                        ..default()
+                    },
+                    OneShot::Despawn,
+                ));
             } else if cooldown.is_none() {
                 shake.add_trauma(0.4);
                 cmd.entity(e).insert(Cooldown::<NoAmmoShake>::new(1.));
-                // todo: add delay to avoid more shake
 
                 // todo: some blinking UI or smt. to show there's no ammo
             }

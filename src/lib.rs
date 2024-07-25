@@ -65,6 +65,7 @@ impl Plugin for AppPlugin {
         app.add_plugins((
             avian2d::PhysicsPlugins::default(),
             bevy_trauma_shake::TraumaPlugin,
+            bevy_enoki::EnokiPlugin
         ));
 
         // Enable dev tools for dev builds.

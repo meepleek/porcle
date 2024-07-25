@@ -8,6 +8,7 @@ edition = "2021"
 avian2d = "0.1.1"
 bevy = { version = "0.14", features = ["wayland"] }
 bevy-inspector-egui = { version = "0.25.1", optional = true }
+bevy_enoki = "0.2.2"
 bevy_trauma_shake = "0.3.0"
 bevy_tweening = { git = "ssh://git@github.com/SecretPocketCat/bevy_tweening",  rev = "8dca8643b50d6ec23ece65158c56f81c0e111f86" }
 # Disable low-severity logs at compile time for performance.
