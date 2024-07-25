@@ -11,7 +11,7 @@ use crate::game::{
     // assets::SoundtrackKey,
     audio::soundtrack::PlaySoundtrack,
     spawn::{
-        level::{Core, SpawnLevel},
+        level::{Core, Health, SpawnLevel},
         paddle::PaddleAmmo,
     },
 };
@@ -79,10 +79,10 @@ fn enter_restart(mut next_screen: ResMut<NextState<Screen>>) {
 fn update_state_text(
     mut text_q: Query<&mut Text>,
     ammo_q: Query<&PaddleAmmo>,
-    core_q: Query<&Core>,
+    core_q: Query<&Health, With<Core>>,
 ) {
-    if let (Ok(core), Ok(ammo)) = (core_q.get_single(), ammo_q.get_single()) {
+    if let (Ok(hp), Ok(ammo)) = (core_q.get_single(), ammo_q.get_single()) {
         let mut text = text_q.single_mut();
-        text.sections[0].value = format!("Health: {} - Ammo: {}", core.health, ammo.0).to_string();
+        text.sections[0].value = format!("Health: {} - Ammo: {}", hp.0, ammo.0).to_string();
     }
 }

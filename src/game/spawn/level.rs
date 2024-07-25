@@ -21,9 +21,10 @@ pub(super) fn plugin(app: &mut App) {
 pub struct SpawnLevel;
 
 #[derive(Component, Debug)]
-pub struct Core {
-    pub health: u8,
-}
+pub struct Core;
+
+#[derive(Component, Debug)]
+pub struct Health(pub u8);
 
 #[derive(Component, Debug)]
 pub struct Wall;
@@ -47,7 +48,8 @@ fn spawn_level(
         },
         Collider::circle(PADDLE_RADIUS),
         RigidBody::Static,
-        Core { health: 5 },
+        Core,
+        Health(5),
         StateScoped(Screen::Game),
     ));
 

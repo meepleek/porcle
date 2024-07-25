@@ -61,8 +61,10 @@
 - [x] move gun barrel on shot
 - [x] tween stuff
 - [x] enemy death particles
-- [ ] enemy death flash
-- [ ] enemy shockwave
+- [ ] enemy health
+- [ ] enemy pushback on hit
+- [ ] enemy hit flash
+- [ ] enemy death shockwave
 - [ ] reflect particles
 - [ ] reflect shockwave
 - [ ] freeze frames on reflect?
