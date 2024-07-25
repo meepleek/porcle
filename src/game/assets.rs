@@ -1,4 +1,5 @@
 use bevy::{prelude::*, utils::HashMap};
+use bevy_enoki::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HandleMap<SfxKey>>();
@@ -6,6 +7,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.register_type::<HandleMap<SoundtrackKey>>();
     app.init_resource::<HandleMap<SoundtrackKey>>();
+    app.add_systems(Startup, setup_particles);
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
@@ -92,4 +94,40 @@ impl<K: AssetKey> HandleMap<K> {
         self.values()
             .all(|x| asset_server.is_loaded_with_dependencies(x))
     }
+}
+
+#[derive(Resource, Reflect)]
+#[reflect(Resource)]
+pub struct ParticleAssets {
+    pub circle_mat: Handle<SpriteParticle2dMaterial>,
+    pub gun: Handle<Particle2dEffect>,
+}
+
+impl ParticleAssets {
+    pub fn gun_particles(
+        &self,
+        transform: Transform,
+    ) -> ParticleSpawnerBundle<SpriteParticle2dMaterial> {
+        ParticleSpawnerBundle {
+            effect: self.gun.clone(),
+            material: self.circle_mat.clone(),
+            transform,
+            ..default()
+        }
+    }
+}
+
+fn setup_particles(
+    ass: Res<AssetServer>,
+    mut materials: ResMut<Assets<SpriteParticle2dMaterial>>,
+    mut cmd: Commands,
+) {
+    cmd.insert_resource(ParticleAssets {
+        circle_mat: materials.add(
+            // hframes and vframes define how the sprite sheet is divided for animations,
+            // if you just want to bind a single texture, leave both at 1.
+            SpriteParticle2dMaterial::new(ass.load("particles/circle.png"), 1, 1),
+        ),
+        gun: ass.load("particles/gun.particle.ron"),
+    });
 }
