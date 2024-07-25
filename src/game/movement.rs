@@ -393,14 +393,13 @@ fn handle_ball_collisions(
                 }
 
                 shake.add_trauma(
-                    0.05 + 0.1 * speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0),
+                    0.1 + 0.225 * speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0),
                 );
                 speed.0 *= 0.7;
                 let dir = vel.0.normalize_or_zero();
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 vel.0 = reflect * speed.0;
                 ball.last_reflection_time = time.elapsed_seconds();
-                shake.add_trauma(0.2);
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
                 shake.add_trauma(0.135);
