@@ -50,7 +50,8 @@
 - [x] reflect based on paddle hit position
 - [x] limit reflection angle
 - [x] never reflect behind paddle, always in front (mirror regular reflection angle)
-- [ ] limit paddle movement speed (angular vel)
+- [x] limit paddle movement speed (angular vel)
+- [x] make the core an aim dead zone
 - [ ] allow catching ball to aim it
 - [ ] add reflection/aim prediction UI
 

@@ -1,12 +1,10 @@
+use std::f32::consts::TAU;
+
 use avian2d::prelude::*;
 // use bevy::color::palettes::tailwind;
 use bevy::prelude::*;
 
-use crate::{
-    ext::{QuatExt, Vec2Ext},
-    game::spawn::paddle::PADDLE_COLL_HEIGHT,
-    AppSet,
-};
+use crate::{ext::QuatExt, game::spawn::paddle::PADDLE_COLL_HEIGHT, AppSet};
 
 use super::{
     input::CursorCoords,
@@ -36,13 +34,14 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+pub const BALL_BASE_SPEED: f32 = 250.;
+pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.35;
+
 #[derive(Component, Debug)]
 pub struct Velocity(pub Vec2);
 
 #[derive(Component, Debug)]
 pub struct Damping(pub f32);
-
-pub const BALL_BASE_SPEED: f32 = 250.;
 
 #[derive(Component, Debug)]
 pub struct BaseSpeed(pub f32);
@@ -132,10 +131,22 @@ fn process_input(_input: Res<ButtonInput<KeyCode>>, mut _cmd: Commands) {}
 fn rotate_paddle(
     mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
     cursor: Res<CursorCoords>,
+    time: Res<Time<Real>>,
 ) {
-    // todo: limit speed
     for mut t in rot_q.iter_mut() {
-        t.rotation = cursor.0.to_quat();
+        // limit rotation in the very center/deadzone
+        let deadzone_radius = 70.0;
+        let radius = cursor.0.length();
+        // deadzone multiplier with exponential decay
+        let deadzone_mult = (radius / deadzone_radius).min(1.).powf(3.0);
+        // keep in mind these angles are in radians
+        let current_angle = t.rotation.z_angle_rad();
+        let target_angle = cursor.0.to_angle();
+        let max_angle =
+            (time.delta_seconds() / PADDLE_REVOLUTION_DURATION_MIN) * TAU * deadzone_mult;
+        let target_delta = target_angle - current_angle;
+        let clamped_angle = current_angle + target_delta.clamp(-max_angle, max_angle);
+        t.rotation = Quat::from_rotation_z(clamped_angle);
     }
 }
 
