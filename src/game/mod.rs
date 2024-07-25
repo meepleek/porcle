@@ -10,6 +10,7 @@ pub mod input;
 mod movement;
 pub mod spawn;
 pub mod time;
+pub mod tween;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -21,5 +22,6 @@ pub(super) fn plugin(app: &mut App) {
         gun::plugin,
         core::plugin,
         time::plugin,
+        tween::plugin,
     ));
 }

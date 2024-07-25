@@ -1177,6 +1177,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_tweening"
+version = "0.11.0"
+source = "git+ssh://git@github.com/SecretPocketCat/bevy_tweening?rev=8dca8643b50d6ec23ece65158c56f81c0e111f86#8dca8643b50d6ec23ece65158c56f81c0e111f86"
+dependencies = [
+ "bevy",
+ "interpolation",
+]
+
+[[package]]
 name = "bevy_ui"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2498,6 +2507,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "interpolation"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e9c13ae9d91148fcb4aab6654c4c2a7d02a15395ea9e23f65170f175f8b269ce"
+
+[[package]]
 name = "io-kit-sys"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3562,7 +3577,9 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_trauma_shake",
+ "bevy_tweening",
  "log",
+ "paste",
  "rand",
 ]
 

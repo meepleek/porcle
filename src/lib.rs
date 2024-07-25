@@ -59,7 +59,7 @@ impl Plugin for AppPlugin {
         );
 
         // Add project plugins.
-        app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+        app.add_plugins((game::plugin, screen::plugin, ui::plugin ));
 
         // Add external plugins
         app.add_plugins((
