@@ -14,7 +14,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{AccumulatedRotation, Damping, Homing, MoveDirection, Speed, Velocity},
+    movement::{AccumulatedRotation, Damping, MoveDirection, Speed, Velocity},
     spawn::{
         ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
         enemy::Enemy,
@@ -42,16 +42,9 @@ fn balls_inside_core(
         if inside_core && inside.is_none() {
             cmd.entity(e).insert(InsideCore);
             cmd.entity(e).remove::<Damping>();
-            cmd.entity(e).remove::<Homing>();
         } else if !inside_core && inside.is_some() {
             cmd.entity(e).remove::<InsideCore>();
             cmd.entity(e).insert(Damping(0.5));
-            cmd.entity(e).insert(Homing {
-                max_distance: 300.,
-                max_factor: 10.,
-                factor_decay: 2.0,
-                max_angle: 25.,
-            });
         }
     }
 }
@@ -245,14 +238,33 @@ fn handle_ball_collisions(
                     continue;
                 }
 
-                shake.add_trauma(
-                    0.1 + 0.225 * speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0),
-                );
+                let speed_factor = speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0);
+
+                // shake
+                shake.add_trauma(0.1 + 0.225 * speed_factor);
+
+                // freeze movement
+                let cooldown = 0.085 + speed_factor * 0.125;
+                cmd.entity(ball_e)
+                    .insert(MovementPaused::cooldown(cooldown));
+                ball.last_reflection_time = time.elapsed_seconds() + cooldown;
+
+                // todo: need to fix
+                // // particles
+                // cmd.spawn((
+                //     particles.particle_spawner(
+                //         particles.reflection.clone(),
+                //         Transform::from_translation(hit.point1.extend(10.)).with_rotation(
+                //             Quat::from_rotation_z(-90f32.to_radians()) * hit.normal1.to_quat(),
+                //         ),
+                //     ),
+                //     OneShot::Despawn,
+                // ));
+
                 speed.0 *= 0.7;
                 let dir = vel.velocity().normalize_or_zero();
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 direction.0 = reflect;
-                ball.last_reflection_time = time.elapsed_seconds();
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
                 shake.add_trauma(0.135);
