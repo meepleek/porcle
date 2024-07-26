@@ -53,9 +53,10 @@ fn balls_inside_core(
             cmd.entity(e).insert(Damping(0.125));
             cmd.entity(e).insert(Homing {
                 max_distance: 300.,
-                max_factor: 15.,
+                max_factor: 80.,
                 factor_decay: 2.0,
-                max_angle: 35.,
+                max_angle: 70.,
+                speed_mult: Some(BALL_BASE_SPEED..(BALL_BASE_SPEED * 2.)),
             });
         }
     }

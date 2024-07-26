@@ -69,7 +69,7 @@
 - [ ] reflect shockwave
 - [x] reflect freeze frames
 - [ ] freeze frames on enemy kill
-- [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
+- [x] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [ ] change color
 - [x] add bloom
 - [ ] add vignette?

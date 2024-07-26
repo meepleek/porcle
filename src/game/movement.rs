@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use avian2d::math::Vector2;
 use bevy::prelude::*;
 
@@ -14,9 +16,10 @@ pub(super) fn plugin(app: &mut App) {
                 apply_damping,
                 compute_velocity.after(apply_damping),
                 apply_impulse.after(compute_velocity),
+                home.after(apply_impulse),
             )
                 .before(ApplyVelocitySet),
-            (apply_velocity, apply_homing_velocity).in_set(ApplyVelocitySet),
+            apply_velocity.in_set(ApplyVelocitySet),
             (accumulate_angle, follow).after(ApplyVelocitySet),
         ),
     );
@@ -84,6 +87,7 @@ pub struct Homing {
     pub max_factor: f32,
     pub factor_decay: f32,
     pub max_angle: f32,
+    pub speed_mult: Option<Range<f32>>,
 }
 
 #[derive(Component, Debug)]
@@ -146,11 +150,7 @@ fn apply_impulse(
 fn apply_velocity(
     mut move_q: Query<
         (&mut Transform, &Velocity),
-        (
-            Without<Homing>,
-            Without<MovementPaused>,
-            Without<Cooldown<MovementPaused>>,
-        ),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
     >,
 ) {
     for (mut t, vel) in &mut move_q {
@@ -158,15 +158,24 @@ fn apply_velocity(
     }
 }
 
-fn apply_homing_velocity(
+fn home(
     mut move_q: Query<
-        (&mut Transform, &mut Velocity, &MoveDirection, &Homing),
+        (&Transform, &mut Velocity, &MoveDirection, &Homing, &Speed),
         (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
     >,
     time: Res<Time>,
     target_q: Query<&GlobalTransform, With<HomingTarget>>,
 ) {
-    for (mut homing_t, mut vel, move_dir, homing) in &mut move_q {
+    for (homing_t, mut vel, move_dir, homing, speed) in &mut move_q {
+        let speed_factor = homing
+            .speed_mult
+            .as_ref()
+            .map_or(1., |range| speed.speed_factor(range.start, range.end));
+
+        if speed_factor <= 0. {
+            continue;
+        }
+
         let mut closest_distance = f32::MAX;
         let mut homing_target_dir = None;
 
@@ -199,6 +208,7 @@ fn apply_homing_velocity(
             let distance_factor = (1.0 - (closest_distance / homing.max_distance))
                 .powf(homing.factor_decay)
                 * homing.max_factor
+                * speed_factor
                 * time.delta_seconds();
             let homing_dir = (move_dir.0 * (1.0 - distance_factor) + target_dir * distance_factor)
                 .normalize_or_zero();
@@ -208,8 +218,6 @@ fn apply_homing_velocity(
             // todo: use if rotation is ever needed
             // homing_t.rotation = homing_dir.to_quat();
         }
-
-        homing_t.translation += vel.0.extend(0.);
     }
 }
 
