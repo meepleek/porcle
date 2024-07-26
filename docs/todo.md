@@ -62,16 +62,16 @@
 - [x] tween stuff
 - [x] enemy death particles
 - [x] enemy health
-- [ ] enemy knockback
+- [x] enemy knockback
 - [x] enemy hit flash
 - [ ] enemy death shockwave
-- [ ] reflect particles
+- [x] reflect particles
 - [ ] reflect shockwave
-- [ ] freeze frames on reflect?
+- [x] reflect freeze frames
 - [ ] freeze frames on enemy kill
 - [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [ ] change color
-- [x] add bloom (does it work on web yet?)
+- [x] add bloom
 - [ ] add vignette?
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed

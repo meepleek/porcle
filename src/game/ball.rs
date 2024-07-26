@@ -1,14 +1,19 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, EaseFunction};
 
-use crate::game::{
-    movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
-    tween::get_relative_translation_tween,
+use crate::{
+    ext::Vec2Ext,
+    game::{
+        movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
+        tween::get_relative_translation_tween,
+    },
 };
 
 use super::{
+    assets::ParticleAssets,
     movement::{AccumulatedRotation, Damping, Homing, MoveDirection, Speed, Velocity},
     spawn::{
         ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
@@ -120,6 +125,7 @@ fn handle_ball_collisions(
     mut cmd: Commands,
     time: Res<Time>,
     mut shake: Shakes,
+    particles: Res<ParticleAssets>,
 ) {
     for (
         ball_e,
@@ -187,6 +193,14 @@ fn handle_ball_collisions(
                     shake.add_trauma(
                         0.15 + 0.15 * speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 2.0),
                     );
+                    cmd.spawn((
+                        particles.particle_spawner(
+                            particles.reflection.clone(),
+                            Transform::from_translation(hit.point1.extend(10.))
+                                .with_rotation(paddle_t.up().truncate().to_quat()),
+                        ),
+                        OneShot::Despawn,
+                    ));
                     // clamp to min speed in case the ball has come back to core
                     speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
                     // aim the ball based on where it landed on the paddle
@@ -204,7 +218,11 @@ fn handle_ball_collisions(
                         3..=5 => 2,
                         _ => 3,
                     };
-                    ball.last_reflection_time = time.elapsed_seconds();
+                    let cooldown =
+                        0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
+                    cmd.entity(ball_e)
+                        .insert(MovementPaused::cooldown(cooldown));
+                    ball.last_reflection_time = time.elapsed_seconds() + cooldown;
                     debug!(ammo=?ammo.0, "added ammo");
 
                     // tween

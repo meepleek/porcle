@@ -102,6 +102,7 @@ pub struct ParticleAssets {
     pub circle_mat: Handle<SpriteParticle2dMaterial>,
     pub gun: Handle<Particle2dEffect>,
     pub enemy: Handle<Particle2dEffect>,
+    pub reflection: Handle<Particle2dEffect>,
 }
 
 impl ParticleAssets {
@@ -132,5 +133,6 @@ fn setup_particles(
         ),
         gun: ass.load("particles/gun.particle.ron"),
         enemy: ass.load("particles/enemy.particle.ron"),
+        reflection: ass.load("particles/reflection.particle.ron"),
     });
 }

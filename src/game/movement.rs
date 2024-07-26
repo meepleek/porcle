@@ -3,10 +3,13 @@ use bevy::prelude::*;
 
 use crate::ext::QuatExt;
 
+use super::time::{process_cooldown, Cooldown};
+
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(First, add_velocity).add_systems(
         Update,
         (
+            process_cooldown::<MovementPaused>,
             (
                 apply_damping,
                 compute_velocity.after(apply_damping),
@@ -63,6 +66,12 @@ pub struct Impulse(pub Vec2);
 #[derive(Component, Debug)]
 pub struct MovementPaused;
 
+impl MovementPaused {
+    pub fn cooldown(duration_s: f32) -> Cooldown<MovementPaused> {
+        Cooldown::new(duration_s)
+    }
+}
+
 impl Speed {
     pub fn speed_factor(&self, min: f32, max: f32) -> f32 {
         ((self.0 - min) / max).clamp(0., 1.)
@@ -93,7 +102,13 @@ pub struct AccumulatedRotation {
 }
 
 fn add_velocity(
-    add_q: Query<Entity, (Added<MoveDirection>, Without<Velocity>)>,
+    add_q: Query<
+        Entity,
+        (
+            Added<MoveDirection>,
+            (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+        ),
+    >,
     mut cmd: Commands,
 ) {
     for e in &add_q {
@@ -102,7 +117,10 @@ fn add_velocity(
 }
 
 fn compute_velocity(
-    mut move_q: Query<(&MoveDirection, &Speed, &mut Velocity), Without<MovementPaused>>,
+    mut move_q: Query<
+        (&MoveDirection, &Speed, &mut Velocity),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
     time: Res<Time>,
 ) {
     for (dir, speed, mut vel) in &mut move_q {
@@ -111,7 +129,10 @@ fn compute_velocity(
 }
 
 fn apply_impulse(
-    mut impulse_q: Query<(&mut Impulse, &mut Velocity), Without<MovementPaused>>,
+    mut impulse_q: Query<
+        (&mut Impulse, &mut Velocity),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
     time: Res<Time>,
 ) {
     for (mut impulse, mut vel) in &mut impulse_q {
@@ -123,7 +144,14 @@ fn apply_impulse(
 }
 
 fn apply_velocity(
-    mut move_q: Query<(&mut Transform, &Velocity), (Without<Homing>, Without<MovementPaused>)>,
+    mut move_q: Query<
+        (&mut Transform, &Velocity),
+        (
+            Without<Homing>,
+            Without<MovementPaused>,
+            Without<Cooldown<MovementPaused>>,
+        ),
+    >,
 ) {
     for (mut t, vel) in &mut move_q {
         t.translation += vel.0.extend(0.);
@@ -133,7 +161,14 @@ fn apply_velocity(
 fn apply_homing_velocity(
     mut move_q: Query<(&mut Transform, &mut Velocity, &MoveDirection, &Homing)>,
     time: Res<Time>,
-    target_q: Query<&GlobalTransform, (With<HomingTarget>, Without<MovementPaused>)>,
+    target_q: Query<
+        &GlobalTransform,
+        (
+            With<HomingTarget>,
+            Without<MovementPaused>,
+            Without<Cooldown<MovementPaused>>,
+        ),
+    >,
 ) {
     for (mut homing_t, mut vel, move_dir, homing) in &mut move_q {
         let mut closest_distance = f32::MAX;
@@ -177,7 +212,10 @@ fn apply_homing_velocity(
 }
 
 fn apply_damping(
-    mut damping_q: Query<(&mut Velocity, &Damping, Option<&mut Speed>), Without<MovementPaused>>,
+    mut damping_q: Query<
+        (&mut Velocity, &Damping, Option<&mut Speed>),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
     time: Res<Time>,
 ) {
     for (mut vel, damping, speed) in &mut damping_q {
