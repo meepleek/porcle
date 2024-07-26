@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{BaseSpeed, Damping, Velocity},
+    movement::{Damping, Speed, Velocity},
     spawn::{
         enemy::Enemy,
         level::Health,
@@ -124,14 +124,14 @@ fn fire_gun(
 
 fn handle_collisions(
     phys_spatial: SpatialQuery,
-    ball_q: Query<(Entity, &GlobalTransform, &Projectile, &Velocity, &BaseSpeed)>,
+    ball_q: Query<(Entity, &GlobalTransform, &Projectile, &Velocity, &Speed)>,
     mut enemy_q: Query<(&GlobalTransform, &Enemy, &mut Health)>,
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
 ) {
     for (e, t, projectile, vel, speed) in &ball_q {
-        if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
+        if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
             // stationary
             continue;
         }
@@ -140,7 +140,7 @@ fn handle_collisions(
             &Collider::rectangle(projectile.size.x, projectile.size.y),
             t.translation().truncate(),
             0.,
-            Dir2::new(vel.0).expect("Non zero velocity"),
+            Dir2::new(vel.velocity()).expect("Non zero velocity"),
             (speed.0 * 1.05) * time.delta_seconds(),
             100,
             false,
@@ -192,7 +192,7 @@ fn handle_collisions(
                             150,
                         )),
                     ));
-                    // todo: kickback
+                    // knockback
                 }
             }
         }

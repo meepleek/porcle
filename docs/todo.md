@@ -61,9 +61,9 @@
 - [x] move gun barrel on shot
 - [x] tween stuff
 - [x] enemy death particles
-- [ ] enemy health
-- [ ] enemy pushback on hit
-- [ ] enemy hit flash
+- [x] enemy health
+- [ ] enemy knockback
+- [x] enemy hit flash
 - [ ] enemy death shockwave
 - [ ] reflect particles
 - [ ] reflect shockwave

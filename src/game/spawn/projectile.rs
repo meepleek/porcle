@@ -6,7 +6,7 @@ use bevy::{
 };
 
 use crate::{
-    game::movement::{BaseSpeed, Damping, Velocity},
+    game::movement::{Damping, MovementBundle},
     screen::Screen,
 };
 
@@ -35,7 +35,6 @@ fn spawn_projectile(
     let ev = trigger.event();
     let x = 15.;
     let y = 35.;
-    let speed = 1800.;
     let mesh_e = cmd
         .spawn(MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
@@ -48,9 +47,8 @@ fn spawn_projectile(
         SpatialBundle::from_transform(ev.transform),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        Velocity(ev.dir.as_vec2() * speed),
+        MovementBundle::new(ev.dir.as_vec2(), 1800.),
         Damping(2.5),
-        BaseSpeed(speed),
         Projectile {
             size: Vec2::new(x, y),
             mesh_e,

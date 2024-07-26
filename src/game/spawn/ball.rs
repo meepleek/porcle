@@ -5,7 +5,10 @@ use bevy::{
 };
 
 use crate::{
-    game::movement::{BaseSpeed, Velocity, BALL_BASE_SPEED},
+    game::{
+        ball::BALL_BASE_SPEED,
+        movement::{MovementBundle, Velocity},
+    },
     screen::Screen,
 };
 
@@ -67,8 +70,7 @@ fn spawn_ball(
             transform: Transform::from_xyz(0.0, 0.0, 0.9),
             ..default()
         },
-        Velocity(dir * BALL_BASE_SPEED),
-        BaseSpeed(BALL_BASE_SPEED),
+        MovementBundle::new(dir.as_vec2(), BALL_BASE_SPEED),
         Ball::default(),
         PaddleReflectionCount(0),
         StateScoped(Screen::Game),
@@ -79,7 +81,10 @@ fn despawn_stationary_balls(
     mut cmd: Commands,
     ball_q: Query<(Entity, &Velocity), (With<Ball>, Without<InsideCore>)>,
 ) {
-    for (e, _) in ball_q.iter().filter(|(_, vel)| vel.0.length() < 10.) {
+    for (e, _) in ball_q
+        .iter()
+        .filter(|(_, vel)| vel.velocity().length() < 10.)
+    {
         cmd.entity(e).despawn_recursive();
     }
 }

@@ -10,7 +10,7 @@ use rand::prelude::*;
 
 use crate::{
     ext::Vec2Ext,
-    game::movement::{HomingTarget, Velocity},
+    game::movement::{HomingTarget, MovementBundle},
     screen::Screen,
 };
 
@@ -79,7 +79,7 @@ fn spawn_enemy(
                         .with_rotation(ev.position.to_quat()),
                 ),
                 Collider::triangle(a, b, c),
-                Velocity(-ev.position.normalize_or_zero() * 30.),
+                MovementBundle::new(-ev.position.normalize_or_zero(), 30.),
                 HomingTarget,
                 Enemy {
                     mesh_e,
