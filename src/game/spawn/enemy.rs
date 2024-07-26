@@ -28,6 +28,7 @@ pub(super) fn plugin(app: &mut App) {
 pub struct SpawnEnemy {
     pub kind: EnemyKind,
     pub position: Vec2,
+    pub speed: f32,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -45,7 +46,8 @@ fn spawner(mut cmd: Commands) {
     let mut rng = thread_rng();
     cmd.trigger(SpawnEnemy {
         kind: EnemyKind::Crawler,
-        position: Vec2::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0)).normalize() * 720.,
+        position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * 720.,
+        speed: rng.gen_range(25.0..40.0),
     });
 }
 
@@ -79,7 +81,7 @@ fn spawn_enemy(
                         .with_rotation(ev.position.to_quat()),
                 ),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), 30.),
+                MovementBundle::new(-ev.position.normalize_or_zero(), ev.speed),
                 HomingTarget,
                 Enemy {
                     mesh_e,

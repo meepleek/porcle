@@ -191,8 +191,6 @@ fn apply_homing_velocity(
 
                 closest_distance = distance;
                 homing_target_dir = Some(target_dir);
-
-                info!(t=?target_t.translation(), el=target_t.translation().abs().max_element(), "close");
             }
         }
 
