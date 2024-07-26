@@ -267,7 +267,15 @@ fn handle_ball_collisions(
                 direction.0 = reflect;
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
-                shake.add_trauma(0.135);
+                shake.add_trauma(0.15);
+
+                cmd.spawn((
+                    particles.particle_spawner(
+                        particles.enemy.clone(),
+                        Transform::from_translation(hit.point1.extend(10.)),
+                    ),
+                    OneShot::Despawn,
+                ));
 
                 // todo: try - boost speed on hit
             }
