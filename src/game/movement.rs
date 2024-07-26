@@ -131,12 +131,11 @@ fn apply_velocity(
 }
 
 fn apply_homing_velocity(
-    mut move_q: Query<(&mut Transform, &mut Velocity, &Homing)>,
+    mut move_q: Query<(&mut Transform, &mut Velocity, &MoveDirection, &Homing)>,
     time: Res<Time>,
     target_q: Query<&GlobalTransform, (With<HomingTarget>, Without<MovementPaused>)>,
 ) {
-    for (mut homing_t, mut vel, homing) in &mut move_q {
-        let dir = vel.0.normalize_or_zero();
+    for (mut homing_t, mut vel, move_dir, homing) in &mut move_q {
         let mut closest_distance = f32::MAX;
         let mut homing_target_dir = None;
 
@@ -147,7 +146,7 @@ fn apply_homing_velocity(
                 let target_dir = (target_t.translation() - homing_t.translation)
                     .normalize()
                     .truncate();
-                let angle = dir.angle_between(target_dir).to_degrees().abs();
+                let angle = move_dir.angle_between(target_dir).to_degrees().abs();
 
                 if angle > homing.max_angle {
                     continue;
@@ -164,8 +163,8 @@ fn apply_homing_velocity(
                 .powf(homing.factor_decay)
                 * homing.max_factor
                 * time.delta_seconds();
-            let homing_dir =
-                (dir * (1.0 - distance_factor) + target_dir * distance_factor).normalize_or_zero();
+            let homing_dir = (move_dir.0 * (1.0 - distance_factor) + target_dir * distance_factor)
+                .normalize_or_zero();
             let speed = vel.0.length();
             vel.0 = homing_dir * speed;
 
