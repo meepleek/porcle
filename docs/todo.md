@@ -72,7 +72,7 @@
 - [x] add bloom
 - [ ] add vignette?
 - [ ] add chromatic abberation
-- [ ] boost PP effects based on current ball speed
+- [x] boost PP effects based on current ball speed
 - [ ] circle/anullus transition
 - [ ] add reflection/aim prediction UI
 

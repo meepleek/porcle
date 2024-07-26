@@ -2,6 +2,7 @@
 mod dev_tools;
 mod ext;
 mod game;
+mod math;
 mod screen;
 mod ui;
 
@@ -15,6 +16,7 @@ use bevy::{
 pub struct AppPlugin;
 
 pub const WINDOW_SIZE: f32 = 1024.;
+pub const BLOOM_BASE: f32 = 0.15;
 
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
@@ -108,7 +110,7 @@ fn spawn_camera(mut commands: Commands) {
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
         BloomSettings {
-            intensity: 0.15,
+            intensity: BLOOM_BASE,
             high_pass_frequency: 0.5,
             low_frequency_boost: 0.3,
             low_frequency_boost_curvature: 0.7,

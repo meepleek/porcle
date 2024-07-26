@@ -1,5 +1,7 @@
+use std::cmp::Ordering;
+
 use avian2d::prelude::*;
-use bevy::{color::palettes::tailwind, prelude::*};
+use bevy::{color::palettes::tailwind, core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, EaseFunction};
@@ -10,7 +12,8 @@ use crate::{
         movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
         tween::get_relative_translation_tween,
     },
-    WINDOW_SIZE,
+    math::asymptotic_smoothing_with_delta_time,
+    BLOOM_BASE, WINDOW_SIZE,
 };
 
 use super::{
@@ -28,18 +31,23 @@ use super::{
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
-    app.add_systems(
+    app.init_resource::<MaxBallSpeedFactor>().add_systems(
         Update,
         (
             reload_balls,
             balls_inside_core,
             handle_ball_collisions,
             color_ball,
+            boost_postprocessing_based_on_ball_speed,
+            update_ball_speed_factor,
         ),
     );
 }
 
 pub const BALL_BASE_SPEED: f32 = 250.;
+
+#[derive(Resource, Debug, Default, Deref, DerefMut)]
+struct MaxBallSpeedFactor(f32);
 
 #[derive(Component, Debug)]
 struct ShapecastNearestEnemy;
@@ -352,16 +360,43 @@ fn handle_ball_collisions(
 }
 
 fn color_ball(
-    ball_q: Query<(&Handle<ColorMaterial>, &Speed)>,
+    ball_q: Query<&Handle<ColorMaterial>, With<Ball>>,
     mut mats: ResMut<Assets<ColorMaterial>>,
+    factor: Res<MaxBallSpeedFactor>,
 ) {
-    for (handle, speed) in &ball_q {
+    for handle in &ball_q {
         if let Some(mat) = mats.get_mut(handle) {
             mat.color = lerp_color(
                 tailwind::RED_400.into(),
                 tailwind::AMBER_300.into(),
-                speed.speed_factor(BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5),
+                factor.0,
             );
         }
+    }
+}
+
+fn update_ball_speed_factor(
+    ball_q: Query<&Speed, With<Ball>>,
+    mut factor: ResMut<MaxBallSpeedFactor>,
+    time: Res<Time>,
+) {
+    factor.0 = asymptotic_smoothing_with_delta_time(
+        factor.0,
+        ball_q
+            .iter()
+            .map(|speed| speed.speed_factor(BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5))
+            .max_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal))
+            .unwrap_or(1.),
+        0.1,
+        time.delta_seconds(),
+    );
+}
+
+fn boost_postprocessing_based_on_ball_speed(
+    factor: Res<MaxBallSpeedFactor>,
+    mut bloom_q: Query<&mut BloomSettings>,
+) {
+    for mut bloom in &mut bloom_q {
+        bloom.intensity = BLOOM_BASE + 0.175 * factor.0;
     }
 }
