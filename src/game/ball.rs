@@ -268,7 +268,7 @@ fn handle_ball_collisions(
             } else if enemy_q.contains(hit_e) {
                 cmd.entity(hit_e).despawn_recursive();
                 shake.add_trauma(0.15);
-
+                // particles
                 cmd.spawn((
                     particles.square_particle_spawner(
                         particles.enemy.clone(),
@@ -276,6 +276,12 @@ fn handle_ball_collisions(
                     ),
                     OneShot::Despawn,
                 ));
+                // freeze
+                let speed_factor =
+                    speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 1.75);
+                let cooldown = 0.08 + speed_factor * 0.12;
+                cmd.entity(ball_e)
+                    .insert(MovementPaused::cooldown(cooldown));
 
                 // todo: try - boost speed on hit
             }
