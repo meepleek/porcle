@@ -200,7 +200,7 @@ fn handle_collisions(
                         )),
                     ));
                     // knockback
-                    impulse.0 += move_dir.0 * 70.;
+                    impulse.0 += move_dir.0 * 30.;
                 }
             }
         }

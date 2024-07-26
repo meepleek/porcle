@@ -115,9 +115,10 @@ fn apply_impulse(
     time: Res<Time>,
 ) {
     for (mut impulse, mut vel) in &mut impulse_q {
-        vel.0 += impulse.0 * time.delta_seconds();
+        let mult_delta = time.delta_seconds() * 6.5;
+        vel.0 += impulse.0 * mult_delta;
         // fixme: this is incorrect, but that can wait after the jam
-        impulse.0 *= 1. - time.delta_seconds();
+        impulse.0 *= 1. - mult_delta;
     }
 }
 
