@@ -44,7 +44,7 @@ fn balls_inside_core(
             cmd.entity(e).remove::<Damping>();
         } else if !inside_core && inside.is_some() {
             cmd.entity(e).remove::<InsideCore>();
-            cmd.entity(e).insert(Damping(0.5));
+            cmd.entity(e).insert(Damping(0.125));
         }
     }
 }
@@ -195,7 +195,7 @@ fn handle_ball_collisions(
                         OneShot::Despawn,
                     ));
                     // clamp to min speed in case the ball has come back to core
-                    speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
+                    speed.0 = (speed.0 * 1.225).clamp(BALL_BASE_SPEED, BALL_BASE_SPEED * 5.0);
                     // aim the ball based on where it landed on the paddle
                     // the further it lands from the center, the greater the reflection angle
                     // if x is positive, then the hit is from outside => this aims the new dir back into the core
@@ -261,7 +261,7 @@ fn handle_ball_collisions(
                 //     OneShot::Despawn,
                 // ));
 
-                speed.0 *= 0.7;
+                speed.0 *= 0.9;
                 let dir = vel.velocity().normalize_or_zero();
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 direction.0 = reflect;
