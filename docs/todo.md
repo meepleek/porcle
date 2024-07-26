@@ -70,8 +70,6 @@
 - [x] try auto-targeting closing ball enemy in cone of vision instead of homing
 - [x] change ball color
 - [x] add bloom
-- [ ] add vignette?
-- [ ] add chromatic abberation
 - [x] boost PP effects based on current ball speed
 - [ ] circle/anullus transition
 - [ ] add reflection/aim prediction UI
@@ -88,9 +86,15 @@
 - [ ] ball destroys enemy projectiles
 
 
+## extra VFX - v0.7.0
+
+- [ ] add vignette?
+- [ ] add chromatic abberation
+
 ## upgrades - v0.x.0
 
 ## scrapped
+
 - [ ] enemy death shockwave
 - [ ] reflect shockwave
 - [ ] ball trail
