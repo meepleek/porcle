@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use avian2d::prelude::*;
 use bevy::{color::palettes::tailwind, core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_enoki::prelude::OneShot;
-use bevy_trauma_shake::Shakes;
+use bevy_trauma_shake::{ShakeSettings, Shakes};
 use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
@@ -40,6 +40,7 @@ pub(super) fn plugin(app: &mut App) {
             color_ball,
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
+            update_trauma_based_on_ball_speed,
         ),
     );
 }
@@ -47,7 +48,7 @@ pub(super) fn plugin(app: &mut App) {
 pub const BALL_BASE_SPEED: f32 = 250.;
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
-struct MaxBallSpeedFactor(f32);
+pub struct MaxBallSpeedFactor(pub f32);
 
 #[derive(Component, Debug)]
 struct ShapecastNearestEnemy;
@@ -398,5 +399,16 @@ fn boost_postprocessing_based_on_ball_speed(
 ) {
     for mut bloom in &mut bloom_q {
         bloom.intensity = BLOOM_BASE + 0.175 * factor.0;
+    }
+}
+
+fn update_trauma_based_on_ball_speed(
+    factor: Res<MaxBallSpeedFactor>,
+    mut shake_q: Query<&mut ShakeSettings>,
+) {
+    for mut shake in &mut shake_q {
+        shake.decay_per_second = 0.9 + 0.1 * factor.0;
+        shake.amplitude = 25.0 - 10. * factor.0;
+        shake.trauma_power = 1.5 + 0.5 * factor.0;
     }
 }

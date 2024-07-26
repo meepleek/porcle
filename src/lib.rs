@@ -12,6 +12,7 @@ use bevy::{
     core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
     prelude::*,
 };
+use bevy_trauma_shake::ShakeSettings;
 
 pub struct AppPlugin;
 
@@ -109,6 +110,7 @@ fn spawn_camera(mut commands: Commands) {
         // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
+        ShakeSettings::default(),
         BloomSettings {
             intensity: BLOOM_BASE,
             high_pass_frequency: 0.5,

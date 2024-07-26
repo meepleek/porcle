@@ -11,6 +11,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
+    ball::MaxBallSpeedFactor,
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     spawn::{
         enemy::Enemy,
@@ -55,10 +56,10 @@ fn fire_gun(
     mut cmd: Commands,
     mut shake: Shakes,
     particles: Res<ParticleAssets>,
+    ball_speed_factor: Res<MaxBallSpeedFactor>,
 ) {
-    if input.just_pressed(MouseButton::Left) {
+    if input.pressed(MouseButton::Left) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
-            // todo: cooldown
             if ammo.0 > 0 {
                 let dir = Dir2::new(t.right().truncate()).unwrap();
                 let rot = t.up().truncate().to_quat();
@@ -70,9 +71,10 @@ fn fire_gun(
                     .with_rotation(rot),
                 });
                 ammo.0 -= 1;
-                shake.add_trauma(0.125);
-                // todo: UI for shoot delay
-                cmd.entity(e).insert(Cooldown::<PaddleAmmo>::new(0.14));
+                shake.add_trauma(0.155 - 0.03 * ball_speed_factor.0);
+                cmd.entity(e).insert(Cooldown::<PaddleAmmo>::new(
+                    0.17 - 0.08 * ball_speed_factor.0,
+                ));
 
                 // tween
                 // barrel
