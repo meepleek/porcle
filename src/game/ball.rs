@@ -1,5 +1,5 @@
 use avian2d::prelude::*;
-use bevy::prelude::*;
+use bevy::{color::palettes::tailwind, prelude::*};
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, EaseFunction};
@@ -23,13 +23,19 @@ use super::{
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation, PADDLE_RADIUS},
     },
     time::Cooldown,
+    tween::lerp_color,
 };
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
     app.add_systems(
         Update,
-        (reload_balls, balls_inside_core, handle_ball_collisions),
+        (
+            reload_balls,
+            balls_inside_core,
+            handle_ball_collisions,
+            color_ball,
+        ),
     );
 }
 
@@ -341,6 +347,21 @@ fn handle_ball_collisions(
                     break;
                 }
             }
+        }
+    }
+}
+
+fn color_ball(
+    ball_q: Query<(&Handle<ColorMaterial>, &Speed)>,
+    mut mats: ResMut<Assets<ColorMaterial>>,
+) {
+    for (handle, speed) in &ball_q {
+        if let Some(mat) = mats.get_mut(handle) {
+            mat.color = lerp_color(
+                tailwind::RED_400.into(),
+                tailwind::AMBER_300.into(),
+                speed.speed_factor(BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5),
+            );
         }
     }
 }

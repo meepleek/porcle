@@ -174,7 +174,7 @@ color_lens!(Sprite, SpriteRelativeColorLens, color);
 color_lens!(BackgroundColor, UiBackgroundColorLens, 0);
 color_lens!(ColorMaterial, ColorMaterialRelativeColorLens, color);
 
-fn lerp_color(from: Color, to: Color, ratio: f32) -> Color {
+pub fn lerp_color(from: Color, to: Color, ratio: f32) -> Color {
     let start = from.to_linear().to_vec4();
     let end: Vec4 = to.to_linear().to_vec4();
     let lerped = start.lerp(end, ratio);

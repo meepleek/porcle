@@ -64,21 +64,17 @@
 - [x] enemy health
 - [x] enemy knockback
 - [x] enemy hit flash
-- [ ] enemy death shockwave
 - [x] reflect particles
-- [ ] reflect shockwave
 - [x] reflect freeze frames
-- [ ] freeze frames on enemy kill
+- [x] freeze frames on enemy kill
 - [x] try auto-targeting closing ball enemy in cone of vision instead of homing
-- [ ] change color
+- [x] change ball color
 - [x] add bloom
 - [ ] add vignette?
 - [ ] add chromatic abberation
 - [ ] boost PP effects based on current ball speed
 - [ ] circle/anullus transition
 - [ ] add reflection/aim prediction UI
-- [ ] ball trail
-- [ ] paddle trail
 
 ## audio - v0.5.0
 
@@ -93,3 +89,9 @@
 
 
 ## upgrades - v0.x.0
+
+## scrapped
+- [ ] enemy death shockwave
+- [ ] reflect shockwave
+- [ ] ball trail
+- [ ] paddle trail
