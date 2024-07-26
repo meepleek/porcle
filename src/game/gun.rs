@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{Damping, Speed, Velocity},
+    movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     spawn::{
         enemy::Enemy,
         level::Health,
@@ -124,13 +124,20 @@ fn fire_gun(
 
 fn handle_collisions(
     phys_spatial: SpatialQuery,
-    ball_q: Query<(Entity, &GlobalTransform, &Projectile, &Velocity, &Speed)>,
-    mut enemy_q: Query<(&GlobalTransform, &Enemy, &mut Health)>,
+    ball_q: Query<(
+        Entity,
+        &GlobalTransform,
+        &Projectile,
+        &Velocity,
+        &MoveDirection,
+        &Speed,
+    )>,
+    mut enemy_q: Query<(&GlobalTransform, &Enemy, &mut Health, &mut Impulse)>,
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
 ) {
-    for (e, t, projectile, vel, speed) in &ball_q {
+    for (e, t, projectile, vel, move_dir, speed) in &ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
             // stationary
             continue;
@@ -140,14 +147,14 @@ fn handle_collisions(
             &Collider::rectangle(projectile.size.x, projectile.size.y),
             t.translation().truncate(),
             0.,
-            Dir2::new(vel.velocity()).expect("Non zero velocity"),
+            Dir2::new(move_dir.0).expect("Non zero velocity"),
             (speed.0 * 1.05) * time.delta_seconds(),
             100,
             false,
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((enemy_t, enemy, mut enemy_hp)) = enemy_q.get_mut(hit.entity) {
+            if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse)) = enemy_q.get_mut(hit_e) {
                 cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
                 cmd.entity(projectile.mesh_e).insert((
                     get_relative_scale_anim(
@@ -193,6 +200,7 @@ fn handle_collisions(
                         )),
                     ));
                     // knockback
+                    impulse.0 += move_dir.0 * 70.;
                 }
             }
         }

@@ -1,3 +1,4 @@
+use avian2d::math::Vector2;
 use bevy::prelude::*;
 
 use crate::ext::QuatExt;
@@ -25,6 +26,7 @@ pub struct ApplyVelocitySet;
 pub struct MovementBundle {
     direction: MoveDirection,
     speed: Speed,
+    impulse: Impulse,
 }
 
 impl MovementBundle {
@@ -32,6 +34,7 @@ impl MovementBundle {
         Self {
             direction: MoveDirection(dir),
             speed: Speed(speed),
+            impulse: Impulse(Vector2::ZERO),
         }
     }
 }
@@ -54,9 +57,8 @@ pub struct Damping(pub f32);
 #[derive(Component, Debug, Default, Deref, DerefMut)]
 pub struct Speed(pub f32);
 
-#[derive(Component, Debug, Deref, DerefMut)]
-#[component(storage = "SparseSet")]
-pub struct Impulse(pub f32);
+#[derive(Component, Debug, Default, Deref, DerefMut)]
+pub struct Impulse(pub Vec2);
 
 #[derive(Component, Debug)]
 pub struct MovementPaused;
@@ -101,28 +103,29 @@ fn add_velocity(
 
 fn compute_velocity(
     mut move_q: Query<(&MoveDirection, &Speed, &mut Velocity), Without<MovementPaused>>,
+    time: Res<Time>,
 ) {
     for (dir, speed, mut vel) in &mut move_q {
-        vel.0 = dir.0 * speed.0;
+        vel.0 = dir.0 * speed.0 * time.delta_seconds();
     }
 }
 
 fn apply_impulse(
-    mut impulse_q: Query<(Entity, &Impulse, &mut Velocity), Without<MovementPaused>>,
-    mut cmd: Commands,
+    mut impulse_q: Query<(&mut Impulse, &mut Velocity), Without<MovementPaused>>,
+    time: Res<Time>,
 ) {
-    for (e, impulse, mut vel) in &mut impulse_q {
-        vel.0 += impulse.0;
-        cmd.entity(e).remove::<Impulse>();
+    for (mut impulse, mut vel) in &mut impulse_q {
+        vel.0 += impulse.0 * time.delta_seconds();
+        // fixme: this is incorrect, but that can wait after the jam
+        impulse.0 *= 1. - time.delta_seconds();
     }
 }
 
 fn apply_velocity(
     mut move_q: Query<(&mut Transform, &Velocity), (Without<Homing>, Without<MovementPaused>)>,
-    time: Res<Time>,
 ) {
     for (mut t, vel) in &mut move_q {
-        t.translation += (vel.0 * time.delta_seconds()).extend(0.);
+        t.translation += vel.0.extend(0.);
     }
 }
 
@@ -169,7 +172,7 @@ fn apply_homing_velocity(
             // homing_t.rotation = homing_dir.to_quat();
         }
 
-        homing_t.translation += (vel.0 * time.delta_seconds()).extend(0.);
+        homing_t.translation += vel.0.extend(0.);
     }
 }
 
