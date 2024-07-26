@@ -1,7 +1,7 @@
 use avian2d::math::Vector2;
 use bevy::prelude::*;
 
-use crate::ext::QuatExt;
+use crate::{ext::QuatExt, WINDOW_SIZE};
 
 use super::time::{process_cooldown, Cooldown};
 
@@ -159,22 +159,24 @@ fn apply_velocity(
 }
 
 fn apply_homing_velocity(
-    mut move_q: Query<(&mut Transform, &mut Velocity, &MoveDirection, &Homing)>,
-    time: Res<Time>,
-    target_q: Query<
-        &GlobalTransform,
-        (
-            With<HomingTarget>,
-            Without<MovementPaused>,
-            Without<Cooldown<MovementPaused>>,
-        ),
+    mut move_q: Query<
+        (&mut Transform, &mut Velocity, &MoveDirection, &Homing),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
     >,
+    time: Res<Time>,
+    target_q: Query<&GlobalTransform, With<HomingTarget>>,
 ) {
     for (mut homing_t, mut vel, move_dir, homing) in &mut move_q {
         let mut closest_distance = f32::MAX;
         let mut homing_target_dir = None;
 
         for target_t in target_q.iter() {
+            // todo: need to fix this
+            if target_t.translation().abs().max_element() > (WINDOW_SIZE / 2.0 - 50.) {
+                // outside window
+                continue;
+            }
+
             let distance = homing_t.translation.distance(target_t.translation());
 
             if distance < closest_distance && distance <= homing.max_distance {
@@ -189,6 +191,8 @@ fn apply_homing_velocity(
 
                 closest_distance = distance;
                 homing_target_dir = Some(target_dir);
+
+                info!(t=?target_t.translation(), el=target_t.translation().abs().max_element(), "close");
             }
         }
 

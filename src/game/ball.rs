@@ -10,17 +10,19 @@ use crate::{
         movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
         tween::get_relative_translation_tween,
     },
+    WINDOW_SIZE,
 };
 
 use super::{
     assets::ParticleAssets,
-    movement::{AccumulatedRotation, Damping, MoveDirection, Speed, Velocity},
+    movement::{AccumulatedRotation, Damping, Homing, MoveDirection, Speed, Velocity},
     spawn::{
         ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation, PADDLE_RADIUS},
     },
+    time::Cooldown,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -33,6 +35,9 @@ pub(super) fn plugin(app: &mut App) {
 
 pub const BALL_BASE_SPEED: f32 = 250.;
 
+#[derive(Component, Debug)]
+struct ShapecastNearestEnemy;
+
 fn balls_inside_core(
     mut cmd: Commands,
     ball_q: Query<(Entity, &GlobalTransform, Option<&InsideCore>), With<Ball>>,
@@ -42,9 +47,16 @@ fn balls_inside_core(
         if inside_core && inside.is_none() {
             cmd.entity(e).insert(InsideCore);
             cmd.entity(e).remove::<Damping>();
+            cmd.entity(e).remove::<Homing>();
         } else if !inside_core && inside.is_some() {
             cmd.entity(e).remove::<InsideCore>();
             cmd.entity(e).insert(Damping(0.125));
+            cmd.entity(e).insert(Homing {
+                max_distance: 300.,
+                max_factor: 15.,
+                factor_decay: 2.0,
+                max_angle: 35.,
+            });
         }
     }
 }
@@ -106,6 +118,13 @@ fn handle_ball_collisions(
         &mut Speed,
         &mut PaddleReflectionCount,
     )>,
+    ball_shapecast_q: Query<
+        (),
+        (
+            With<ShapecastNearestEnemy>,
+            Without<Cooldown<MovementPaused>>,
+        ),
+    >,
     mut paddle_q: Query<(
         Entity,
         &mut PaddleAmmo,
@@ -113,7 +132,7 @@ fn handle_ball_collisions(
         &Paddle,
         &mut PaddleMode,
     )>,
-    enemy_q: Query<(), With<Enemy>>,
+    enemy_q: Query<&GlobalTransform, With<Enemy>>,
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
@@ -135,7 +154,6 @@ fn handle_ball_collisions(
             // stationary ball
             continue;
         }
-        // gizmos.circle_2d(t.translation().truncate(), ball.0, tailwind::AMBER_600);
         for hit in phys_spatial.shape_hits(
             &Collider::circle(ball.radius),
             ball_t.translation().truncate(),
@@ -246,7 +264,7 @@ fn handle_ball_collisions(
                 // freeze movement
                 let cooldown = 0.085 + speed_factor * 0.125;
                 cmd.entity(ball_e)
-                    .insert(MovementPaused::cooldown(cooldown));
+                    .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 ball.last_reflection_time = time.elapsed_seconds() + cooldown;
 
                 // todo: need to fix
@@ -281,9 +299,46 @@ fn handle_ball_collisions(
                     speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 1.75);
                 let cooldown = 0.08 + speed_factor * 0.12;
                 cmd.entity(ball_e)
-                    .insert(MovementPaused::cooldown(cooldown));
+                    .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
 
-                // todo: try - boost speed on hit
+                // todo: shapecast cone/triangle & try to find lowest angle coupled with nearest - this can still miss, but we don't wanna be doing predictions 'cause we're lazy
+
+                // todo: try - boost speed on hit or maybe actually take a slight speed hit
+            }
+        }
+
+        if ball_shapecast_q.get(ball_e).is_ok() {
+            cmd.entity(ball_e).remove::<ShapecastNearestEnemy>();
+            debug!("shapecasting nearest enemy");
+            let radius = 170.;
+            let origin = ball_t.translation().truncate() + direction.0 * 150.;
+            // gizmos.circle_2d(origin, radius, tailwind::AMBER_700);
+            for hit in phys_spatial
+                .shape_hits(
+                    &Collider::circle(radius),
+                    origin,
+                    0.,
+                    Dir2::new(direction.0).expect("Non zero velocity"),
+                    (speed.0 * 1.05) * time.delta_seconds(),
+                    100,
+                    true,
+                    SpatialQueryFilter::default(),
+                )
+                .iter()
+            {
+                if let Ok(enemy_t) = enemy_q.get(hit.entity) {
+                    let enemy_pos = enemy_t.translation();
+                    if enemy_pos.abs().max_element() > (WINDOW_SIZE / 2. - 50.) {
+                        // outside window
+                        continue;
+                    }
+
+                    debug!(pos = ?enemy_t.translation(), "nearest enemy");
+                    direction.0 = (enemy_t.translation() - ball_t.translation())
+                        .truncate()
+                        .normalize_or_zero();
+                    break;
+                }
             }
         }
     }

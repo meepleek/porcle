@@ -59,8 +59,6 @@ fn spawn_ball(
     let dir = Dir2::new(Vec2::X).unwrap();
     // let dir = Dir2::new(-Vec2::Y).unwrap();
 
-    // todo: switch to shapecaster instead?
-    // or fix the collision weirdness
     cmd.spawn((
         MaterialMesh2dBundle {
             mesh: Mesh2dHandle(meshes.add(Circle {
