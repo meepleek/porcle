@@ -270,7 +270,7 @@ fn handle_ball_collisions(
                 shake.add_trauma(0.15);
 
                 cmd.spawn((
-                    particles.particle_spawner(
+                    particles.square_particle_spawner(
                         particles.enemy.clone(),
                         Transform::from_translation(hit.point1.extend(10.)),
                     ),

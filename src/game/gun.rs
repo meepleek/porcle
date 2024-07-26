@@ -176,7 +176,7 @@ fn handle_collisions(
                         DespawnOnTweenCompleted::Entity(hit_e),
                     ));
                     cmd.spawn((
-                        particles.particle_spawner(
+                        particles.square_particle_spawner(
                             particles.enemy.clone(),
                             Transform::from_translation(enemy_t.translation()),
                         ),

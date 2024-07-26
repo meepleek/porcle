@@ -106,6 +106,19 @@ pub struct ParticleAssets {
 }
 
 impl ParticleAssets {
+    pub fn square_particle_spawner(
+        &self,
+        effect: Handle<Particle2dEffect>,
+        transform: Transform,
+    ) -> ParticleSpawnerBundle<ColorParticle2dMaterial> {
+        ParticleSpawnerBundle {
+            effect,
+            material: DEFAULT_MATERIAL,
+            transform,
+            ..default()
+        }
+    }
+
     pub fn particle_spawner(
         &self,
         effect: Handle<Particle2dEffect>,
