@@ -3,10 +3,12 @@ use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, AssetAnimator, Delay, EaseFunction};
+use rand::thread_rng;
 use std::time::Duration;
 
 use crate::{
-    ext::Vec2Ext, game::spawn::projectile::SpawnProjectile, game::tween::get_relative_scale_anim,
+    ext::{RandExt, Vec2Ext},
+    game::{spawn::projectile::SpawnProjectile, tween::get_relative_scale_anim},
 };
 
 use super::{
@@ -61,8 +63,10 @@ fn fire_gun(
     if input.pressed(MouseButton::Left) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
             if ammo.0 > 0 {
-                let dir = Dir2::new(t.right().truncate()).unwrap();
-                let rot = t.up().truncate().to_quat();
+                let mut rng = thread_rng();
+                let accuracy = rng.rotation_range_degrees(4.5);
+                let dir = Dir2::new(accuracy * t.right().truncate()).unwrap();
+                let rot = (accuracy * t.up().truncate()).to_quat();
                 cmd.trigger(SpawnProjectile {
                     dir,
                     transform: Transform::from_translation(

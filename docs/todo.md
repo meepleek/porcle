@@ -65,7 +65,7 @@
 
 - [x] CCW rotation adds ammo, CW twice reloads ball
 - [x] randomise initial ball angle
-- [ ] bullet accurracy (couple degrees)
+- [x] gun accurracy (couple degrees rng)
 - [ ] ammo capacity
 - [ ] ammo UI
 - [ ] health UI
