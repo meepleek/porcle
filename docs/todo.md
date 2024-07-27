@@ -2,24 +2,13 @@
 
 ## Overview
 
-- circle pong
+- circle pong - the core holds the ball
 - reflecting the ball adds the current mult to points
-- circling the paddle around raises the mult
-- points can be used for upgrades
-- possibly add a timer
-- upgrading slows ball, but also resets mult
-- upgrades initially show only the price, but the upgrade itself are just ???
-
-
-## Upgrades
-
-- shield
-- bigger paddle
-- add another paddle
-- raise starting mult
-- add time
-- slowmo meter
-- add extra scoring ball (different color?) that scores but doesn't lose the game
+- circling the paddle around adds ammo or respawns ball
+- enemies come from outside & try to attack the core
+- hitting the core lowers it's HP
+- both the paddle gun & the ball are effective weapons
+- kill count as score
 
 ## proto - v0.1.0
 
@@ -106,6 +95,7 @@
 - [ ] faster shooting
 - [ ] bigger ammo reflection
 - [ ] greater ammo capacity
+- [ ] paddle size
 
 ## extra VFX - v0.7.0
 
