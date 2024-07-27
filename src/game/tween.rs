@@ -171,6 +171,14 @@ impl Lens<Text> for TextRelativeColorLens {
 }
 
 color_lens!(Sprite, SpriteRelativeColorLens, color);
+relative_tween_fns!(
+    sprite_color,
+    Animator,
+    Sprite,
+    SpriteRelativeColorLens,
+    Color,
+    Color
+);
 color_lens!(BackgroundColor, UiBackgroundColorLens, 0);
 color_lens!(ColorMaterial, ColorMaterialRelativeColorLens, color);
 

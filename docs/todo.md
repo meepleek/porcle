@@ -77,9 +77,9 @@
 - [x] boost speed outside core?
 - [x] make core actually smaller than paddle radius
 - [x] fix initial ball respawn direction (incorrect after rotating)
-- [ ] health UI
 - [x] ammo capacity
 - [x] ammo UI
+- [x] health UI
 - [ ] circle/anullus transition
 - [ ] tween in lvl elements
 - [ ] spawn initial ball after a delay

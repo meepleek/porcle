@@ -8,7 +8,6 @@ use bevy::{
 };
 
 use crate::{
-    ext::QuatExt,
     game::assets::{HandleMap, ParticleAssets, SpriteKey},
     screen::Screen,
     WINDOW_SIZE,
@@ -16,22 +15,25 @@ use crate::{
 
 use super::{
     ball::SpawnBall,
-    paddle::{Paddle, PaddleAmmo, PaddleRotation, SpawnPaddle},
+    paddle::{Paddle, SpawnPaddle},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level)
-        .add_systems(Update, (add_ball_to_paddle, rotate_gears, update_ammo_fill));
+        .add_systems(Update, (add_ball_to_paddle,));
 }
 
 pub const CORE_RADIUS: f32 = 90.0;
 pub const AMMO_FILL_RADIUS: f32 = 34.0;
+pub const GEAR_COUNT: u8 = 8;
 
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
 
 #[derive(Component, Debug)]
-pub struct Core;
+pub struct Core {
+    pub gear_entity_ids: Vec<(Entity, bool)>,
+}
 
 #[derive(Component, Debug)]
 pub struct Health(pub u8);
@@ -41,8 +43,8 @@ pub struct Wall;
 
 #[derive(Component, Debug)]
 pub struct Gear {
-    even: bool,
-    offset: Rot2,
+    pub even: bool,
+    pub offset: Rot2,
 }
 
 #[derive(Component, Debug)]
@@ -56,15 +58,44 @@ fn spawn_level(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    let cog_entity_ids: Vec<_> = (0..GEAR_COUNT)
+        .map(|i| {
+            let rot = Rot2::degrees((360f32 / GEAR_COUNT as f32) * i as f32 + 90.);
+            let angle = rot.as_radians() + 18f32.to_radians();
+            cmd.spawn((
+                Name::new("small_gear"),
+                SpriteBundle {
+                    texture: sprites.get(&SpriteKey::GearSmall).unwrap().clone(),
+                    transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
+                        .with_rotation(Quat::from_rotation_z(angle)),
+                    ..default()
+                },
+                Gear {
+                    even: i % 2 == 0,
+                    offset: Rot2::radians(angle),
+                },
+            ))
+            .id()
+        })
+        .collect();
+
     cmd.spawn((
         Name::new("core"),
         SpatialBundle::default(),
         Collider::circle(CORE_RADIUS),
         RigidBody::Static,
-        Core,
-        Health(5),
+        Core {
+            gear_entity_ids: cog_entity_ids
+                .iter()
+                .cloned()
+                .map(|e| (e, true))
+                .rev()
+                .collect(),
+        },
+        Health(GEAR_COUNT),
         StateScoped(Screen::Game),
     ))
+    .push_children(&cog_entity_ids)
     .with_children(|b| {
         // big gear
         b.spawn((
@@ -98,25 +129,6 @@ fn spawn_level(
             },
         ));
 
-        // small gear
-        let small_gear_count = 8;
-        for i in 0..small_gear_count {
-            let rot = Rot2::degrees((360f32 / small_gear_count as f32) * i as f32);
-            let angle = rot.as_radians() + 18f32.to_radians();
-            b.spawn((
-                Name::new("small_gear"),
-                SpriteBundle {
-                    texture: sprites.get(&SpriteKey::GearSmall).unwrap().clone(),
-                    transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
-                        .with_rotation(Quat::from_rotation_z(angle)),
-                    ..default()
-                },
-                Gear {
-                    even: i % 2 == 0,
-                    offset: Rot2::radians(angle),
-                },
-            ));
-        }
         //particles
         b.spawn((particles.particle_spawner(particles.core.clone(), Transform::default()),));
     });
@@ -143,37 +155,5 @@ fn spawn_level(
 fn add_ball_to_paddle(paddle_q: Query<Entity, Added<Paddle>>, mut cmd: Commands) {
     for paddle_e in &paddle_q {
         cmd.trigger(SpawnBall { paddle_e });
-    }
-}
-
-fn rotate_gears(
-    paddle_rot_q: Query<&Transform, With<PaddleRotation>>,
-    mut gear_q: Query<(&mut Transform, &Gear), Without<PaddleRotation>>,
-) {
-    if let Some(paddle_t) = paddle_rot_q.iter().next() {
-        for (mut gear_t, gear) in &mut gear_q {
-            gear_t.rotation = Quat::from_rotation_z(
-                (gear.offset.as_radians() + paddle_t.rotation.z_angle_rad())
-                    * (if gear.even { 1. } else { -1. }),
-            );
-        }
-    }
-}
-
-fn update_ammo_fill(
-    ammo_q: Query<&PaddleAmmo, Changed<PaddleAmmo>>,
-    ammo_fill_q: Query<Entity, With<AmmoFill>>,
-    mut cmd: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-) {
-    if let Some(ammo) = ammo_q.iter().next() {
-        for e in &ammo_fill_q {
-            cmd.entity(e)
-                .try_insert(Mesh2dHandle(meshes.add(CircularSegment::from_turns(
-                    AMMO_FILL_RADIUS,
-                    // not sure why, but the segments fills at 95% already
-                    ammo.factor() * 0.95,
-                ))));
-        }
     }
 }
