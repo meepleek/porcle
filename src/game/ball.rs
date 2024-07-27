@@ -18,7 +18,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{Damping, Homing, MoveDirection, Speed, Velocity},
+    movement::{Homing, MoveDirection, Speed, Velocity},
     spawn::{
         ball::{Ball, InsideCore, BALL_BASE_RADIUS},
         enemy::Enemy,
@@ -67,11 +67,9 @@ fn balls_inside_core(
         let inside_core = t.translation().length() < PADDLE_RADIUS * 1.1;
         if inside_core && inside.is_none() {
             cmd.entity(e).insert(InsideCore);
-            cmd.entity(e).remove::<Damping>();
             cmd.entity(e).remove::<Homing>();
         } else if !inside_core && inside.is_some() {
             cmd.entity(e).remove::<InsideCore>();
-            cmd.entity(e).insert(Damping(0.125));
             cmd.entity(e).insert(Homing {
                 max_distance: 300.,
                 max_factor: 80.,
