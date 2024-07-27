@@ -216,13 +216,12 @@ fn handle_ball_collisions(
                     direction.0 = new_dir;
 
                     // ammo
-                    ammo.0 += ball_speed_factor.ammo_bonus();
+                    ammo.offset(ball_speed_factor.ammo_bonus() as isize);
                     let cooldown =
                         0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
                     cmd.entity(ball_e)
                         .insert(MovementPaused::cooldown(cooldown));
                     ball.last_reflection_time = time.elapsed_seconds() + cooldown;
-                    debug!(ammo=?ammo.0, "added ammo");
 
                     // tween
                     cmd.entity(paddle.mesh_e).insert(Animator::new(

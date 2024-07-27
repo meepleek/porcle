@@ -1,7 +1,11 @@
 //! Spawn the main level by triggering other observers.
 
 use avian2d::prelude::*;
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::tailwind,
+    prelude::*,
+    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
+};
 
 use crate::{
     ext::QuatExt,
@@ -12,15 +16,16 @@ use crate::{
 
 use super::{
     ball::SpawnBall,
-    paddle::{Paddle, PaddleRotation, SpawnPaddle},
+    paddle::{Paddle, PaddleAmmo, PaddleRotation, SpawnPaddle},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level)
-        .add_systems(Update, (add_ball_to_paddle, rotate_gears));
+        .add_systems(Update, (add_ball_to_paddle, rotate_gears, update_ammo_fill));
 }
 
 pub const CORE_RADIUS: f32 = 90.0;
+pub const AMMO_FILL_RADIUS: f32 = 34.0;
 
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
@@ -40,13 +45,19 @@ pub struct Gear {
     offset: Rot2,
 }
 
+#[derive(Component, Debug)]
+pub struct AmmoFill;
+
 fn spawn_level(
     _trigger: Trigger<SpawnLevel>,
     mut cmd: Commands,
     sprites: Res<HandleMap<SpriteKey>>,
     particles: Res<ParticleAssets>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     cmd.spawn((
+        Name::new("core"),
         SpatialBundle::default(),
         Collider::circle(CORE_RADIUS),
         RigidBody::Static,
@@ -57,13 +68,36 @@ fn spawn_level(
     .with_children(|b| {
         // big gear
         b.spawn((
-            Name::new("big_gear"),
+            Name::new("ammo_sprite"),
             SpriteBundle {
-                texture: sprites.get(&SpriteKey::GearBig).unwrap().clone(),
+                texture: sprites.get(&SpriteKey::Ammo).unwrap().clone(),
+                transform: Transform::from_translation(Vec3::Z * 0.3),
+                ..default()
+            },
+        ));
+
+        b.spawn((
+            Name::new("ammo_fill"),
+            AmmoFill,
+            MaterialMesh2dBundle {
+                // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
+                material: materials.add(ColorMaterial::from_color(tailwind::GREEN_400)),
+                transform: Transform::from_translation(Vec3::Z * 0.2)
+                    .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
+                ..default()
+            },
+        ));
+
+        b.spawn((
+            Name::new("ammo_bg"),
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS))),
+                material: materials.add(ColorMaterial::from_color(tailwind::GRAY_800)),
                 transform: Transform::from_translation(Vec3::Z * 0.1),
                 ..default()
             },
         ));
+
         // small gear
         let small_gear_count = 8;
         for i in 0..small_gear_count {
@@ -122,6 +156,24 @@ fn rotate_gears(
                 (gear.offset.as_radians() + paddle_t.rotation.z_angle_rad())
                     * (if gear.even { 1. } else { -1. }),
             );
+        }
+    }
+}
+
+fn update_ammo_fill(
+    ammo_q: Query<&PaddleAmmo, Changed<PaddleAmmo>>,
+    ammo_fill_q: Query<Entity, With<AmmoFill>>,
+    mut cmd: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
+    if let Some(ammo) = ammo_q.iter().next() {
+        for e in &ammo_fill_q {
+            cmd.entity(e)
+                .try_insert(Mesh2dHandle(meshes.add(CircularSegment::from_turns(
+                    AMMO_FILL_RADIUS,
+                    // not sure why, but the segments fills at 95% already
+                    ammo.factor() * 0.95,
+                ))));
         }
     }
 }

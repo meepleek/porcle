@@ -62,7 +62,7 @@ fn fire_gun(
 ) {
     if input.pressed(MouseButton::Left) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
-            if ammo.0 > 0 {
+            if ammo.ammo() > 0 {
                 let mut rng = thread_rng();
                 let accuracy = rng.rotation_range_degrees(4.5);
                 let dir = Dir2::new(accuracy * t.right().truncate()).unwrap();
@@ -74,7 +74,7 @@ fn fire_gun(
                     )
                     .with_rotation(rot),
                 });
-                ammo.0 -= 1;
+                ammo.offset(-1);
                 shake.add_trauma(0.155 - 0.03 * ball_speed_factor.0);
                 cmd.entity(e).insert(Cooldown::<PaddleAmmo>::new(
                     0.17 - 0.08 * ball_speed_factor.0,

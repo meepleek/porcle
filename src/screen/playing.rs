@@ -83,6 +83,6 @@ fn update_state_text(
 ) {
     if let (Ok(hp), Ok(ammo)) = (core_q.get_single(), ammo_q.get_single()) {
         let mut text = text_q.single_mut();
-        text.sections[0].value = format!("Health: {} - Ammo: {}", hp.0, ammo.0).to_string();
+        text.sections[0].value = format!("Health: {} - Ammo: {}", hp.0, ammo.ammo()).to_string();
     }
 }

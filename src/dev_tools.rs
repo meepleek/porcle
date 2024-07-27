@@ -21,7 +21,7 @@ pub(super) fn plugin(app: &mut App) {
 fn process_debug_input(input: Res<ButtonInput<KeyCode>>, mut ammo_q: Query<&mut PaddleAmmo>) {
     if input.just_pressed(KeyCode::NumpadAdd) {
         for mut ammo in &mut ammo_q {
-            ammo.0 += 10;
+            ammo.offset(10);
         }
     }
 }

@@ -101,7 +101,7 @@ fn apply_cycle_effects(
         } else if (angle.rotation - paddle_rot.ccw_start) >= 360f32.to_radians() {
             // CCW (positive angle)
             for mut ammo in &mut ammo_q {
-                ammo.0 += ball_speed_factor.ammo_bonus();
+                ammo.offset(ball_speed_factor.ammo_bonus() as isize);
             }
             paddle_rot.reset(angle.rotation);
         } else if angle.rotation > paddle_rot.cw_start {

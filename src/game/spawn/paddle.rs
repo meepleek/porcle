@@ -66,8 +66,25 @@ impl PaddleRotation {
     }
 }
 
-#[derive(Component, Debug, Default)]
-pub struct PaddleAmmo(pub usize);
+#[derive(Component, Debug)]
+pub struct PaddleAmmo {
+    ammo: usize,
+    capacity: usize,
+}
+
+impl PaddleAmmo {
+    pub fn ammo(&self) -> usize {
+        self.ammo
+    }
+
+    pub fn offset(&mut self, delta: isize) {
+        self.ammo = ((self.ammo as isize + delta) as usize).clamp(0, self.capacity);
+    }
+
+    pub fn factor(&self) -> f32 {
+        self.ammo as f32 / self.capacity as f32
+    }
+}
 
 fn spawn_paddle(
     _trigger: Trigger<SpawnPaddle>,
@@ -131,7 +148,10 @@ fn spawn_paddle(
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
             Paddle { mesh_e, barrel_e },
             PaddleMode::Reflect,
-            PaddleAmmo::default(),
+            PaddleAmmo {
+                capacity: 50,
+                ammo: 0,
+            },
         ))
         .add_child(mesh_e)
         .id();

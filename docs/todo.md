@@ -77,11 +77,9 @@
 - [x] boost speed outside core?
 - [x] make core actually smaller than paddle radius
 - [x] fix initial ball respawn direction (incorrect after rotating)
-- [ ] resize cam to fit the game
-- [ ] add black bars to sides
-- [ ] ammo capacity
-- [ ] ammo UI
 - [ ] health UI
+- [x] ammo capacity
+- [x] ammo UI
 - [ ] circle/anullus transition
 - [ ] tween in lvl elements
 - [ ] spawn initial ball after a delay
@@ -92,6 +90,8 @@
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
+- [ ] resize cam to fit the game
+- [ ] add black bars to sides
 
 ## audio - v0.6.0
 
