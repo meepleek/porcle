@@ -36,6 +36,16 @@ impl QuatExt for Quat {
     }
 }
 
+pub trait Rot2Ext {
+    fn to_quat(self) -> Quat;
+}
+
+impl Rot2Ext for Rot2 {
+    fn to_quat(self) -> Quat {
+        Quat::from_rotation_z(self.as_radians())
+    }
+}
+
 pub trait RandExt {
     fn rotation(&mut self) -> Rot2;
     fn rotation_range_degrees(&mut self, degrees: f32) -> Rot2;

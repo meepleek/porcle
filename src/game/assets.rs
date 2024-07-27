@@ -2,12 +2,39 @@ use bevy::{prelude::*, utils::HashMap};
 use bevy_enoki::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
+    app.register_type::<HandleMap<SpriteKey>>();
+    app.init_resource::<HandleMap<SpriteKey>>();
+
     app.register_type::<HandleMap<SfxKey>>();
     app.init_resource::<HandleMap<SfxKey>>();
 
     app.register_type::<HandleMap<SoundtrackKey>>();
     app.init_resource::<HandleMap<SoundtrackKey>>();
     app.add_systems(Startup, setup_particles);
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
+pub enum SpriteKey {
+    GearSmall,
+    GearBig,
+}
+
+impl AssetKey for SpriteKey {
+    type Asset = Image;
+}
+
+impl FromWorld for HandleMap<SpriteKey> {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.resource::<AssetServer>();
+        [
+            (
+                SpriteKey::GearSmall,
+                asset_server.load("images/gear_small.png"),
+            ),
+            (SpriteKey::GearBig, asset_server.load("images/gear_big.png")),
+        ]
+        .into()
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
@@ -103,6 +130,7 @@ pub struct ParticleAssets {
     pub gun: Handle<Particle2dEffect>,
     pub enemy: Handle<Particle2dEffect>,
     pub reflection: Handle<Particle2dEffect>,
+    pub core: Handle<Particle2dEffect>,
 }
 
 impl ParticleAssets {
@@ -147,5 +175,6 @@ fn setup_particles(
         gun: ass.load("particles/gun.particle.ron"),
         enemy: ass.load("particles/enemy.particle.ron"),
         reflection: ass.load("particles/reflection.particle.ron"),
+        core: ass.load("particles/core.particle.ron"),
     });
 }
