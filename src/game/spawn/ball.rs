@@ -31,6 +31,12 @@ pub struct Ball {
 #[derive(Component, Debug)]
 pub struct PaddleReflectionCount(pub usize);
 
+impl PaddleReflectionCount {
+    pub fn ammo_bonus(&self) -> usize {
+        (self.0 / 2).min(5)
+    }
+}
+
 #[derive(Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct InsideCore;

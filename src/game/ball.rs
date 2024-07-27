@@ -18,12 +18,12 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{AccumulatedRotation, Damping, Homing, MoveDirection, Speed, Velocity},
+    movement::{Damping, Homing, MoveDirection, Speed, Velocity},
     spawn::{
-        ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
+        ball::{Ball, InsideCore, PaddleReflectionCount},
         enemy::Enemy,
         level::Wall,
-        paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation, PADDLE_RADIUS},
+        paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
     },
     time::Cooldown,
     tween::lerp_color,
@@ -34,7 +34,6 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<MaxBallSpeedFactor>().add_systems(
         Update,
         (
-            reload_balls,
             balls_inside_core,
             handle_ball_collisions,
             color_ball,
@@ -74,51 +73,6 @@ fn balls_inside_core(
                 speed_mult: Some(BALL_BASE_SPEED..(BALL_BASE_SPEED * 2.)),
             });
         }
-    }
-}
-
-fn reload_balls(
-    mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
-    mut cmd: Commands,
-    time: Res<Time>,
-    ball_q: Query<Option<&InsideCore>, With<Ball>>,
-) {
-    if !ball_q.is_empty() && ball_q.iter().any(|inside| inside.is_some()) {
-        for (mut paddle_rot, angle) in rot_q.iter_mut() {
-            paddle_rot.reset(angle.rotation);
-        }
-        return;
-    }
-
-    // todo: limit speed
-    for (mut paddle_rot, angle) in rot_q.iter_mut() {
-        let min_rot = 355.0f32.to_radians();
-
-        // CW (negative angle)
-        if ((angle.rotation - paddle_rot.cw_start) <= -min_rot) ||
-            // CCW (positive angle)
-            ((angle.rotation - paddle_rot.ccw_start) >= min_rot)
-        {
-            paddle_rot.reset(angle.rotation);
-            cmd.trigger(SpawnBall);
-        } else if angle.rotation > paddle_rot.cw_start {
-            paddle_rot.cw_start = angle.rotation;
-        } else if angle.rotation < paddle_rot.ccw_start {
-            paddle_rot.ccw_start = angle.rotation;
-        }
-
-        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_seconds();
-        if delta < 1. {
-            // reset if rotation doesn't change for a while
-            paddle_rot.timer.tick(time.delta());
-            if paddle_rot.timer.just_finished() {
-                paddle_rot.reset(angle.rotation);
-            }
-        } else {
-            paddle_rot.timer.reset()
-        }
-
-        paddle_rot.prev_rot = angle.rotation;
     }
 }
 
@@ -239,12 +193,7 @@ fn handle_ball_collisions(
 
                     // ammo
                     paddle_reflection_count.0 += 1;
-                    ammo.0 += match paddle_reflection_count.0 {
-                        0 => 0,
-                        1..=2 => 1,
-                        3..=5 => 2,
-                        _ => 3,
-                    };
+                    ammo.0 += paddle_reflection_count.ammo_bonus();
                     let cooldown =
                         0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
                     cmd.entity(ball_e)

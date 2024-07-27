@@ -8,10 +8,10 @@ use crate::{
 
 use super::{
     input::CursorCoords,
-    movement::{MoveDirection, MovementPaused},
+    movement::{AccumulatedRotation, MoveDirection, MovementPaused},
     spawn::{
-        ball::Ball,
-        paddle::{PaddleMode, PaddleRotation},
+        ball::{Ball, PaddleReflectionCount, SpawnBall},
+        paddle::{PaddleAmmo, PaddleMode, PaddleRotation},
     },
 };
 
@@ -19,7 +19,11 @@ pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
     app.add_systems(
         Update,
-        (process_input.in_set(AppSet::ProcessInput), rotate_paddle),
+        (
+            process_input.in_set(AppSet::ProcessInput),
+            rotate_paddle,
+            apply_cycle_effects,
+        ),
     );
 }
 
@@ -76,5 +80,50 @@ fn rotate_paddle(
         let clamped_angle =
             current_angle * Rot2::radians(target_delta.clamp(-max_delta, max_delta));
         t.rotation = Quat::from_rotation_z(clamped_angle.as_radians());
+    }
+}
+
+fn apply_cycle_effects(
+    mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
+    mut ammo_q: Query<&mut PaddleAmmo>,
+    ball_q: Query<&PaddleReflectionCount, With<Ball>>,
+    mut cmd: Commands,
+    time: Res<Time>,
+) {
+    for (mut paddle_rot, angle) in rot_q.iter_mut() {
+        if (angle.rotation - paddle_rot.cw_start) <= -720f32.to_radians() {
+            // CW (negative angle)
+            paddle_rot.reset(angle.rotation);
+            cmd.trigger(SpawnBall);
+        } else if (angle.rotation - paddle_rot.ccw_start) >= 360f32.to_radians() {
+            let ammo_bonus = ball_q
+                .iter()
+                .map(|reflection_count| reflection_count.ammo_bonus())
+                .max()
+                .unwrap_or(1);
+
+            // CCW (positive angle)
+            for mut ammo in &mut ammo_q {
+                ammo.0 += ammo_bonus;
+            }
+            paddle_rot.reset(angle.rotation);
+        } else if angle.rotation > paddle_rot.cw_start {
+            paddle_rot.cw_start = angle.rotation;
+        } else if angle.rotation < paddle_rot.ccw_start {
+            paddle_rot.ccw_start = angle.rotation;
+        }
+
+        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_seconds();
+        if delta < 3. {
+            // reset if rotation doesn't change for a while
+            paddle_rot.timer.tick(time.delta());
+            if paddle_rot.timer.just_finished() {
+                paddle_rot.reset(angle.rotation);
+            }
+        } else {
+            paddle_rot.timer.reset()
+        }
+
+        paddle_rot.prev_rot = angle.rotation;
     }
 }

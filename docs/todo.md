@@ -71,12 +71,22 @@
 - [x] change ball color
 - [x] add bloom
 - [x] boost PP effects based on current ball speed
+
+## Missing stuff - v0.5.0
+
+- [x] CCW rotation adds ammo, CW twice reloads ball
+- [ ] randomise initial ball angle
+- [ ] bullet accurracy (couple degrees)
+- [ ] ammo capacity
+- [ ] ammo UI
+- [ ] health UI
 - [ ] circle/anullus transition
 - [ ] add reflection/aim prediction UI
+- [ ] score - just kill count
 
-## audio - v0.5.0
+## audio - v0.6.0
 
-## enemies - v0.6.0
+## enemies - v0.7.0
 
 - [ ] improve crawler
 - [ ] slower crawler that has to be hit by the ball (shielded)
@@ -85,13 +95,20 @@
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
 
+## upgrades - v0.x.0
+
+- [ ] health
+- [ ] max health
+- [ ] more homing
+- [ ] ball grows bigger
+- [ ] faster shooting
+- [ ] bigger ammo reflection
+- [ ] greater ammo capacity
 
 ## extra VFX - v0.7.0
 
 - [ ] add vignette?
 - [ ] add chromatic abberation
-
-## upgrades - v0.x.0
 
 ## scrapped
 
