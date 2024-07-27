@@ -12,7 +12,7 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
 }
 
-pub const PADDLE_RADIUS: f32 = 240.0;
+pub const PADDLE_RADIUS: f32 = 260.0;
 pub const PADDLE_HEIGHT: f32 = 120.0;
 pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 10.;
 
