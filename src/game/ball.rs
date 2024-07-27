@@ -20,7 +20,7 @@ use super::{
     assets::ParticleAssets,
     movement::{Damping, Homing, MoveDirection, Speed, Velocity},
     spawn::{
-        ball::{Ball, InsideCore},
+        ball::{Ball, InsideCore, BALL_BASE_RADIUS},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
@@ -37,6 +37,7 @@ pub(super) fn plugin(app: &mut App) {
             balls_inside_core,
             handle_ball_collisions,
             color_ball,
+            scale_ball,
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
             update_trauma_based_on_ball_speed,
@@ -323,6 +324,15 @@ fn color_ball(
                 factor.0,
             );
         }
+    }
+}
+
+// todo:
+fn scale_ball(mut ball_q: Query<(&mut Transform, &mut Ball)>, factor: Res<MaxBallSpeedFactor>) {
+    for (mut ball_t, mut ball) in &mut ball_q {
+        let scale = 1.0 + factor.0 * 0.45;
+        ball.radius = scale * BALL_BASE_RADIUS;
+        ball_t.scale = Vec2::splat(scale).extend(1.);
     }
 }
 

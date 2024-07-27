@@ -70,9 +70,11 @@
 - [x] captured ball loses speed
 - [x] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
 - [x] disallow catching ball from outside
-- [ ] spawn ball in captured position instead of in the center
-- [ ] reset capture status on ball respawn
-- [ ] grow ball based on speed
+- [x] spawn ball in captured position instead of in the center
+- [x] reset capture status on ball respawn
+- [x] grow ball based on speed
+- [ ] fix initial ball boost (probably incorrect value when no balls)
+- [ ] boost speed outside core?
 - [ ] ammo capacity
 - [ ] ammo UI
 - [ ] health UI
@@ -83,6 +85,9 @@
 - [ ] score - just kill count
 - [ ] spawn rate based on score
 - [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [ ] ball move particles
+- [ ] paddle move particles
+- [ ] enemy move particles
 
 ## audio - v0.6.0
 
