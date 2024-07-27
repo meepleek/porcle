@@ -10,11 +10,12 @@ use crate::{screen::Screen, WINDOW_SIZE};
 
 use super::{
     ball::SpawnBall,
-    paddle::{SpawnPaddle, PADDLE_RADIUS},
+    paddle::{Paddle, SpawnPaddle, PADDLE_RADIUS},
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_level);
+    app.observe(spawn_level)
+        .add_systems(Update, add_ball_to_paddle);
 }
 
 #[derive(Event, Debug)]
@@ -54,7 +55,6 @@ fn spawn_level(
     ));
 
     cmd.trigger(SpawnPaddle);
-    cmd.trigger(SpawnBall);
 
     let half_size = WINDOW_SIZE / 2.;
 
@@ -70,5 +70,11 @@ fn spawn_level(
             Wall,
             StateScoped(Screen::Game),
         ));
+    }
+}
+
+fn add_ball_to_paddle(paddle_q: Query<Entity, Added<Paddle>>, mut cmd: Commands) {
+    for paddle_e in &paddle_q {
+        cmd.trigger(SpawnBall { paddle_e });
     }
 }

@@ -51,6 +51,7 @@ fn process_input(
                         .truncate()
                         .normalize_or_zero();
                         move_dir.0 = dir;
+                        info!(?dir, "found my ball");
                         cmd.entity(ball_e)
                             .remove_parent_in_place()
                             .remove::<MovementPaused>();
@@ -95,7 +96,9 @@ fn apply_cycle_effects(
         if (angle.rotation - paddle_rot.cw_start) <= -720f32.to_radians() {
             // CW (negative angle)
             paddle_rot.reset(angle.rotation);
-            cmd.trigger(SpawnBall);
+            cmd.trigger(SpawnBall {
+                paddle_e: paddle_rot.paddle_e,
+            });
         } else if (angle.rotation - paddle_rot.ccw_start) >= 360f32.to_radians() {
             // CCW (positive angle)
             for mut ammo in &mut ammo_q {

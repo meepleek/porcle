@@ -8,21 +8,26 @@ use crate::{ext::QuatExt, WINDOW_SIZE};
 use super::time::{process_cooldown, Cooldown};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(First, add_velocity).add_systems(
-        Update,
-        (
-            process_cooldown::<MovementPaused>,
+    app.register_type::<MoveDirection>()
+        .register_type::<Damping>()
+        .register_type::<Speed>()
+        .register_type::<Velocity>()
+        .add_systems(First, insert_velocity)
+        .add_systems(
+            Update,
             (
-                apply_damping,
-                compute_velocity.after(apply_damping),
-                apply_impulse.after(compute_velocity),
-                home.after(apply_impulse),
-            )
-                .before(ApplyVelocitySet),
-            apply_velocity.in_set(ApplyVelocitySet),
-            (accumulate_angle, follow).after(ApplyVelocitySet),
-        ),
-    );
+                process_cooldown::<MovementPaused>,
+                (
+                    apply_damping,
+                    compute_velocity.after(apply_damping),
+                    apply_impulse.after(compute_velocity),
+                    home.after(apply_impulse),
+                )
+                    .before(ApplyVelocitySet),
+                apply_velocity.in_set(ApplyVelocitySet),
+                (accumulate_angle, follow).after(ApplyVelocitySet),
+            ),
+        );
 }
 
 #[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -45,7 +50,7 @@ impl MovementBundle {
     }
 }
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Velocity(Vec2);
 
 impl Velocity {
@@ -54,19 +59,19 @@ impl Velocity {
     }
 }
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct MoveDirection(pub Vec2);
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Damping(pub f32);
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Speed(pub f32);
 
-#[derive(Component, Debug, Default, Deref, DerefMut)]
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Impulse(pub Vec2);
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
 pub struct MovementPaused;
 
 impl MovementPaused {
@@ -105,16 +110,7 @@ pub struct AccumulatedRotation {
     pub rotation: f32,
 }
 
-fn add_velocity(
-    add_q: Query<
-        Entity,
-        (
-            Added<MoveDirection>,
-            (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
-        ),
-    >,
-    mut cmd: Commands,
-) {
+fn insert_velocity(add_q: Query<Entity, Added<MoveDirection>>, mut cmd: Commands) {
     for e in &add_q {
         cmd.entity(e).try_insert(Velocity::default());
     }

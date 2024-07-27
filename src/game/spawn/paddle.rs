@@ -41,15 +41,17 @@ pub struct PaddleRotation {
     pub ccw_start: f32,
     pub timer: Timer,
     pub prev_rot: f32,
+    pub paddle_e: Entity,
 }
 
-impl Default for PaddleRotation {
-    fn default() -> Self {
+impl PaddleRotation {
+    fn new(paddle_e: Entity) -> Self {
         Self {
             cw_start: 0.,
             ccw_start: 0.,
             timer: Timer::new(Duration::from_millis(50), TimerMode::Once),
             prev_rot: 0.,
+            paddle_e,
         }
     }
 }
@@ -107,20 +109,22 @@ fn spawn_paddle(
         })
         .id();
 
-    cmd.spawn((
-        SpatialBundle::default(),
-        PaddleRotation::default(),
-        AccumulatedRotation::default(),
-        StateScoped(Screen::Game),
-    ))
-    .with_children(|b| {
-        b.spawn((
+    let paddle_e = cmd
+        .spawn((
             SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
             Paddle { mesh_e, barrel_e },
             PaddleMode::Reflect,
             PaddleAmmo::default(),
         ))
-        .add_child(mesh_e);
-    });
+        .add_child(mesh_e)
+        .id();
+
+    cmd.spawn((
+        SpatialBundle::default(),
+        PaddleRotation::new(paddle_e),
+        AccumulatedRotation::default(),
+        StateScoped(Screen::Game),
+    ))
+    .add_child(paddle_e);
 }

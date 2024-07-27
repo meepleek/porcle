@@ -87,7 +87,6 @@ fn handle_ball_collisions(
     mut ball_q: Query<(
         Entity,
         &GlobalTransform,
-        &mut Transform,
         &mut Ball,
         &Velocity,
         &mut MoveDirection,
@@ -115,7 +114,7 @@ fn handle_ball_collisions(
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
 ) {
-    for (ball_e, ball_t, mut ball_local_t, mut ball, vel, mut direction, mut speed) in &mut ball_q {
+    for (ball_e, ball_t, mut ball, vel, mut direction, mut speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
@@ -169,19 +168,16 @@ fn handle_ball_collisions(
                     + origit_rot;
                 debug!(angle_factor, angle, "paddle hit");
 
-                if let PaddleMode::Capture = *paddle_mode {
+                // allow capturing only from the inside of the core
+                if matches!(*paddle_mode, PaddleMode::Capture) && hit_point_local.x < 0. {
                     // catching ball
                     *paddle_mode = PaddleMode::Captured {
                         shoot_rotation: Rot2::radians(angle.to_radians()),
                         ball_e,
                     };
                     cmd.entity(ball_e)
-                        .set_parent(paddle_e)
+                        .set_parent_in_place(paddle_e)
                         .insert(MovementPaused);
-                    ball_local_t.translation = paddle_t
-                        .affine()
-                        .inverse()
-                        .transform_point(ball_t.translation());
                 } else {
                     // reflecting ball
                     shake.add_trauma(
