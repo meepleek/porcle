@@ -18,7 +18,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    movement::{Homing, MoveDirection, Speed, Velocity},
+    movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     spawn::{
         ball::{Ball, InsideCore, BALL_BASE_RADIUS},
         enemy::Enemy,
@@ -35,6 +35,7 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             balls_inside_core,
+            update_ball_speed,
             handle_ball_collisions,
             color_ball,
             scale_ball,
@@ -46,6 +47,15 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub const BALL_BASE_SPEED: f32 = 250.;
+
+#[derive(Component, Debug, Deref, DerefMut, Reflect)]
+pub struct BallSpeed(pub f32);
+
+impl Default for BallSpeed {
+    fn default() -> Self {
+        Self(BALL_BASE_SPEED)
+    }
+}
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
 pub struct MaxBallSpeedFactor(pub f32);
@@ -81,6 +91,14 @@ fn balls_inside_core(
     }
 }
 
+fn update_ball_speed(mut ball_q: Query<(&GlobalTransform, &mut Speed, &BallSpeed), With<Ball>>) {
+    for (t, mut speed, ball_speed) in &mut ball_q {
+        let dist = t.translation().length();
+        let factor = ((dist - PADDLE_RADIUS) / 120.0).clamp(0., 1.).powf(2.0);
+        speed.0 = ball_speed.0 * (1. + factor * 0.5);
+    }
+}
+
 fn handle_ball_collisions(
     phys_spatial: SpatialQuery,
     mut ball_q: Query<(
@@ -89,7 +107,8 @@ fn handle_ball_collisions(
         &mut Ball,
         &Velocity,
         &mut MoveDirection,
-        &mut Speed,
+        &Speed,
+        &mut BallSpeed,
     )>,
     ball_shapecast_q: Query<
         (),
@@ -113,7 +132,7 @@ fn handle_ball_collisions(
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
 ) {
-    for (ball_e, ball_t, mut ball, vel, mut direction, mut speed) in &mut ball_q {
+    for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
@@ -133,7 +152,7 @@ fn handle_ball_collisions(
                 paddle_q.get_mut(hit_e)
             {
                 if let PaddleMode::Captured { .. } = *paddle_mode {
-                    speed.0 = (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.25))
+                    ball_speed.0 = (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.25))
                         .max(BALL_BASE_SPEED);
                     debug!(speed = speed.0, "captured ball");
                     continue;
@@ -191,7 +210,7 @@ fn handle_ball_collisions(
                         OneShot::Despawn,
                     ));
                     // clamp to min speed in case the ball has come back to core
-                    speed.0 = (speed.0 * 1.225).clamp(BALL_BASE_SPEED, BALL_BASE_SPEED * 5.0);
+                    ball_speed.0 = (speed.0 * 1.225).clamp(BALL_BASE_SPEED, BALL_BASE_SPEED * 5.0);
                     let rot = Quat::from_rotation_z(angle.to_radians());
                     let new_dir = (rot * -paddle_t.right()).truncate().normalize_or_zero();
                     direction.0 = new_dir;
@@ -248,7 +267,7 @@ fn handle_ball_collisions(
                 //     OneShot::Despawn,
                 // ));
 
-                speed.0 *= 0.9;
+                ball_speed.0 *= 0.9;
                 let dir = vel.velocity().normalize_or_zero();
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 direction.0 = reflect;
@@ -269,6 +288,7 @@ fn handle_ball_collisions(
                 let cooldown = 0.08 + speed_factor * 0.06;
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
+                ball_speed.0 *= 0.9;
             }
         }
 
@@ -325,17 +345,16 @@ fn color_ball(
     }
 }
 
-// todo:
 fn scale_ball(mut ball_q: Query<(&mut Transform, &mut Ball)>, factor: Res<MaxBallSpeedFactor>) {
     for (mut ball_t, mut ball) in &mut ball_q {
-        let scale = 1.0 + factor.0 * 0.45;
+        let scale = 1.0 + factor.0 * 0.35;
         ball.radius = scale * BALL_BASE_RADIUS;
         ball_t.scale = Vec2::splat(scale).extend(1.);
     }
 }
 
 fn update_ball_speed_factor(
-    ball_q: Query<&Speed, With<Ball>>,
+    ball_q: Query<&BallSpeed, With<Ball>>,
     mut factor: ResMut<MaxBallSpeedFactor>,
     time: Res<Time>,
 ) {
@@ -343,7 +362,7 @@ fn update_ball_speed_factor(
         factor.0,
         ball_q
             .iter()
-            .map(|speed| speed.speed_factor(BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5))
+            .map(|speed| speed_factor(speed.0, BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5))
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal))
             .unwrap_or_default(),
         0.1,

@@ -74,7 +74,7 @@
 - [x] reset capture status on ball respawn
 - [x] grow ball based on speed
 - [x] fix initial ball boost (probably incorrect value when no balls)
-- [ ] boost speed outside core?
+- [x] boost speed outside core?
 - [ ] fix initial ball respawn direction (incorrect after rotating)
 - [ ] ammo capacity
 - [ ] ammo UI

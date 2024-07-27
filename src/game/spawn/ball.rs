@@ -7,8 +7,8 @@ use bevy::{
 use crate::{
     ext::Vec2Ext,
     game::{
-        ball::BALL_BASE_SPEED,
-        movement::{MovementBundle, MovementPaused, Speed},
+        ball::{BallSpeed, BALL_BASE_SPEED},
+        movement::{MovementBundle, MovementPaused},
     },
     screen::Screen,
 };
@@ -16,8 +16,7 @@ use crate::{
 use super::paddle::PaddleMode;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_ball)
-        .add_systems(Update, despawn_stationary_balls);
+    app.observe(spawn_ball);
 }
 
 pub const BALL_BASE_RADIUS: f32 = 30.;
@@ -71,7 +70,7 @@ fn spawn_ball(
                     transform: Transform::from_xyz(BALL_BASE_RADIUS * -1.8, 0., 0.9),
                     ..default()
                 },
-                // todo?:
+                BallSpeed::default(),
                 MovementBundle::new(Vec2::X, BALL_BASE_SPEED),
                 MovementPaused,
                 Ball::default(),
@@ -84,14 +83,5 @@ fn spawn_ball(
             ball_e,
             shoot_rotation: paddle_t.right().truncate().to_rot2(),
         };
-    }
-}
-
-fn despawn_stationary_balls(
-    mut cmd: Commands,
-    ball_q: Query<(Entity, &Speed), (With<Ball>, Without<InsideCore>)>,
-) {
-    for (e, _) in ball_q.iter().filter(|(_, speed)| speed.0 < 10.) {
-        cmd.entity(e).despawn_recursive();
     }
 }

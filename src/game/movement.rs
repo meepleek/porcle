@@ -69,6 +69,9 @@ pub struct Damping(pub f32);
 pub struct Speed(pub f32);
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct SpeedMultiplier(pub f32);
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Impulse(pub Vec2);
 
 #[derive(Component, Debug, Reflect)]
@@ -82,8 +85,12 @@ impl MovementPaused {
 
 impl Speed {
     pub fn speed_factor(&self, min: f32, max: f32) -> f32 {
-        ((self.0 - min) / max).clamp(0., 1.)
+        speed_factor(self.0, min, max)
     }
+}
+
+pub fn speed_factor(speed: f32, min: f32, max: f32) -> f32 {
+    ((speed - min) / max).clamp(0., 1.)
 }
 
 #[derive(Component, Debug)]
@@ -118,13 +125,18 @@ fn insert_velocity(add_q: Query<Entity, Added<MoveDirection>>, mut cmd: Commands
 
 fn compute_velocity(
     mut move_q: Query<
-        (&MoveDirection, &Speed, &mut Velocity),
+        (
+            &MoveDirection,
+            &Speed,
+            Option<&SpeedMultiplier>,
+            &mut Velocity,
+        ),
         (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
     >,
     time: Res<Time>,
 ) {
-    for (dir, speed, mut vel) in &mut move_q {
-        vel.0 = dir.0 * speed.0 * time.delta_seconds();
+    for (dir, speed, speed_mult, mut vel) in &mut move_q {
+        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_seconds();
     }
 }
 
