@@ -34,7 +34,7 @@ pub struct Ball {
 
 #[derive(Component, Debug)]
 #[component(storage = "SparseSet")]
-pub struct InsideCore;
+pub struct InsidePaddleRadius;
 
 impl Default for Ball {
     fn default() -> Self {
@@ -74,7 +74,7 @@ fn spawn_ball(
                 MovementBundle::new(Vec2::X, BALL_BASE_SPEED),
                 MovementPaused,
                 Ball::default(),
-                InsideCore,
+                InsidePaddleRadius,
                 StateScoped(Screen::Game),
             ))
             .set_parent(ev.paddle_e)

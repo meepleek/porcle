@@ -10,13 +10,15 @@ use crate::{screen::Screen, WINDOW_SIZE};
 
 use super::{
     ball::SpawnBall,
-    paddle::{Paddle, SpawnPaddle, PADDLE_RADIUS},
+    paddle::{Paddle, SpawnPaddle},
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_level)
         .add_systems(Update, add_ball_to_paddle);
 }
+
+pub const CORE_RADIUS: f32 = 100.0;
 
 #[derive(Event, Debug)]
 pub struct SpawnLevel;
@@ -38,16 +40,13 @@ fn spawn_level(
 ) {
     cmd.spawn((
         MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(
-                meshes.add(Annulus::new(PADDLE_RADIUS - 10.0, PADDLE_RADIUS + 10.0)),
-            ),
+            mesh: Mesh2dHandle(meshes.add(Circle::new(CORE_RADIUS))),
             material: materials.add(ColorMaterial::from_color(
                 bevy::color::palettes::tailwind::INDIGO_200,
             )),
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         },
-        Collider::circle(PADDLE_RADIUS),
+        Collider::circle(CORE_RADIUS),
         RigidBody::Static,
         Core,
         Health(5),

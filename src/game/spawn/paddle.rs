@@ -79,6 +79,22 @@ fn spawn_paddle(
         bevy::color::palettes::tailwind::SKY_400,
     ));
 
+    for offset in [-10., 15.] {
+        cmd.spawn((
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Annulus::new(
+                    PADDLE_RADIUS + offset,
+                    PADDLE_RADIUS + offset + 10.,
+                ))),
+                material: materials.add(ColorMaterial::from_color(
+                    bevy::color::palettes::tailwind::SKY_200,
+                )),
+                ..default()
+            },
+            StateScoped(Screen::Game),
+        ));
+    }
+
     let barrel_e = cmd
         .spawn(SpatialBundle::default())
         .with_children(|b| {

@@ -20,7 +20,7 @@ use super::{
     assets::ParticleAssets,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     spawn::{
-        ball::{Ball, InsideCore, BALL_BASE_RADIUS},
+        ball::{Ball, InsidePaddleRadius, BALL_BASE_RADIUS},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
@@ -71,15 +71,15 @@ struct ShapecastNearestEnemy;
 
 fn balls_inside_core(
     mut cmd: Commands,
-    ball_q: Query<(Entity, &GlobalTransform, Option<&InsideCore>), With<Ball>>,
+    ball_q: Query<(Entity, &GlobalTransform, Option<&InsidePaddleRadius>), With<Ball>>,
 ) {
     for (e, t, inside) in &ball_q {
         let inside_core = t.translation().length() < PADDLE_RADIUS * 1.1;
         if inside_core && inside.is_none() {
-            cmd.entity(e).insert(InsideCore);
+            cmd.entity(e).insert(InsidePaddleRadius);
             cmd.entity(e).remove::<Homing>();
         } else if !inside_core && inside.is_some() {
-            cmd.entity(e).remove::<InsideCore>();
+            cmd.entity(e).remove::<InsidePaddleRadius>();
             cmd.entity(e).insert(Homing {
                 max_distance: 300.,
                 max_factor: 80.,

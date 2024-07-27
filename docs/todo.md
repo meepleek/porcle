@@ -75,6 +75,9 @@
 - [x] grow ball based on speed
 - [x] fix initial ball boost (probably incorrect value when no balls)
 - [x] boost speed outside core?
+- [x] make core actually smaller than paddle radius
+- [ ] resize cam to fit the game
+- [ ] add black bars to sides
 - [ ] fix initial ball respawn direction (incorrect after rotating)
 - [ ] ammo capacity
 - [ ] ammo UI
