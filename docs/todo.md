@@ -69,7 +69,9 @@
 - [x] ball reflects back from paddle hit outside
 - [x] captured ball loses speed
 - [x] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
-- [ ] try to lower the base ball speed and/or increments to make keeping the ball rolling more managable
+- [ ] disallow catching ball from outside
+- [ ] reset capture status on ball respawn
+- [ ] spawn ball in captured position instead of in the center
 - [ ] ammo capacity
 - [ ] ammo UI
 - [ ] health UI
