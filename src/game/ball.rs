@@ -139,6 +139,7 @@ fn handle_ball_collisions(
                 paddle_q.get_mut(hit_e)
             {
                 if let PaddleMode::Captured { .. } = *paddle_mode {
+                    // todo: lower ball speed
                     continue;
                 }
 
@@ -152,8 +153,13 @@ fn handle_ball_collisions(
                     .inverse()
                     .transform_point(hit.point1.extend(0.));
                 // limit upper treshold to 1 to account for the collider rounding
-                let angle_factor = (hit_point_local.y / (PADDLE_COLL_HEIGHT / 2.)).min(1.0);
-                let angle = angle_factor * -30.0;
+                let ratio = hit_point_local.y / (PADDLE_COLL_HEIGHT / 2.);
+                let angle_factor = ratio
+                    .abs()
+                    .min(1.0)
+                    // exp decay
+                    .powf(1.5);
+                let angle = angle_factor * ratio.signum() * -20.0;
                 debug!(angle_factor, angle, "paddle hit");
 
                 if let PaddleMode::Capture = *paddle_mode {

@@ -100,6 +100,7 @@
 - [ ] bigger ammo reflection
 - [ ] greater ammo capacity
 - [ ] paddle size
+- [ ] better accuracy
 
 ## extra VFX - v0.7.0
 
