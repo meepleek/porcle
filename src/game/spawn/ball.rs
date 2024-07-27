@@ -3,8 +3,10 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use rand::thread_rng;
 
 use crate::{
+    ext::RandExt,
     game::{
         ball::BALL_BASE_SPEED,
         movement::{MovementBundle, Speed},
@@ -61,9 +63,8 @@ fn spawn_ball(
         cmd.entity(e).despawn_recursive();
     }
 
-    // todo: random
-    let dir = Dir2::new(Vec2::X).unwrap();
-    // let dir = Dir2::new(-Vec2::Y).unwrap();
+    let mut rng = thread_rng();
+    let dir = rng.direction();
 
     cmd.spawn((
         MaterialMesh2dBundle {

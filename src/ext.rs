@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use rand::{rngs::ThreadRng, Rng};
 
 pub trait Vec2Ext {
     fn to_quat(self) -> Quat;
@@ -30,5 +31,20 @@ impl QuatExt for Quat {
 
     fn z_angle_rad(&self) -> f32 {
         self.to_scaled_axis().z
+    }
+}
+
+pub trait RandExt {
+    fn rotation(&mut self) -> Rot2;
+    fn direction(&mut self) -> Dir2;
+}
+
+impl RandExt for ThreadRng {
+    fn rotation(&mut self) -> Rot2 {
+        Rot2::degrees(self.gen_range(-360f32..360f32))
+    }
+
+    fn direction(&mut self) -> Dir2 {
+        Dir2::new(self.rotation() * Vec2::X).expect("Non-zero direction")
     }
 }

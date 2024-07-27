@@ -75,7 +75,7 @@
 ## Missing stuff - v0.5.0
 
 - [x] CCW rotation adds ammo, CW twice reloads ball
-- [ ] randomise initial ball angle
+- [x] randomise initial ball angle
 - [ ] bullet accurracy (couple degrees)
 - [ ] ammo capacity
 - [ ] ammo UI
