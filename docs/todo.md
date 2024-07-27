@@ -76,9 +76,9 @@
 - [x] fix initial ball boost (probably incorrect value when no balls)
 - [x] boost speed outside core?
 - [x] make core actually smaller than paddle radius
+- [x] fix initial ball respawn direction (incorrect after rotating)
 - [ ] resize cam to fit the game
 - [ ] add black bars to sides
-- [ ] fix initial ball respawn direction (incorrect after rotating)
 - [ ] ammo capacity
 - [ ] ammo UI
 - [ ] health UI

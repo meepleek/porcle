@@ -26,7 +26,7 @@ fn handle_collisions(
             if enemy_q.contains(*coll_e) {
                 cmd.entity(*coll_e).despawn_recursive();
                 hp.0 = hp.0.saturating_sub(1);
-                info!("ouch!");
+                debug!("ouch!");
 
                 if hp.0 == 0 {
                     next.set(Screen::GameOver);

@@ -42,16 +42,15 @@ fn process_input(
                 PaddleMode::Reflect => PaddleMode::Capture,
                 PaddleMode::Capture => PaddleMode::Reflect,
                 PaddleMode::Captured {
-                    shoot_rotation: rotation,
+                    shoot_rotation,
                     ball_e,
                 } => {
                     if let Ok(mut move_dir) = ball_q.get_mut(ball_e) {
-                        let dir = (Quat::from_rotation_z(rotation.as_radians())
+                        let dir = (Quat::from_rotation_z(shoot_rotation.as_radians())
                             * -paddle_t.right())
                         .truncate()
                         .normalize_or_zero();
                         move_dir.0 = dir;
-                        info!(?dir, "found my ball");
                         cmd.entity(ball_e)
                             .remove_parent_in_place()
                             .remove::<MovementPaused>();

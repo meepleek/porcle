@@ -5,7 +5,6 @@ use bevy::{
 };
 
 use crate::{
-    ext::Vec2Ext,
     game::{
         ball::{BallSpeed, BALL_BASE_SPEED},
         movement::{MovementBundle, MovementPaused},
@@ -51,14 +50,14 @@ fn spawn_ball(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     ball_q: Query<Entity, With<Ball>>,
-    mut paddle_q: Query<(&GlobalTransform, &mut PaddleMode)>,
+    mut paddle_q: Query<&mut PaddleMode>,
 ) {
     for e in &ball_q {
         cmd.entity(e).despawn_recursive();
     }
 
     let ev = trigger.event();
-    if let Ok((paddle_t, mut paddle_mode)) = paddle_q.get_mut(ev.paddle_e) {
+    if let Ok(mut paddle_mode) = paddle_q.get_mut(ev.paddle_e) {
         let ball_e = cmd
             .spawn((
                 Name::new("Ball"),
@@ -81,7 +80,7 @@ fn spawn_ball(
             .id();
         *paddle_mode = PaddleMode::Captured {
             ball_e,
-            shoot_rotation: paddle_t.right().truncate().to_rot2(),
+            shoot_rotation: Rot2::degrees(0.),
         };
     }
 }
