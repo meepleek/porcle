@@ -159,7 +159,16 @@ fn handle_ball_collisions(
                     .min(1.0)
                     // exp decay
                     .powf(1.5);
-                let angle = angle_factor * ratio.signum() * -20.0;
+                // aim the ball based on where it landed on the paddle
+                // the further it lands from the center, the greater the reflection angle
+                // if x is positive, then the hit is from outside => reflect it back outside
+                let origit_rot = if hit_point_local.x > 0. { 180. } else { 0. };
+                let max_reflection_angle = 20.0;
+                let angle = angle_factor
+                    * ratio.signum()
+                    * max_reflection_angle
+                    * hit_point_local.x.signum()
+                    + origit_rot;
                 debug!(angle_factor, angle, "paddle hit");
 
                 if let PaddleMode::Capture = *paddle_mode {
@@ -190,9 +199,6 @@ fn handle_ball_collisions(
                     ));
                     // clamp to min speed in case the ball has come back to core
                     speed.0 = (speed.0 * 1.225).clamp(BALL_BASE_SPEED, BALL_BASE_SPEED * 5.0);
-                    // aim the ball based on where it landed on the paddle
-                    // the further it lands from the center, the greater the reflection angle
-                    // if x is positive, then the hit is from outside => this aims the new dir back into the core
                     let rot = Quat::from_rotation_z(angle.to_radians());
                     let new_dir = (rot * -paddle_t.right()).truncate().normalize_or_zero();
                     direction.0 = new_dir;
