@@ -67,7 +67,7 @@
 - [x] randomise initial ball angle
 - [x] gun accurracy (couple degrees rng)
 - [x] ball reflects back from paddle hit outside
-- [ ] captured ball loses speed
+- [x] captured ball loses speed
 - [ ] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
 - [ ] try to lower the base ball speed and/or increments to make keeping the ball rolling more managable
 - [ ] ammo capacity

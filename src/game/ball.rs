@@ -139,7 +139,9 @@ fn handle_ball_collisions(
                 paddle_q.get_mut(hit_e)
             {
                 if let PaddleMode::Captured { .. } = *paddle_mode {
-                    // todo: lower ball speed
+                    speed.0 = (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.25))
+                        .max(BALL_BASE_SPEED);
+                    debug!(speed = speed.0, "captured ball");
                     continue;
                 }
 
@@ -277,10 +279,6 @@ fn handle_ball_collisions(
                 let cooldown = 0.08 + speed_factor * 0.12;
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
-
-                // todo: shapecast cone/triangle & try to find lowest angle coupled with nearest - this can still miss, but we don't wanna be doing predictions 'cause we're lazy
-
-                // todo: try - boost speed on hit or maybe actually take a slight speed hit
             }
         }
 
