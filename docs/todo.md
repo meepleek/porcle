@@ -82,11 +82,10 @@
 - [x] health UI
 - [ ] circle/anullus transition
 - [ ] tween in lvl elements
-- [ ] spawn initial ball after a delay
-- [ ] add reflection/aim prediction UI
 - [ ] score - just kill count
 - [ ] spawn rate based on score
 - [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [ ] add reflection/aim prediction UI
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
