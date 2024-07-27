@@ -81,6 +81,8 @@
 - [ ] ammo UI
 - [ ] health UI
 - [ ] circle/anullus transition
+- [ ] tween in lvl elements
+- [ ] spawn initial ball after a delay
 - [ ] add reflection/aim prediction UI
 - [ ] score - just kill count
 
