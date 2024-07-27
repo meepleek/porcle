@@ -7,10 +7,11 @@ use crate::{
 };
 
 use super::{
+    ball::MaxBallSpeedFactor,
     input::CursorCoords,
     movement::{AccumulatedRotation, MoveDirection, MovementPaused},
     spawn::{
-        ball::{Ball, PaddleReflectionCount, SpawnBall},
+        ball::{Ball, SpawnBall},
         paddle::{PaddleAmmo, PaddleMode, PaddleRotation},
     },
 };
@@ -86,7 +87,7 @@ fn rotate_paddle(
 fn apply_cycle_effects(
     mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
     mut ammo_q: Query<&mut PaddleAmmo>,
-    ball_q: Query<&PaddleReflectionCount, With<Ball>>,
+    ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut cmd: Commands,
     time: Res<Time>,
 ) {
@@ -96,15 +97,9 @@ fn apply_cycle_effects(
             paddle_rot.reset(angle.rotation);
             cmd.trigger(SpawnBall);
         } else if (angle.rotation - paddle_rot.ccw_start) >= 360f32.to_radians() {
-            let ammo_bonus = ball_q
-                .iter()
-                .map(|reflection_count| reflection_count.ammo_bonus())
-                .max()
-                .unwrap_or(1);
-
             // CCW (positive angle)
             for mut ammo in &mut ammo_q {
-                ammo.0 += ammo_bonus;
+                ammo.0 += ball_speed_factor.ammo_bonus();
             }
             paddle_rot.reset(angle.rotation);
         } else if angle.rotation > paddle_rot.cw_start {

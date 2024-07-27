@@ -68,7 +68,7 @@
 - [x] gun accurracy (couple degrees rng)
 - [x] ball reflects back from paddle hit outside
 - [x] captured ball loses speed
-- [ ] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
+- [x] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
 - [ ] try to lower the base ball speed and/or increments to make keeping the ball rolling more managable
 - [ ] ammo capacity
 - [ ] ammo UI
@@ -78,6 +78,8 @@
 - [ ] spawn initial ball after a delay
 - [ ] add reflection/aim prediction UI
 - [ ] score - just kill count
+- [ ] spawn rate based on score
+- [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
 
 ## audio - v0.6.0
 

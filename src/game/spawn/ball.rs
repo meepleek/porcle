@@ -31,15 +31,6 @@ pub struct Ball {
 }
 
 #[derive(Component, Debug)]
-pub struct PaddleReflectionCount(pub usize);
-
-impl PaddleReflectionCount {
-    pub fn ammo_bonus(&self) -> usize {
-        (self.0 / 2).min(5)
-    }
-}
-
-#[derive(Component, Debug)]
 #[component(storage = "SparseSet")]
 pub struct InsideCore;
 
@@ -78,7 +69,6 @@ fn spawn_ball(
         MovementBundle::new(dir.as_vec2(), BALL_BASE_SPEED),
         Ball::default(),
         InsideCore,
-        PaddleReflectionCount(0),
         StateScoped(Screen::Game),
     ));
 }

@@ -20,7 +20,7 @@ use super::{
     assets::ParticleAssets,
     movement::{Damping, Homing, MoveDirection, Speed, Velocity},
     spawn::{
-        ball::{Ball, InsideCore, PaddleReflectionCount},
+        ball::{Ball, InsideCore},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
@@ -48,6 +48,12 @@ pub const BALL_BASE_SPEED: f32 = 250.;
 
 #[derive(Resource, Debug, Default, Deref, DerefMut)]
 pub struct MaxBallSpeedFactor(pub f32);
+
+impl MaxBallSpeedFactor {
+    pub fn ammo_bonus(&self) -> usize {
+        ((self.0 * 5.0).round() as usize).max(1)
+    }
+}
 
 #[derive(Component, Debug)]
 struct ShapecastNearestEnemy;
@@ -86,7 +92,6 @@ fn handle_ball_collisions(
         &Velocity,
         &mut MoveDirection,
         &mut Speed,
-        &mut PaddleReflectionCount,
     )>,
     ball_shapecast_q: Query<
         (),
@@ -108,18 +113,9 @@ fn handle_ball_collisions(
     time: Res<Time>,
     mut shake: Shakes,
     particles: Res<ParticleAssets>,
+    ball_speed_factor: Res<MaxBallSpeedFactor>,
 ) {
-    for (
-        ball_e,
-        ball_t,
-        mut ball_local_t,
-        mut ball,
-        vel,
-        mut direction,
-        mut speed,
-        mut paddle_reflection_count,
-    ) in &mut ball_q
-    {
+    for (ball_e, ball_t, mut ball_local_t, mut ball, vel, mut direction, mut speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
             // stationary ball
             continue;
@@ -206,8 +202,7 @@ fn handle_ball_collisions(
                     direction.0 = new_dir;
 
                     // ammo
-                    paddle_reflection_count.0 += 1;
-                    ammo.0 += paddle_reflection_count.ammo_bonus();
+                    ammo.0 += ball_speed_factor.ammo_bonus();
                     let cooldown =
                         0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
                     cmd.entity(ball_e)
