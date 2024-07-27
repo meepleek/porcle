@@ -347,7 +347,7 @@ fn update_ball_speed_factor(
             .iter()
             .map(|speed| speed.speed_factor(BALL_BASE_SPEED * 1.3, BALL_BASE_SPEED * 2.5))
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal))
-            .unwrap_or(1.),
+            .unwrap_or_default(),
         0.1,
         time.delta_seconds(),
     );
