@@ -268,7 +268,7 @@ fn handle_ball_collisions(
                 // freeze
                 let speed_factor =
                     speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 1.75);
-                let cooldown = 0.08 + speed_factor * 0.12;
+                let cooldown = 0.08 + speed_factor * 0.06;
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
             }

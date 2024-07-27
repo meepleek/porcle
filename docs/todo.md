@@ -73,8 +73,9 @@
 - [x] spawn ball in captured position instead of in the center
 - [x] reset capture status on ball respawn
 - [x] grow ball based on speed
-- [ ] fix initial ball boost (probably incorrect value when no balls)
+- [x] fix initial ball boost (probably incorrect value when no balls)
 - [ ] boost speed outside core?
+- [ ] fix initial ball respawn direction (incorrect after rotating)
 - [ ] ammo capacity
 - [ ] ammo UI
 - [ ] health UI
