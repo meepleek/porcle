@@ -46,6 +46,11 @@ impl Plugin for AppPlugin {
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
                         resolution: Vec2::splat(WINDOW_SIZE).into(),
+                        resize_constraints: WindowResizeConstraints {
+                            min_width: WINDOW_SIZE,
+                            min_height: WINDOW_SIZE,
+                            ..default()
+                        },
                         prevent_default_event_handling: true,
                         ..default()
                     }
