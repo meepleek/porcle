@@ -2,12 +2,54 @@
 
 use bevy::prelude::*;
 use bevy_tweening::*;
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 #[derive(Component)]
 pub enum DespawnOnTweenCompleted {
     Itself,
     Entity(Entity),
+}
+
+#[derive(Component)]
+#[component(storage = "SparseSet")]
+pub struct TweenFactor<T: Send + Sync + 'static> {
+    timer: Timer,
+    delay: Option<Timer>,
+    ease: EaseFunction,
+    _phantom: PhantomData<T>,
+}
+
+impl<T: Send + Sync> TweenFactor<T> {
+    pub fn new(duration_ms: u64, ease: EaseFunction) -> Self {
+        Self {
+            timer: Timer::new(Duration::from_millis(duration_ms), TimerMode::Once),
+            delay: None,
+            ease,
+            _phantom: default(),
+        }
+    }
+
+    pub fn with_delay(mut self, delay_ms: u64) -> Self {
+        self.delay = Some(Timer::new(Duration::from_millis(delay_ms), TimerMode::Once));
+        self
+    }
+
+    pub fn factor(&self) -> f32 {
+        self.timer.fraction().calc(self.ease)
+    }
+}
+
+pub fn tween_factor<T: Send + Sync>(mut factor_q: Query<&mut TweenFactor<T>>, time: Res<Time>) {
+    for mut factor in &mut factor_q {
+        if let Some(delay) = factor.delay.as_mut() {
+            delay.tick(time.delta());
+            if delay.just_finished() {
+                factor.delay.take();
+            }
+        } else if !factor.timer.finished() {
+            factor.timer.tick(time.delta());
+        }
+    }
 }
 
 pub(super) fn plugin(app: &mut App) {
@@ -85,6 +127,15 @@ relative_tween_fns!(
     Animator,
     BackgroundColor,
     UiBackgroundColorLens,
+    Color,
+    Color
+);
+
+relative_tween_fns!(
+    ui_image_color,
+    Animator,
+    UiImage,
+    UiImageColorLens,
     Color,
     Color
 );
@@ -180,6 +231,7 @@ relative_tween_fns!(
     Color
 );
 color_lens!(BackgroundColor, UiBackgroundColorLens, 0);
+color_lens!(UiImage, UiImageColorLens, color);
 color_lens!(ColorMaterial, ColorMaterialRelativeColorLens, color);
 
 pub fn lerp_color(from: Color, to: Color, ratio: f32) -> Color {
