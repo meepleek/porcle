@@ -94,10 +94,11 @@ fn balls_inside_core(
 }
 
 fn update_ball_speed(mut ball_q: Query<(&GlobalTransform, &mut Speed, &BallSpeed), With<Ball>>) {
-    for (t, mut speed, ball_speed) in &mut ball_q {
-        let dist = t.translation().length();
-        let factor = ((dist - PADDLE_RADIUS) / 120.0).clamp(0., 1.).powf(2.0);
-        speed.0 = ball_speed.0 * (1. + factor * 0.5);
+    for (_t, mut speed, ball_speed) in &mut ball_q {
+        // let dist = t.translation().length();
+        // let factor = ((dist - PADDLE_RADIUS) / 120.0).clamp(0., 1.).powf(2.0);
+        // speed.0 = ball_speed.0 * (1. + factor * 0.5);
+        speed.0 = ball_speed.0;
     }
 }
 
