@@ -15,7 +15,9 @@ pub(super) fn plugin(app: &mut App) {
         .add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
 
     #[cfg(feature = "dev")]
-    app.add_plugins(WorldInspectorPlugin::new().run_if(input_toggle_active(false, KeyCode::KeyE)));
+    app.add_plugins(
+        WorldInspectorPlugin::new().run_if(input_toggle_active(false, MouseButton::Middle)),
+    );
 }
 
 fn process_debug_input(input: Res<ButtonInput<KeyCode>>, mut ammo_q: Query<&mut PaddleAmmo>) {

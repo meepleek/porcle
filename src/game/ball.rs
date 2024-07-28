@@ -224,7 +224,7 @@ fn handle_ball_collisions(
                     ball.last_reflection_time = time.elapsed_seconds() + cooldown;
 
                     // tween
-                    cmd.entity(paddle.mesh_e).insert(Animator::new(
+                    cmd.entity(paddle.sprite_e).insert(Animator::new(
                         get_relative_translation_tween(
                             ((rot / 3.) * Vec3::X) * 50.,
                             60,

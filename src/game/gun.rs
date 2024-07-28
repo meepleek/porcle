@@ -70,7 +70,7 @@ fn fire_gun(
                 cmd.trigger(SpawnProjectile {
                     dir,
                     transform: Transform::from_translation(
-                        t.translation() + (rot * (-Vec3::Y * 70.0)),
+                        t.translation() + (rot * (-Vec3::Y * 80.0)),
                     )
                     .with_rotation(rot),
                 });
@@ -84,7 +84,7 @@ fn fire_gun(
                 // barrel
                 cmd.entity(paddle.barrel_e).insert(Animator::new(
                     get_relative_translation_tween(
-                        Vec3::X * -40.,
+                        Vec3::Y * -35.,
                         60,
                         Some(EaseFunction::QuadraticOut),
                     )
@@ -95,7 +95,7 @@ fn fire_gun(
                     )),
                 ));
                 // paddle
-                cmd.entity(paddle.mesh_e).insert(Animator::new(
+                cmd.entity(paddle.sprite_e).insert(Animator::new(
                     Delay::new(Duration::from_millis(40))
                         .then(get_relative_translation_tween(
                             Vec3::X * -8.,

@@ -18,10 +18,10 @@ use super::level::Health;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
-    app.add_systems(
-        Update,
-        spawner.run_if(in_state(Screen::Game).and_then(on_timer(Duration::from_millis(1500)))),
-    );
+    // app.add_systems(
+    //     Update,
+    //     spawner.run_if(in_state(Screen::Game).and_then(on_timer(Duration::from_millis(1500)))),
+    // );
 }
 
 #[derive(Event, Debug)]

@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use avian2d::prelude::*;
 use bevy::{
+    color::palettes::tailwind,
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -24,7 +25,7 @@ pub struct SpawnPaddle;
 
 #[derive(Component, Debug)]
 pub struct Paddle {
-    pub mesh_e: Entity,
+    pub sprite_e: Entity,
     pub barrel_e: Entity,
 }
 
@@ -96,9 +97,7 @@ fn spawn_paddle(
     mut materials: ResMut<Assets<ColorMaterial>>,
     sprites: Res<SpriteAssets>,
 ) {
-    let mat = materials.add(ColorMaterial::from_color(
-        bevy::color::palettes::tailwind::SKY_400,
-    ));
+    let color: Color = tailwind::SKY_400.into();
 
     // rails/paddle radius
     for offset in [-10., 15.] {
@@ -120,48 +119,50 @@ fn spawn_paddle(
     let barrel_e = cmd
         .spawn(SpatialBundle::default())
         .with_children(|b| {
-            b.spawn(MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Rectangle::new(25.0, 70.0))),
-                material: mat.clone(),
-                transform: Transform::from_xyz(35., 0., 0.)
-                    .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
-                ..default()
-            });
+            b.spawn((
+                Name::new("barrel"),
+                SpriteBundle {
+                    texture: sprites.paddle_barrel.clone(),
+                    sprite: Sprite { color, ..default() },
+                    transform: Transform::from_xyz(0., 55., 0.),
+                    // .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
+                    ..default()
+                },
+            ));
         })
         .id();
 
-    let mesh_e = cmd
-        .spawn(MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, PADDLE_HEIGHT))),
-            material: mat.clone(),
-            ..default()
-        })
-        .with_children(|b| {
-            b.spawn(MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Capsule2d::new(25.0, 10.0))),
-                material: mat.clone(),
-                transform: Transform::from_xyz(15., 0., 0.),
+    let sprite_e = cmd
+        .spawn((
+            Name::new("base_sprite"),
+            SpriteBundle {
+                texture: sprites.paddle_base.clone(),
+                sprite: Sprite { color, ..default() },
+                transform: Transform::from_xyz(4.5, 0., 0.)
+                    .with_rotation(Quat::from_rotation_z(-90f32.to_radians())),
                 ..default()
-            })
-            .add_child(barrel_e);
-        })
+            },
+        ))
+        .add_child(barrel_e)
         .id();
 
     let paddle_e = cmd
         .spawn((
+            Name::new("paddle"),
             SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
-            Paddle { mesh_e, barrel_e },
+            Paddle { sprite_e, barrel_e },
             PaddleMode::Reflect,
             PaddleAmmo {
                 capacity: 50,
                 ammo: 0,
             },
         ))
-        .add_child(mesh_e)
+        .add_child(sprite_e)
         .id();
 
     cmd.spawn((
+        Name::new("paddle_rotation"),
         SpatialBundle::default(),
         PaddleRotation::new(paddle_e),
         AccumulatedRotation::default(),
