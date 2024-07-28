@@ -52,6 +52,7 @@ pub enum Screen {
     Game,
     RestartGame,
     GameOver,
+    Exit,
 }
 
 #[derive(Component, Debug, Default)]
