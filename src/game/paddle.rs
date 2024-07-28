@@ -31,7 +31,7 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.35;
+pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.45;
 
 fn process_input(
     input: PlayerInput,
