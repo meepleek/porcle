@@ -15,6 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
 pub enum SpriteKey {
+    TransitionCircle,
     GearSmall,
     Ammo,
 }
@@ -32,6 +33,10 @@ impl FromWorld for HandleMap<SpriteKey> {
                 asset_server.load("images/gear_small.png"),
             ),
             (SpriteKey::Ammo, asset_server.load("images/ammo.png")),
+            (
+                SpriteKey::TransitionCircle,
+                asset_server.load("images/transition_circle.png"),
+            ),
         ]
         .into()
     }
