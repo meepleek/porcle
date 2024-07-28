@@ -2,7 +2,10 @@ use avian2d::prelude::*;
 use bevy::{color::palettes::tailwind, prelude::*, sprite::Mesh2dHandle};
 use bevy_trauma_shake::Shakes;
 
-use crate::{ext::QuatExt, screen::Screen};
+use crate::{
+    ext::QuatExt,
+    screen::{NextTransitionedState, Screen},
+};
 
 use super::{
     movement::MovementPaused,
@@ -34,7 +37,7 @@ fn handle_collisions(
     mut core_q: Query<(&mut Health, &CollidingEntities), With<Core>>,
     enemy_q: Query<(), With<Enemy>>,
     mut cmd: Commands,
-    mut next: ResMut<NextState<Screen>>,
+    mut next: ResMut<NextTransitionedState>,
     mut shake: Shakes,
     mut taken_dmg_w: EventWriter<TakenDamage>,
 ) {

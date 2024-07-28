@@ -6,7 +6,7 @@ use bevy::{
     window::{CursorGrabMode, PrimaryWindow},
 };
 
-use super::Screen;
+use super::{NextTransitionedState, Screen};
 use crate::game::{
     // assets::SoundtrackKey,
     audio::soundtrack::PlaySoundtrack,
@@ -42,11 +42,11 @@ fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<Pr
     win.cursor.grab_mode = CursorGrabMode::None;
 }
 
-fn return_to_title_screen(mut next_screen: ResMut<NextState<Screen>>) {
+fn return_to_title_screen(mut next_screen: ResMut<NextTransitionedState>) {
     next_screen.set(Screen::Title);
 }
 
-fn restart_game(mut next_screen: ResMut<NextState<Screen>>) {
+fn restart_game(mut next_screen: ResMut<NextTransitionedState>) {
     next_screen.set(Screen::RestartGame);
 }
 

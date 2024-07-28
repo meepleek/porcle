@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 
-use super::Screen;
+use super::{NextTransitionedState, Screen};
 use crate::{
     game::{assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack},
     ui::prelude::*,
@@ -50,7 +50,7 @@ fn exit_credits(mut commands: Commands) {
 }
 
 fn handle_credits_action(
-    mut next_screen: ResMut<NextState<Screen>>,
+    mut next_screen: ResMut<NextTransitionedState>,
     mut button_query: InteractionQuery<&CreditsAction>,
 ) {
     for (interaction, action) in &mut button_query {

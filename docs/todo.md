@@ -80,7 +80,7 @@
 - [x] ammo capacity
 - [x] ammo UI
 - [x] health UI
-- [ ] circle/anullus transition
+- [x] circle/anullus transition
 - [ ] tween in lvl elements
 - [ ] score - just kill count
 - [ ] spawn rate based on score

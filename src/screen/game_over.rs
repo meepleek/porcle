@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 
-use super::Screen;
+use super::{NextTransitionedState, Screen};
 use crate::ui::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
@@ -31,7 +31,7 @@ fn enter_game_over(mut commands: Commands) {
 }
 
 fn handle_title_action(
-    mut next_screen: ResMut<NextState<Screen>>,
+    mut next_screen: ResMut<NextTransitionedState>,
     mut button_query: InteractionQuery<&BtnAction>,
 ) {
     for (interaction, action) in &mut button_query {

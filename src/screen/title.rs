@@ -2,7 +2,7 @@
 
 use bevy::prelude::*;
 
-use super::Screen;
+use super::{NextTransitionedState, Screen};
 use crate::ui::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
@@ -36,7 +36,7 @@ fn enter_title(mut commands: Commands) {
 }
 
 fn handle_title_action(
-    mut next_screen: ResMut<NextState<Screen>>,
+    mut next_screen: ResMut<NextTransitionedState>,
     mut button_query: InteractionQuery<&TitleAction>,
     #[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>,
 ) {
