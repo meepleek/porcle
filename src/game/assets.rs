@@ -60,6 +60,21 @@ pub struct MusicAssets {
     pub credits: Handle<AudioSource>,
 }
 
+// todo: use asset_loader for particles too
+// #[derive(AssetCollection, Resource)]
+// pub struct ParticleAssets {
+//     #[asset(path = "particles/circle.png")]
+//     pub circle_mat: Handle<SpriteParticle2dMaterial>,
+//     #[asset(path = "particles/gun.particle.ron")]
+//     pub gun: Handle<Particle2dEffect>,
+//     #[asset(path = "particles/enemy.particle.ron")]
+//     pub enemy: Handle<Particle2dEffect>,
+//     #[asset(path = "particles/reflection.particle.ron")]
+//     pub reflection: Handle<Particle2dEffect>,
+//     #[asset(path = "particles/core.particle.ron")]
+//     pub core: Handle<Particle2dEffect>,
+// }
+
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct ParticleAssets {
