@@ -83,8 +83,9 @@
 - [x] circle/anullus transition
 - [x] tween in lvl elements
 - [x] score - just kill count
-- [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
 - [x] add capture UI
+- [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [ ] enemy death particles on core hit
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
