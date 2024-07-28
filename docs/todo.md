@@ -81,7 +81,7 @@
 - [x] ammo UI
 - [x] health UI
 - [x] circle/anullus transition
-- [ ] tween in lvl elements
+- [x] tween in lvl elements
 - [ ] score - just kill count
 - [ ] spawn rate based on score
 - [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color

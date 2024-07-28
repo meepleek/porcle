@@ -46,6 +46,16 @@ impl Rot2Ext for Rot2 {
     }
 }
 
+pub trait TransExt {
+    fn zero_scale_2d() -> Transform;
+}
+
+impl TransExt for Transform {
+    fn zero_scale_2d() -> Transform {
+        Transform::from_scale(Vec2::ZERO.extend(1.))
+    }
+}
+
 pub trait RandExt {
     fn rotation(&mut self) -> Rot2;
     fn rotation_range_degrees(&mut self, degrees: f32) -> Rot2;

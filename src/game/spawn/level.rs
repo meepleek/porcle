@@ -177,7 +177,7 @@ fn add_ball_to_paddle(paddle_q: Query<Entity, Added<Paddle>>, mut cmd: Commands)
     for paddle_e in &paddle_q {
         cmd.trigger(SpawnBall {
             paddle_e,
-            tween_delay_ms: 650,
+            tween_delay_ms: 1400,
         });
     }
 }

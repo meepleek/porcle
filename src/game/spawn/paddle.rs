@@ -9,6 +9,7 @@ use bevy::{
 use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
+    ext::TransExt,
     game::{
         assets::SpriteAssets,
         movement::AccumulatedRotation,
@@ -132,11 +133,12 @@ fn spawn_paddle(
                 material: materials.add(ColorMaterial::from_color(
                     bevy::color::palettes::tailwind::SKY_200,
                 )),
+                transform: Transform::zero_scale_2d(),
                 ..default()
             },
             Animator::new(delay_tween(
-                get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
-                650 + i as u64 * 150,
+                get_relative_scale_tween(Vec3::ONE, 600, Some(EaseFunction::BackOut)),
+                950 + i as u64 * 150,
             )),
             StateScoped(Screen::Game),
         ));
@@ -187,7 +189,7 @@ fn spawn_paddle(
                 },
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
-                    450,
+                    1200,
                 )),
             ))
             .add_child(barrel_e)
