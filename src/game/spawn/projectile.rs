@@ -1,12 +1,11 @@
 use avian2d::prelude::*;
-use bevy::{
-    color::palettes::tailwind,
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::{color::palettes::tailwind, prelude::*};
 
 use crate::{
-    game::movement::{Damping, MovementBundle},
+    game::{
+        assets::SpriteAssets,
+        movement::{Damping, MovementBundle},
+    },
     screen::Screen,
 };
 
@@ -29,16 +28,19 @@ pub struct Projectile {
 fn spawn_projectile(
     trigger: Trigger<SpawnProjectile>,
     mut cmd: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    sprites: Res<SpriteAssets>,
 ) {
     let ev = trigger.event();
-    let x = 15.;
-    let y = 35.;
-    let mesh_e = cmd
-        .spawn(MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
-            material: materials.add(ColorMaterial::from_color(tailwind::RED_400)),
+    let x = 16.;
+    let y = 30.;
+    let sprite_e = cmd
+        .spawn(SpriteBundle {
+            texture: sprites.bullet.clone(),
+            sprite: Sprite {
+                color: tailwind::YELLOW_400.into(),
+                ..default()
+            },
+            transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
             ..default()
         })
         .id();
@@ -47,13 +49,13 @@ fn spawn_projectile(
         SpatialBundle::from_transform(ev.transform),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        MovementBundle::new(ev.dir.as_vec2(), 1800.),
-        Damping(2.5),
+        MovementBundle::new(ev.dir.as_vec2(), 1200.),
+        Damping(1.5),
         Projectile {
             size: Vec2::new(x, y),
-            mesh_e,
+            mesh_e: sprite_e,
         },
         StateScoped(Screen::Game),
     ))
-    .add_child(mesh_e);
+    .add_child(sprite_e);
 }
