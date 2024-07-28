@@ -85,6 +85,7 @@
 - [ ] score - just kill count
 - [ ] spawn rate based on score
 - [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [x] add capture UI
 - [ ] add reflection/aim prediction UI
 - [ ] ball move particles
 - [ ] paddle move particles
