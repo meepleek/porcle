@@ -101,7 +101,9 @@
 ## enemies - v0.7.0
 
 - [ ] spawn rate based on score
-- [ ] improve crawler
+- [ ] improve crawler (add a sprite, too)
+- [ ] consider limiting crawlers to just 2 HP
+- [ ] bigger/chunkier crawler (add a sprite, too)
 - [ ] slower crawler that has to be hit by the ball (shielded)
 - [ ] shooty enemy/turret
 - [ ] turret that has to be destroyed by the ball (shielded)

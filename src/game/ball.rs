@@ -65,7 +65,7 @@ pub struct MaxBallSpeedFactor(pub f32);
 
 impl MaxBallSpeedFactor {
     pub fn ammo_bonus(&self) -> usize {
-        ((self.0 * 5.0).round() as usize).max(1)
+        ((self.0 * 3.0).round() as usize).max(1) * 2
     }
 }
 

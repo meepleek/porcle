@@ -227,7 +227,7 @@ fn spawn_paddle(
             },
             PaddleMode::Reflect,
             PaddleAmmo {
-                capacity: 50,
+                capacity: 55,
                 ammo: 0,
             },
         ))
