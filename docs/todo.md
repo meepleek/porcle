@@ -92,6 +92,7 @@
 - [ ] enemy move particles
 - [ ] resize cam to fit the game
 - [ ] add black bars to sides
+- [ ] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
 
 ## audio - v0.6.0
 
