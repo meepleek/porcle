@@ -92,7 +92,7 @@
 - [x] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
 - [x] add black bars to sides (letterboxing)
 - [x] add gamepad controls
-- [ ] despawn out of bounds projectiles
+- [x] despawn out of bounds projectiles
 - [ ] pick a color palette
 - [ ] add reflection/aim prediction UI
 

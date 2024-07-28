@@ -9,6 +9,8 @@ use crate::{
     screen::Screen,
 };
 
+use super::despawn::DespawnOutOfBounds;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_projectile);
 }
@@ -55,6 +57,7 @@ fn spawn_projectile(
             size: Vec2::new(x, y),
             mesh_e: sprite_e,
         },
+        DespawnOutOfBounds,
         StateScoped(Screen::Game),
     ))
     .add_child(sprite_e);
