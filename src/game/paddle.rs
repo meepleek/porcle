@@ -97,6 +97,7 @@ fn apply_cycle_effects(
             paddle_rot.reset(angle.rotation);
             cmd.trigger(SpawnBall {
                 paddle_e: paddle_rot.paddle_e,
+                tween_delay_ms: 0,
             });
         } else if (angle.rotation - paddle_rot.ccw_start) >= 360f32.to_radians() {
             // CCW (positive angle)
