@@ -107,7 +107,6 @@ fn spawn_camera(mut commands: Commands) {
         tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
         ..default()
     };
-    // cam_bundle.projection.scale = 1.5;
     cam_bundle.projection.scaling_mode = ScalingMode::AutoMin {
         min_width: GAME_SIZE,
         min_height: GAME_SIZE,
