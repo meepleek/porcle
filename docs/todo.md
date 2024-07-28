@@ -89,8 +89,8 @@
 - [x] bg particles
 - [x] ball move particles
 - [x] resize cam to fit the game
-- [ ] add black bars to sides
 - [x] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
+- [x] add black bars to sides (letterboxing)
 - [ ] add gamepad controls
 - [ ] add reflection/aim prediction UI
 

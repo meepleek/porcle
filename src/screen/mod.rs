@@ -7,7 +7,7 @@ mod playing;
 mod splash;
 mod title;
 
-use bevy::{color::palettes::tailwind, prelude::*};
+use bevy::{color::palettes::tailwind, prelude::*, window::WindowResized};
 
 use crate::game::{
     assets::{assets_exist, SpriteAssets},
@@ -29,9 +29,11 @@ pub(super) fn plugin(app: &mut App) {
             game_over::plugin,
         ))
         .add_systems(OnExit(Screen::Loading), setup_transition_overlay)
+        .add_systems(Startup, setup_letterbox)
         .add_systems(
             Update,
             (
+                resize_letterbox,
                 start_transition_anim.run_if(
                     assets_exist
                         .and_then(resource_exists::<Transition>)
@@ -133,6 +135,112 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
     .push_children(&circle_entity_ids);
 
     cmd.insert_resource(Transition { circle_entity_ids });
+}
+
+#[derive(Component)]
+enum LetterboxAxis {
+    Vertical,
+    Horizontal,
+}
+
+fn setup_letterbox(mut cmd: Commands) {
+    cmd.spawn((
+        Name::new("letterbox"),
+        NodeBundle {
+            z_index: ZIndex::Global(1500),
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                ..default()
+            },
+            ..default()
+        },
+    ))
+    .with_children(|b| {
+        let color: BackgroundColor = Color::BLACK.into();
+        b.spawn((
+            Name::new("letterbox_left"),
+            NodeBundle {
+                background_color: color,
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    top: Val::ZERO,
+                    left: Val::ZERO,
+                    width: Val::ZERO,
+                    height: Val::Vh(100.),
+                    ..default()
+                },
+                ..default()
+            },
+            LetterboxAxis::Vertical,
+        ));
+        b.spawn((
+            Name::new("letterbox_right"),
+            NodeBundle {
+                background_color: color,
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    top: Val::ZERO,
+                    right: Val::ZERO,
+                    width: Val::ZERO,
+                    height: Val::Vh(100.),
+                    ..default()
+                },
+                ..default()
+            },
+            LetterboxAxis::Vertical,
+        ));
+        b.spawn((
+            Name::new("letterbox_top"),
+            NodeBundle {
+                background_color: color,
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    top: Val::ZERO,
+                    left: Val::ZERO,
+                    width: Val::Vw(100.),
+                    height: Val::ZERO,
+                    ..default()
+                },
+                ..default()
+            },
+            LetterboxAxis::Horizontal,
+        ));
+        b.spawn((
+            Name::new("letterbox_bottom"),
+            NodeBundle {
+                background_color: color,
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    bottom: Val::ZERO,
+                    left: Val::ZERO,
+                    width: Val::Vw(100.),
+                    height: Val::ZERO,
+                    ..default()
+                },
+                ..default()
+            },
+            LetterboxAxis::Horizontal,
+        ));
+    });
+}
+
+fn resize_letterbox(
+    mut letterbox_q: Query<(&LetterboxAxis, &mut Style)>,
+    mut resize_evr: EventReader<WindowResized>,
+) {
+    if let Some(ev) = resize_evr.read().next() {
+        for (axis, mut style) in &mut letterbox_q {
+            match axis {
+                LetterboxAxis::Vertical => {
+                    style.width = Val::Px((ev.width - ev.height).max(0.) / 2.);
+                }
+                LetterboxAxis::Horizontal => {
+                    style.height = Val::Px((ev.height - ev.width).max(0.) / 2.);
+                }
+            }
+        }
+    }
 }
 
 fn start_transition_anim(
