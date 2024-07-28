@@ -20,7 +20,10 @@ pub(super) fn plugin(app: &mut App) {
 
 pub const PADDLE_RADIUS: f32 = 260.0;
 pub const PADDLE_HEIGHT: f32 = 120.0;
-pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 10.;
+pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 20.;
+pub const PADDLE_REFLECT_BASE_COLOR: Srgba = tailwind::SKY_700;
+pub const PADDLE_REFLECT_CAPTURE_COLOR: Srgba = tailwind::AMBER_400;
+pub const PADDLE_REFLECT_CAPTURED_COLOR: Srgba = tailwind::AMBER_700;
 
 #[derive(Event, Debug)]
 pub struct SpawnPaddle;
@@ -29,6 +32,7 @@ pub struct SpawnPaddle;
 pub struct Paddle {
     pub sprite_e: Entity,
     pub barrel_e: Entity,
+    pub reflect_e: Entity,
 }
 
 #[derive(Component, Debug)]
@@ -39,6 +43,16 @@ pub enum PaddleMode {
         shoot_rotation: Rot2,
         ball_e: Entity,
     },
+}
+
+impl PaddleMode {
+    pub fn color(&self) -> Color {
+        match self {
+            PaddleMode::Reflect => PADDLE_REFLECT_BASE_COLOR.into(),
+            PaddleMode::Capture => PADDLE_REFLECT_CAPTURE_COLOR.into(),
+            PaddleMode::Captured { .. } => PADDLE_REFLECT_CAPTURED_COLOR.into(),
+        }
+    }
 }
 
 #[derive(Component, Debug)]
@@ -133,35 +147,54 @@ fn spawn_paddle(
         })
         .id();
 
-    let sprite_e = cmd
+    let reflect_e = cmd
         .spawn((
-            Name::new("base_sprite"),
+            Name::new("reflect"),
             SpriteBundle {
-                texture: sprites.paddle_base.clone(),
-                sprite: Sprite { color, ..default() },
-                transform: Transform::from_xyz(4.5, 0., 0.)
-                    .with_rotation(Quat::from_rotation_z(-90f32.to_radians())),
+                texture: sprites.paddle_reflect.clone(),
+                sprite: Sprite {
+                    color: PADDLE_REFLECT_CAPTURED_COLOR.into(),
+                    ..default()
+                },
+                transform: Transform::from_xyz(0., -17.5, 0.5),
                 ..default()
             },
         ))
-        .add_child(barrel_e)
+        .id();
+
+    let sprite_e = cmd
+        .spawn(SpatialBundle::default())
         .with_children(|b| {
-            for sign in [1., -1.] {
-                b.spawn((
-                    Name::new("wheel"),
-                    SpriteBundle {
-                        texture: sprites.paddle_wheel.clone(),
-                        sprite: Sprite { color, ..default() },
-                        transform: Transform::from_xyz(98. * sign, -16., 0.),
-                        ..default()
-                    },
-                    RotateWithPaddle {
-                        invert: true,
-                        offset: Rot2::default(),
-                        multiplier: 10.,
-                    },
-                ));
-            }
+            b.spawn((
+                Name::new("base_sprite"),
+                SpriteBundle {
+                    texture: sprites.paddle_base.clone(),
+                    sprite: Sprite { color, ..default() },
+                    transform: Transform::from_xyz(7., 0., 0.)
+                        .with_rotation(Quat::from_rotation_z(-90f32.to_radians())),
+                    ..default()
+                },
+            ))
+            .add_child(barrel_e)
+            .with_children(|b| {
+                for sign in [1., -1.] {
+                    b.spawn((
+                        Name::new("wheel"),
+                        SpriteBundle {
+                            texture: sprites.paddle_wheel.clone(),
+                            sprite: Sprite { color, ..default() },
+                            transform: Transform::from_xyz(98. * sign, -16., 0.),
+                            ..default()
+                        },
+                        RotateWithPaddle {
+                            invert: true,
+                            offset: Rot2::default(),
+                            multiplier: 10.,
+                        },
+                    ));
+                }
+            })
+            .add_child(reflect_e);
         })
         .id();
 
@@ -170,7 +203,11 @@ fn spawn_paddle(
             Name::new("paddle"),
             SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
-            Paddle { sprite_e, barrel_e },
+            Paddle {
+                sprite_e,
+                barrel_e,
+                reflect_e,
+            },
             PaddleMode::Reflect,
             PaddleAmmo {
                 capacity: 50,

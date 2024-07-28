@@ -83,7 +83,7 @@ fn spawn_ball(
             .spawn((
                 Name::new("Ball"),
                 SpatialBundle::from_transform(Transform::from_xyz(
-                    BALL_BASE_RADIUS * -1.6,
+                    BALL_BASE_RADIUS * -1.1,
                     0.,
                     0.9,
                 )),

@@ -9,8 +9,9 @@ use bevy_tweening::{Animator, EaseFunction};
 use crate::{
     ext::Vec2Ext,
     game::{
-        movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
-        tween::get_relative_translation_tween,
+        movement::MovementPaused,
+        spawn::paddle::PADDLE_COLL_HEIGHT,
+        tween::{get_relative_sprite_color_anim, get_relative_translation_tween},
     },
     math::asymptotic_smoothing_with_delta_time,
     BLOOM_BASE, WINDOW_SIZE,
@@ -196,6 +197,12 @@ fn handle_ball_collisions(
                     cmd.entity(ball_e)
                         .set_parent_in_place(paddle_e)
                         .insert(MovementPaused);
+                    cmd.entity(paddle.reflect_e)
+                        .try_insert(get_relative_sprite_color_anim(
+                            paddle_mode.color(),
+                            150,
+                            Some(EaseFunction::QuadraticOut),
+                        ));
                 } else {
                     // reflecting ball
                     shake.add_trauma(

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_tweening::EaseFunction;
 use std::f32::consts::TAU;
 
 use crate::{
@@ -12,8 +13,9 @@ use super::{
     movement::{AccumulatedRotation, MoveDirection, MovementPaused},
     spawn::{
         ball::{Ball, SpawnBall},
-        paddle::{PaddleAmmo, PaddleMode, PaddleRotation},
+        paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
+    tween::get_relative_sprite_color_anim,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -32,12 +34,12 @@ const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.35;
 
 fn process_input(
     input: Res<ButtonInput<MouseButton>>,
-    mut paddle_mode_q: Query<(&mut PaddleMode, &GlobalTransform)>,
+    mut paddle_mode_q: Query<(&Paddle, &mut PaddleMode, &GlobalTransform)>,
     mut cmd: Commands,
     mut ball_q: Query<&mut MoveDirection, With<Ball>>,
 ) {
     if input.just_pressed(MouseButton::Right) {
-        for (mut pm, paddle_t) in &mut paddle_mode_q {
+        for (paddle, mut pm, paddle_t) in &mut paddle_mode_q {
             *pm = match *pm {
                 PaddleMode::Reflect => PaddleMode::Capture,
                 PaddleMode::Capture => PaddleMode::Reflect,
@@ -58,6 +60,12 @@ fn process_input(
                     PaddleMode::Reflect
                 }
             };
+            cmd.entity(paddle.reflect_e)
+                .try_insert(get_relative_sprite_color_anim(
+                    pm.color(),
+                    150,
+                    Some(EaseFunction::QuadraticOut),
+                ));
         }
     }
 }
