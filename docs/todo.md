@@ -84,14 +84,15 @@
 - [x] tween in lvl elements
 - [x] score - just kill count
 - [x] add capture UI
-- [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
-- [ ] enemy death particles on core hit
+- [x] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [x] enemy death particles on core hit
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
 - [ ] resize cam to fit the game
 - [ ] add black bars to sides
 - [ ] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
+- [ ] add gamepad controls
 - [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0

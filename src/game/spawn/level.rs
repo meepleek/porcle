@@ -53,6 +53,9 @@ pub struct RotateWithPaddle {
 }
 
 #[derive(Component, Debug)]
+pub struct AmmoUi;
+
+#[derive(Component, Debug)]
 pub struct AmmoFill;
 
 fn spawn_level(
@@ -111,6 +114,7 @@ fn spawn_level(
     .with_children(|b| {
         b.spawn((
             SpatialBundle::from_transform(Transform::from_scale(Vec2::ZERO.extend(1.))),
+            AmmoUi,
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
                 300,

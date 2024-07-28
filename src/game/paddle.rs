@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tweening::EaseFunction;
+use bevy_tweening::{Animator, EaseFunction};
 use std::f32::consts::TAU;
 
 use crate::{
@@ -13,9 +13,10 @@ use super::{
     movement::{AccumulatedRotation, MoveDirection, MovementPaused},
     spawn::{
         ball::{Ball, SpawnBall},
+        level::AmmoUi,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
-    tween::get_relative_sprite_color_anim,
+    tween::{get_relative_scale_tween, get_relative_sprite_color_anim},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -95,6 +96,7 @@ fn rotate_paddle(
 fn apply_cycle_effects(
     mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
     mut ammo_q: Query<&mut PaddleAmmo>,
+    ammo_ui_q: Query<Entity, With<AmmoUi>>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut cmd: Commands,
     time: Res<Time>,
@@ -111,6 +113,20 @@ fn apply_cycle_effects(
             // CCW (positive angle)
             for mut ammo in &mut ammo_q {
                 ammo.offset(ball_speed_factor.ammo_bonus() as isize);
+            }
+            for e in &ammo_ui_q {
+                cmd.entity(e).try_insert(Animator::new(
+                    get_relative_scale_tween(
+                        Vec2::splat(1.25).extend(1.),
+                        400,
+                        Some(EaseFunction::BackOut),
+                    )
+                    .then(get_relative_scale_tween(
+                        Vec3::ONE,
+                        200,
+                        Some(EaseFunction::QuadraticOut),
+                    )),
+                ));
             }
             paddle_rot.reset(angle.rotation);
         } else if angle.rotation > paddle_rot.cw_start {

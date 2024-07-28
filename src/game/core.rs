@@ -1,13 +1,17 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::tailwind, prelude::*, sprite::Mesh2dHandle};
+use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
+use bevy_tweening::EaseFunction;
 
 use crate::{
     ext::QuatExt,
+    game::{movement::Damping, tween::DespawnOnTweenCompleted},
     screen::{NextTransitionedState, Screen},
 };
 
 use super::{
+    assets::ParticleAssets,
     movement::MovementPaused,
     spawn::{
         enemy::Enemy,
@@ -35,19 +39,38 @@ pub struct TakenDamage;
 
 fn handle_collisions(
     mut core_q: Query<(&mut Health, &CollidingEntities), With<Core>>,
-    enemy_q: Query<(), With<Enemy>>,
+    enemy_q: Query<(&Enemy, &GlobalTransform)>,
     mut cmd: Commands,
     mut next: ResMut<NextTransitionedState>,
     mut shake: Shakes,
     mut taken_dmg_w: EventWriter<TakenDamage>,
+    particles: Res<ParticleAssets>,
 ) {
     for (mut hp, coll) in &mut core_q {
         for coll_e in coll.iter() {
-            if enemy_q.contains(*coll_e) {
+            if let Ok((enemy, enemy_t)) = enemy_q.get(*coll_e) {
                 cmd.entity(*coll_e).despawn_recursive();
                 hp.0 = hp.0.saturating_sub(1);
                 taken_dmg_w.send_default();
                 debug!("ouch!");
+                cmd.entity(*coll_e)
+                    .remove::<Enemy>()
+                    .try_insert(Damping(5.));
+                cmd.entity(enemy.mesh_e).try_insert((
+                    get_relative_scale_anim(
+                        Vec2::ZERO.extend(1.),
+                        150,
+                        Some(EaseFunction::BounceIn),
+                    ),
+                    DespawnOnTweenCompleted::Entity(*coll_e),
+                ));
+                cmd.spawn((
+                    particles.square_particle_spawner(
+                        particles.enemy.clone(),
+                        Transform::from_translation(enemy_t.translation()),
+                    ),
+                    OneShot::Despawn,
+                ));
 
                 if hp.0 == 0 {
                     next.set(Screen::GameOver);
