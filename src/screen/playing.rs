@@ -9,7 +9,7 @@ use bevy::{
 use super::{NextTransitionedState, Screen};
 use crate::game::{
     // assets::SoundtrackKey,
-    audio::soundtrack::PlaySoundtrack,
+    audio::soundtrack::PlayMusic,
     spawn::level::SpawnLevel,
 };
 
@@ -37,7 +37,7 @@ fn enter_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<P
 
 fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
     // We could use [`StateScoped`] on the sound playing entites instead.
-    commands.trigger(PlaySoundtrack::Disable);
+    commands.trigger(PlayMusic::Disable);
     let mut win = window_q.single_mut();
     win.cursor.grab_mode = CursorGrabMode::None;
 }

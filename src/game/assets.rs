@@ -1,131 +1,63 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use bevy_enoki::prelude::*;
 
+use crate::screen::Screen;
+
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<HandleMap<SpriteKey>>();
-    app.init_resource::<HandleMap<SpriteKey>>();
-
-    app.register_type::<HandleMap<SfxKey>>();
-    app.init_resource::<HandleMap<SfxKey>>();
-
-    app.register_type::<HandleMap<SoundtrackKey>>();
-    app.init_resource::<HandleMap<SoundtrackKey>>();
+    app.add_loading_state(
+        LoadingState::new(Screen::Loading)
+            .continue_to_state(Screen::Loaded)
+            .load_collection::<SpriteAssets>()
+            .load_collection::<SfxAssets>()
+            .load_collection::<MusicAssets>(),
+    );
     app.add_systems(Startup, setup_particles);
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
-pub enum SpriteKey {
-    TransitionCircle,
-    GearSmall,
-    Ammo,
+pub fn assets_exist(
+    sprites: Option<Res<SpriteAssets>>,
+    sfx: Option<Res<SfxAssets>>,
+    music: Option<Res<MusicAssets>>,
+    particles: Option<Res<ParticleAssets>>,
+) -> bool {
+    sprites.is_some() && sfx.is_some() && music.is_some() && particles.is_some()
 }
 
-impl AssetKey for SpriteKey {
-    type Asset = Image;
+#[derive(AssetCollection, Resource)]
+pub struct SpriteAssets {
+    #[asset(path = "images/transition_circle.png")]
+    pub transition_circle: Handle<Image>,
+    #[asset(path = "images/gear_small.png")]
+    pub gear_small: Handle<Image>,
+    #[asset(path = "images/ammo_icon.png")]
+    pub ammo_icon: Handle<Image>,
+    #[asset(path = "images/bullet.png")]
+    pub bullet: Handle<Image>,
+    #[asset(path = "images/paddle_base.png")]
+    pub paddle_base: Handle<Image>,
+    #[asset(path = "images/paddle_reflect.png")]
+    pub paddle_reflect: Handle<Image>,
+    #[asset(path = "images/paddle_wheel.png")]
+    pub paddle_wheel: Handle<Image>,
+    #[asset(path = "images/paddle_barrel.png")]
+    pub paddle_barrel: Handle<Image>,
+    #[asset(path = "images/ball.png")]
+    pub ball: Handle<Image>,
 }
 
-impl FromWorld for HandleMap<SpriteKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [
-            (
-                SpriteKey::GearSmall,
-                asset_server.load("images/gear_small.png"),
-            ),
-            (SpriteKey::Ammo, asset_server.load("images/ammo.png")),
-            (
-                SpriteKey::TransitionCircle,
-                asset_server.load("images/transition_circle.png"),
-            ),
-        ]
-        .into()
-    }
+#[derive(AssetCollection, Resource)]
+pub struct SfxAssets {
+    #[asset(path = "audio/sfx/button_hover.ogg")]
+    pub button_hover: Handle<AudioSource>,
+    #[asset(path = "audio/sfx/button_press.ogg")]
+    pub button_click: Handle<AudioSource>,
 }
 
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
-pub enum SfxKey {
-    ButtonHover,
-    ButtonPress,
-    Step1,
-    Step2,
-    Step3,
-    Step4,
-}
-
-impl AssetKey for SfxKey {
-    type Asset = AudioSource;
-}
-
-impl FromWorld for HandleMap<SfxKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [
-            (
-                SfxKey::ButtonHover,
-                asset_server.load("audio/sfx/button_hover.ogg"),
-            ),
-            (
-                SfxKey::ButtonPress,
-                asset_server.load("audio/sfx/button_press.ogg"),
-            ),
-            (SfxKey::Step1, asset_server.load("audio/sfx/step1.ogg")),
-            (SfxKey::Step2, asset_server.load("audio/sfx/step2.ogg")),
-            (SfxKey::Step3, asset_server.load("audio/sfx/step3.ogg")),
-            (SfxKey::Step4, asset_server.load("audio/sfx/step4.ogg")),
-        ]
-        .into()
-    }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
-pub enum SoundtrackKey {
-    Credits,
-    Gameplay,
-}
-
-impl AssetKey for SoundtrackKey {
-    type Asset = AudioSource;
-}
-
-impl FromWorld for HandleMap<SoundtrackKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [
-            (
-                SoundtrackKey::Credits,
-                asset_server.load("audio/soundtracks/Monkeys Spinning Monkeys.ogg"),
-            ),
-            (
-                SoundtrackKey::Gameplay,
-                asset_server.load("audio/soundtracks/Fluffing A Duck.ogg"),
-            ),
-        ]
-        .into()
-    }
-}
-
-pub trait AssetKey: Sized {
-    type Asset: Asset;
-}
-
-#[derive(Resource, Reflect, Deref, DerefMut)]
-#[reflect(Resource)]
-pub struct HandleMap<K: AssetKey>(HashMap<K, Handle<K::Asset>>);
-
-impl<K: AssetKey, T> From<T> for HandleMap<K>
-where
-    T: Into<HashMap<K, Handle<K::Asset>>>,
-{
-    fn from(value: T) -> Self {
-        Self(value.into())
-    }
-}
-
-impl<K: AssetKey> HandleMap<K> {
-    pub fn all_loaded(&self, asset_server: &AssetServer) -> bool {
-        self.values()
-            .all(|x| asset_server.is_loaded_with_dependencies(x))
-    }
+#[derive(AssetCollection, Resource)]
+pub struct MusicAssets {
+    #[asset(path = "audio/soundtracks/Monkeys Spinning Monkeys.ogg")]
+    pub credits: Handle<AudioSource>,
 }
 
 #[derive(Resource, Reflect)]

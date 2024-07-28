@@ -4,36 +4,23 @@
 use bevy::prelude::*;
 
 use super::{NextTransitionedState, Screen};
-use crate::{
-    game::assets::{HandleMap, SfxKey, SoundtrackKey},
-    ui::prelude::*,
-};
+use crate::ui::prelude::*;
 
+// todo: use transition
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Loading), enter_loading);
-    app.add_systems(
-        Update,
-        continue_to_title.run_if(in_state(Screen::Loading).and_then(all_assets_loaded)),
-    );
+    app.add_systems(OnEnter(Screen::Loading), enter_loading)
+        .add_systems(OnEnter(Screen::Loaded), on_loaded);
 }
 
 fn enter_loading(mut commands: Commands) {
     commands
         .ui_root()
-        .insert(StateScoped(Screen::Loading))
+        .insert(StateScoped(Screen::Loaded))
         .with_children(|children| {
             children.label("Loading...");
         });
 }
 
-fn all_assets_loaded(
-    asset_server: Res<AssetServer>,
-    sfx_handles: Res<HandleMap<SfxKey>>,
-    soundtrack_handles: Res<HandleMap<SoundtrackKey>>,
-) -> bool {
-    sfx_handles.all_loaded(&asset_server) && soundtrack_handles.all_loaded(&asset_server)
-}
-
-fn continue_to_title(mut next_screen: ResMut<NextTransitionedState>) {
+fn on_loaded(mut next_screen: ResMut<NextTransitionedState>) {
     next_screen.set(Screen::Title);
 }

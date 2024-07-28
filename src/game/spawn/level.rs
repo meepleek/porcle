@@ -8,7 +8,7 @@ use bevy::{
 };
 
 use crate::{
-    game::assets::{HandleMap, ParticleAssets, SpriteKey},
+    game::assets::{ParticleAssets, SpriteAssets},
     screen::Screen,
     WINDOW_SIZE,
 };
@@ -53,7 +53,7 @@ pub struct AmmoFill;
 fn spawn_level(
     _trigger: Trigger<SpawnLevel>,
     mut cmd: Commands,
-    sprites: Res<HandleMap<SpriteKey>>,
+    sprites: Res<SpriteAssets>,
     particles: Res<ParticleAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -65,7 +65,7 @@ fn spawn_level(
             cmd.spawn((
                 Name::new("small_gear"),
                 SpriteBundle {
-                    texture: sprites.get(&SpriteKey::GearSmall).unwrap().clone(),
+                    texture: sprites.gear_small.clone(),
                     transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
                         .with_rotation(Quat::from_rotation_z(angle)),
                     ..default()
@@ -101,7 +101,7 @@ fn spawn_level(
         b.spawn((
             Name::new("ammo_sprite"),
             SpriteBundle {
-                texture: sprites.get(&SpriteKey::Ammo).unwrap().clone(),
+                texture: sprites.ammo_icon.clone(),
                 transform: Transform::from_translation(Vec3::Z * 0.3),
                 ..default()
             },

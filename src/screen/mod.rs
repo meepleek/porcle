@@ -10,7 +10,7 @@ mod title;
 use bevy::{color::palettes::tailwind, prelude::*};
 
 use crate::game::{
-    assets::{HandleMap, SpriteKey},
+    assets::{assets_exist, SpriteAssets},
     tween::{tween_factor, TweenFactor},
 };
 
@@ -28,11 +28,15 @@ pub(super) fn plugin(app: &mut App) {
             playing::plugin,
             game_over::plugin,
         ))
-        .add_systems(Startup, setup_transition_overlay)
+        .add_systems(OnExit(Screen::Loading), setup_transition_overlay)
         .add_systems(
             Update,
             (
-                start_transition_anim.run_if(resource_changed::<NextTransitionedState>),
+                start_transition_anim.run_if(
+                    assets_exist
+                        .and_then(resource_exists::<Transition>)
+                        .and_then(resource_changed::<NextTransitionedState>),
+                ),
                 transition_out,
                 transition_in,
                 tween_factor::<TransitionCircle>,
@@ -47,6 +51,7 @@ pub enum Screen {
     #[default]
     Splash,
     Loading,
+    Loaded,
     Title,
     Credits,
     Game,
@@ -74,7 +79,7 @@ impl NextTransitionedState {
     }
 }
 
-fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<HandleMap<SpriteKey>>) {
+fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
     let colors = [
         tailwind::CYAN_200.into(),
         tailwind::CYAN_400.into(),
@@ -91,7 +96,7 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<HandleMap<SpriteK
                 TransitionCircle,
                 ImageBundle {
                     image: UiImage {
-                        texture: sprites.get(&SpriteKey::TransitionCircle).unwrap().clone(),
+                        texture: sprites.transition_circle.clone(),
                         color: *color,
                         ..default()
                     },

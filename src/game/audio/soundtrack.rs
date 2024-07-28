@@ -1,48 +1,41 @@
 use bevy::{audio::PlaybackMode, prelude::*};
 
-use crate::game::assets::{HandleMap, SoundtrackKey};
-
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<IsSoundtrack>();
+    app.register_type::<Music>();
     app.observe(play_soundtrack);
 }
 
 fn play_soundtrack(
-    trigger: Trigger<PlaySoundtrack>,
+    trigger: Trigger<PlayMusic>,
     mut commands: Commands,
-    soundtrack_handles: Res<HandleMap<SoundtrackKey>>,
-    soundtrack_query: Query<Entity, With<IsSoundtrack>>,
+    soundtrack_query: Query<Entity, With<Music>>,
 ) {
     for entity in &soundtrack_query {
         commands.entity(entity).despawn_recursive();
     }
 
-    let soundtrack_key = match trigger.event() {
-        PlaySoundtrack::Key(key) => *key,
-        PlaySoundtrack::Disable => return,
+    let handle = match trigger.event() {
+        PlayMusic::Track(key) => key.clone(),
+        PlayMusic::Disable => return,
     };
     commands.spawn((
         AudioSourceBundle {
-            source: soundtrack_handles[&soundtrack_key].clone_weak(),
+            source: handle,
             settings: PlaybackSettings {
                 mode: PlaybackMode::Loop,
                 ..default()
             },
         },
-        IsSoundtrack,
+        Music,
     ));
 }
 
-/// Trigger this event to play or disable the soundtrack.
-/// Playing a new soundtrack will overwrite the previous one.
-/// Soundtracks will loop.
 #[derive(Event)]
-pub enum PlaySoundtrack {
-    Key(SoundtrackKey),
+pub enum PlayMusic {
+    Track(Handle<AudioSource>),
     Disable,
 }
 
-/// Marker component for the soundtrack entity so we can find it later.
 #[derive(Component, Reflect)]
 #[reflect(Component)]
-struct IsSoundtrack;
+struct Music;

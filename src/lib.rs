@@ -58,7 +58,7 @@ impl Plugin for AppPlugin {
                     ..default()
                 })
                 // pixelart
-                .set(ImagePlugin::default_nearest())
+                .set(ImagePlugin::default_linear())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
                         volume: Volume::new(0.3),
