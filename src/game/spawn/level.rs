@@ -58,6 +58,7 @@ fn spawn_level(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    // todo: make the gears & center icons lighter/improve contrast with ball
     let cog_entity_ids: Vec<_> = (0..GEAR_COUNT)
         .map(|i| {
             let rot = Rot2::degrees((360f32 / GEAR_COUNT as f32) * i as f32 + 90.);

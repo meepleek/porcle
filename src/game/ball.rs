@@ -375,9 +375,8 @@ fn update_trauma_based_on_ball_speed(
     mut shake_q: Query<&mut ShakeSettings>,
 ) {
     for mut shake in &mut shake_q {
-        shake.decay_per_second = 0.9 + 0.1 * factor.0;
-        shake.amplitude = 25.0 - 10. * factor.0;
-        shake.trauma_power = 1.5 + 0.5 * factor.0;
+        shake.decay_per_second = 0.9 + 0.3 * factor.0;
+        shake.amplitude = 25.0 - 15. * factor.0;
     }
 }
 

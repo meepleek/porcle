@@ -6,7 +6,10 @@ use bevy::{
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 
-use crate::{game::movement::AccumulatedRotation, screen::Screen};
+use crate::{
+    game::{assets::SpriteAssets, movement::AccumulatedRotation},
+    screen::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
@@ -91,11 +94,13 @@ fn spawn_paddle(
     mut cmd: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    sprites: Res<SpriteAssets>,
 ) {
     let mat = materials.add(ColorMaterial::from_color(
         bevy::color::palettes::tailwind::SKY_400,
     ));
 
+    // rails/paddle radius
     for offset in [-10., 15.] {
         cmd.spawn((
             MaterialMesh2dBundle {
