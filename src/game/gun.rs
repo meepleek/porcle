@@ -9,6 +9,7 @@ use std::time::Duration;
 use crate::{
     ext::{RandExt, Vec2Ext},
     game::{spawn::projectile::SpawnProjectile, tween::get_relative_scale_anim},
+    ui::palette::COL_ENEMY_FLASH,
 };
 
 use super::{
@@ -193,7 +194,7 @@ fn handle_collisions(
                     // flash
                     cmd.entity(enemy.mesh_e).insert(AssetAnimator::new(
                         get_relative_color_material_color_tween(
-                            Color::WHITE,
+                            COL_ENEMY_FLASH,
                             50,
                             Some(EaseFunction::QuadraticIn),
                         )

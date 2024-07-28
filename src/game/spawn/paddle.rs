@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use avian2d::prelude::*;
 use bevy::{
-    color::palettes::tailwind,
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -16,6 +15,9 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
+    ui::palette::{
+        COL_PADDLE, COL_PADDLE_CAPTURE, COL_PADDLE_CAPTURED, COL_PADDLE_REFLECT, COL_PADDLE_TRACKS,
+    },
 };
 
 use super::level::RotateWithPaddle;
@@ -27,9 +29,6 @@ pub(super) fn plugin(app: &mut App) {
 pub const PADDLE_RADIUS: f32 = 350.0;
 pub const PADDLE_HEIGHT: f32 = 120.0;
 pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 20.;
-pub const PADDLE_REFLECT_BASE_COLOR: Srgba = tailwind::SKY_700;
-pub const PADDLE_REFLECT_CAPTURE_COLOR: Srgba = tailwind::AMBER_400;
-pub const PADDLE_REFLECT_CAPTURED_COLOR: Srgba = tailwind::AMBER_700;
 
 #[derive(Event, Debug)]
 pub struct SpawnPaddle;
@@ -54,9 +53,9 @@ pub enum PaddleMode {
 impl PaddleMode {
     pub fn color(&self) -> Color {
         match self {
-            PaddleMode::Reflect => PADDLE_REFLECT_BASE_COLOR.into(),
-            PaddleMode::Capture => PADDLE_REFLECT_CAPTURE_COLOR.into(),
-            PaddleMode::Captured { .. } => PADDLE_REFLECT_CAPTURED_COLOR.into(),
+            PaddleMode::Reflect => COL_PADDLE_REFLECT,
+            PaddleMode::Capture => COL_PADDLE_CAPTURE,
+            PaddleMode::Captured { .. } => COL_PADDLE_CAPTURED,
         }
     }
 }
@@ -119,8 +118,6 @@ fn spawn_paddle(
     mut materials: ResMut<Assets<ColorMaterial>>,
     sprites: Res<SpriteAssets>,
 ) {
-    let color: Color = tailwind::SKY_400.into();
-
     // rails/paddle radius
     for (i, offset) in [-10., 15.].into_iter().enumerate() {
         cmd.spawn((
@@ -130,9 +127,7 @@ fn spawn_paddle(
                     PADDLE_RADIUS + offset,
                     PADDLE_RADIUS + offset + 10.,
                 ))),
-                material: materials.add(ColorMaterial::from_color(
-                    bevy::color::palettes::tailwind::SKY_200,
-                )),
+                material: materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
                 transform: Transform::zero_scale_2d(),
                 ..default()
             },
@@ -151,7 +146,10 @@ fn spawn_paddle(
                 Name::new("barrel"),
                 SpriteBundle {
                     texture: sprites.paddle_barrel.clone(),
-                    sprite: Sprite { color, ..default() },
+                    sprite: Sprite {
+                        color: COL_PADDLE,
+                        ..default()
+                    },
                     transform: Transform::from_xyz(0., 55., 0.),
                     ..default()
                 },
@@ -165,7 +163,7 @@ fn spawn_paddle(
             SpriteBundle {
                 texture: sprites.paddle_reflect.clone(),
                 sprite: Sprite {
-                    color: PADDLE_REFLECT_CAPTURED_COLOR.into(),
+                    color: COL_PADDLE_REFLECT,
                     ..default()
                 },
                 transform: Transform::from_xyz(0., -17.5, 0.5),
@@ -181,7 +179,10 @@ fn spawn_paddle(
                 Name::new("base_sprite"),
                 SpriteBundle {
                     texture: sprites.paddle_base.clone(),
-                    sprite: Sprite { color, ..default() },
+                    sprite: Sprite {
+                        color: COL_PADDLE,
+                        ..default()
+                    },
                     transform: Transform::from_xyz(7., 0., 0.)
                         .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
                         .with_scale(Vec2::ZERO.extend(1.)),
@@ -199,7 +200,10 @@ fn spawn_paddle(
                         Name::new("wheel"),
                         SpriteBundle {
                             texture: sprites.paddle_wheel.clone(),
-                            sprite: Sprite { color, ..default() },
+                            sprite: Sprite {
+                                color: COL_PADDLE,
+                                ..default()
+                            },
                             transform: Transform::from_xyz(98. * sign, -16., 0.),
                             ..default()
                         },

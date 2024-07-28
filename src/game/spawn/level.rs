@@ -2,7 +2,6 @@
 
 use avian2d::prelude::*;
 use bevy::{
-    color::palettes::tailwind,
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -14,6 +13,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
+    ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_GEARS},
     GAME_SIZE,
 };
 
@@ -75,6 +75,10 @@ fn spawn_level(
                 Name::new("small_gear"),
                 SpriteBundle {
                     texture: sprites.gear_small.clone(),
+                    sprite: Sprite {
+                        color: COL_GEARS,
+                        ..default()
+                    },
                     transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
                         .with_rotation(Quat::from_rotation_z(angle))
                         .with_scale(Vec2::ZERO.extend(1.)),
@@ -126,6 +130,10 @@ fn spawn_level(
                 Name::new("ammo_sprite"),
                 SpriteBundle {
                     texture: sprites.ammo_icon.clone(),
+                    sprite: Sprite {
+                        color: COL_AMMO_BG,
+                        ..default()
+                    },
                     transform: Transform::from_translation(Vec3::Z * 0.3),
                     ..default()
                 },
@@ -136,7 +144,7 @@ fn spawn_level(
                 AmmoFill,
                 MaterialMesh2dBundle {
                     // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
-                    material: materials.add(ColorMaterial::from_color(tailwind::GREEN_400)),
+                    material: materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
                     transform: Transform::from_translation(Vec3::Z * 0.2)
                         .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
                     ..default()
@@ -147,7 +155,7 @@ fn spawn_level(
                 Name::new("ammo_bg"),
                 MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS))),
-                    material: materials.add(ColorMaterial::from_color(tailwind::GRAY_800)),
+                    material: materials.add(ColorMaterial::from_color(COL_AMMO_BG)),
                     transform: Transform::from_translation(Vec3::Z * 0.1),
                     ..default()
                 },

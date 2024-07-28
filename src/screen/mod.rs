@@ -7,14 +7,15 @@ mod playing;
 mod splash;
 mod title;
 
-use bevy::{color::palettes::tailwind, prelude::*, window::WindowResized};
+use bevy::{prelude::*, window::WindowResized};
 
-use crate::game::{
-    assets::{assets_exist, SpriteAssets},
-    tween::{tween_factor, TweenFactor},
+use crate::{
+    game::{
+        assets::{assets_exist, SpriteAssets},
+        tween::{tween_factor, TweenFactor},
+    },
+    ui::palette::{COL_BG, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
 };
-
-use self::splash::SPLASH_BACKGROUND_COLOR;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<Screen>()
@@ -82,12 +83,7 @@ impl NextTransitionedState {
 }
 
 fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
-    let colors = [
-        tailwind::CYAN_200.into(),
-        tailwind::CYAN_400.into(),
-        tailwind::CYAN_600.into(),
-        SPLASH_BACKGROUND_COLOR,
-    ];
+    let colors = [COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3, COL_BG];
 
     let circle_entity_ids: Vec<_> = colors
         .iter()

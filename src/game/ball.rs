@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use avian2d::prelude::*;
-use bevy::{color::palettes::tailwind, core_pipeline::bloom::BloomSettings, prelude::*};
+use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
 use bevy_tweening::{Animator, EaseFunction};
@@ -14,6 +14,7 @@ use crate::{
         tween::{get_relative_sprite_color_anim, get_relative_translation_tween},
     },
     math::asymptotic_smoothing_with_delta_time,
+    ui::palette::{COL_BALL, COL_BALL_FAST},
     BLOOM_BASE, GAME_SIZE,
 };
 
@@ -307,7 +308,6 @@ fn handle_ball_collisions(
             debug!("shapecasting nearest enemy");
             let radius = 170.;
             let origin = ball_t.translation().truncate() + direction.0 * 150.;
-            // gizmos.circle_2d(origin, radius, tailwind::AMBER_700);
             for hit in phys_spatial
                 .shape_hits(
                     &Collider::circle(radius),
@@ -346,11 +346,7 @@ fn color_ball(
 ) {
     for handle in &ball_q {
         if let Some(mat) = mats.get_mut(handle) {
-            mat.color = lerp_color(
-                tailwind::RED_400.into(),
-                tailwind::AMBER_300.into(),
-                factor.0,
-            );
+            mat.color = lerp_color(COL_BALL, COL_BALL_FAST, factor.0);
         }
     }
 }

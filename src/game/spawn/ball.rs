@@ -1,4 +1,4 @@
-use bevy::{color::palettes::tailwind, prelude::*};
+use bevy::prelude::*;
 use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
@@ -9,6 +9,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
+    ui::palette::COL_BALL,
 };
 
 use super::paddle::PaddleMode;
@@ -68,7 +69,7 @@ fn spawn_ball(
                 SpriteBundle {
                     texture: sprites.ball.clone(),
                     sprite: Sprite {
-                        color: tailwind::YELLOW_400.into(),
+                        color: COL_BALL,
                         ..default()
                     },
                     transform: Transform::from_scale(Vec3::Z),

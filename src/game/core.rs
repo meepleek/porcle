@@ -1,5 +1,5 @@
 use avian2d::prelude::*;
-use bevy::{color::palettes::tailwind, prelude::*, sprite::Mesh2dHandle};
+use bevy::{prelude::*, sprite::Mesh2dHandle};
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::EaseFunction;
@@ -8,6 +8,7 @@ use crate::{
     ext::QuatExt,
     game::{movement::Damping, tween::DespawnOnTweenCompleted},
     screen::{NextTransitionedState, Screen},
+    ui::palette::COL_GEARS_DISABLED,
 };
 
 use super::{
@@ -134,7 +135,7 @@ fn disable_gears(
                         350,
                         Some(bevy_tweening::EaseFunction::BackIn),
                     ),
-                    get_relative_sprite_color_anim(tailwind::GRAY_800.into(), 350, None),
+                    get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
                     MovementPaused,
                 ));
             }

@@ -1,5 +1,5 @@
 use avian2d::prelude::*;
-use bevy::{color::palettes::tailwind, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     game::{
@@ -7,6 +7,7 @@ use crate::{
         movement::{Damping, MovementBundle},
     },
     screen::Screen,
+    ui::palette::COL_BULLET,
 };
 
 use super::despawn::DespawnOutOfBounds;
@@ -39,7 +40,7 @@ fn spawn_projectile(
         .spawn(SpriteBundle {
             texture: sprites.bullet.clone(),
             sprite: Sprite {
-                color: tailwind::YELLOW_400.into(),
+                color: COL_BULLET,
                 ..default()
             },
             transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),

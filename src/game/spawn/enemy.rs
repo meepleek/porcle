@@ -12,6 +12,7 @@ use crate::{
     ext::Vec2Ext,
     game::movement::{HomingTarget, MovementBundle},
     screen::Screen,
+    ui::palette::COL_ENEMY,
     GAME_SIZE,
 };
 
@@ -67,11 +68,10 @@ fn spawn_enemy(
             let b = Vec2::new(-size, -size);
             let c = Vec2::new(size, -size);
 
-            let color = bevy::color::palettes::tailwind::PURPLE_400;
             let mesh_e = cmd
                 .spawn(MaterialMesh2dBundle {
                     mesh: Mesh2dHandle(meshes.add(Triangle2d::new(a, b, c))),
-                    material: materials.add(ColorMaterial::from_color(color)),
+                    material: materials.add(ColorMaterial::from_color(COL_ENEMY)),
                     ..default()
                 })
                 .id();
@@ -87,7 +87,7 @@ fn spawn_enemy(
                 HomingTarget,
                 Enemy {
                     mesh_e,
-                    color: color.into(),
+                    color: COL_ENEMY,
                 },
                 Health(3),
                 StateScoped(Screen::Game),
