@@ -24,7 +24,7 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
 }
 
-pub const PADDLE_RADIUS: f32 = 260.0;
+pub const PADDLE_RADIUS: f32 = 350.0;
 pub const PADDLE_HEIGHT: f32 = 120.0;
 pub const PADDLE_COLL_HEIGHT: f32 = PADDLE_HEIGHT + 20.;
 pub const PADDLE_REFLECT_BASE_COLOR: Srgba = tailwind::SKY_700;

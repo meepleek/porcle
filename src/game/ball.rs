@@ -14,7 +14,7 @@ use crate::{
         tween::{get_relative_sprite_color_anim, get_relative_translation_tween},
     },
     math::asymptotic_smoothing_with_delta_time,
-    BLOOM_BASE, WINDOW_SIZE,
+    BLOOM_BASE, GAME_SIZE,
 };
 
 use super::{
@@ -324,7 +324,7 @@ fn handle_ball_collisions(
             {
                 if let Ok(enemy_t) = enemy_q.get(hit.entity) {
                     let enemy_pos = enemy_t.translation();
-                    if enemy_pos.abs().max_element() > (WINDOW_SIZE / 2. - 50.) {
+                    if enemy_pos.abs().max_element() > (GAME_SIZE / 2. - 50.) {
                         // outside window
                         continue;
                     }

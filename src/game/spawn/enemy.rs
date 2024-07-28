@@ -12,6 +12,7 @@ use crate::{
     ext::Vec2Ext,
     game::movement::{HomingTarget, MovementBundle},
     screen::Screen,
+    GAME_SIZE,
 };
 
 use super::level::Health;
@@ -44,9 +45,10 @@ pub enum EnemyKind {
 
 fn spawner(mut cmd: Commands) {
     let mut rng = thread_rng();
+    let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
     cmd.trigger(SpawnEnemy {
         kind: EnemyKind::Crawler,
-        position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * 720.,
+        position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * spawn_dist,
         speed: rng.gen_range(25.0..40.0),
     });
 }

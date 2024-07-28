@@ -88,9 +88,9 @@
 - [x] enemy death particles on core hit
 - [x] bg particles
 - [x] ball move particles
-- [ ] resize cam to fit the game
+- [x] resize cam to fit the game
 - [ ] add black bars to sides
-- [ ] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
+- [x] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
 - [ ] add gamepad controls
 - [ ] add reflection/aim prediction UI
 

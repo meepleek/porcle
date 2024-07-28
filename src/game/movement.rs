@@ -3,7 +3,7 @@ use std::ops::Range;
 use avian2d::math::Vector2;
 use bevy::prelude::*;
 
-use crate::{ext::QuatExt, WINDOW_SIZE};
+use crate::{ext::QuatExt, GAME_SIZE};
 
 use super::time::{process_cooldown, Cooldown};
 
@@ -189,7 +189,7 @@ fn home(
 
         for target_t in target_q.iter() {
             // todo: need to fix this
-            if target_t.translation().abs().max_element() > (WINDOW_SIZE / 2.0 - 50.) {
+            if target_t.translation().abs().max_element() > (GAME_SIZE / 2.0 - 50.) {
                 // outside window
                 continue;
             }

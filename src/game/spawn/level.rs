@@ -14,7 +14,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    WINDOW_SIZE,
+    GAME_SIZE,
 };
 
 use super::{
@@ -160,7 +160,7 @@ fn spawn_level(
 
     cmd.trigger(SpawnPaddle);
 
-    let half_size = WINDOW_SIZE / 2.;
+    let half_size = GAME_SIZE / 2.;
 
     for (a, b) in [
         (Vec2::new(-1., 1.), Vec2::ONE),

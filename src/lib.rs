@@ -11,12 +11,14 @@ use bevy::{
     audio::{AudioPlugin, Volume},
     core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
     prelude::*,
+    render::camera::ScalingMode,
 };
 use bevy_trauma_shake::ShakeSettings;
 
 pub struct AppPlugin;
 
-pub const WINDOW_SIZE: f32 = 1024.;
+pub const GAME_SIZE: f32 = 1600.;
+pub const MIN_WINDOW_SIZE: f32 = 720.;
 pub const BLOOM_BASE: f32 = 0.15;
 
 impl Plugin for AppPlugin {
@@ -45,10 +47,10 @@ impl Plugin for AppPlugin {
                         title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
-                        resolution: Vec2::splat(WINDOW_SIZE).into(),
+                        resolution: Vec2::splat(1024.).into(),
                         resize_constraints: WindowResizeConstraints {
-                            min_width: WINDOW_SIZE,
-                            min_height: WINDOW_SIZE,
+                            min_width: MIN_WINDOW_SIZE,
+                            min_height: MIN_WINDOW_SIZE,
                             ..default()
                         },
                         prevent_default_event_handling: true,
@@ -97,16 +99,23 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((
-        Name::new("Camera"),
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                ..default()
-            },
-            tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
+    let mut cam_bundle = Camera2dBundle {
+        camera: Camera {
+            hdr: true,
             ..default()
         },
+        tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
+        ..default()
+    };
+    // cam_bundle.projection.scale = 1.5;
+    cam_bundle.projection.scaling_mode = ScalingMode::AutoMin {
+        min_width: GAME_SIZE,
+        min_height: GAME_SIZE,
+    };
+
+    commands.spawn((
+        Name::new("Camera"),
+        cam_bundle,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
