@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use avian2d::prelude::*;
 use bevy::{color::palettes::tailwind, core_pipeline::bloom::BloomSettings, prelude::*};
-use bevy_enoki::prelude::OneShot;
+use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
 use bevy_tweening::{Animator, EaseFunction};
 
@@ -41,6 +41,7 @@ pub(super) fn plugin(app: &mut App) {
             handle_ball_collisions,
             color_ball,
             rotate_ball,
+            rotate_ball_particles,
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
             update_trauma_based_on_ball_speed,
@@ -402,6 +403,27 @@ fn rotate_ball(
     for ball in &ball_q {
         if let Ok(mut t) = trans_q.get_mut(ball.sprite_e) {
             t.rotate_z(base_speed * factor * time.delta_seconds());
+        }
+    }
+}
+
+fn rotate_ball_particles(
+    ball_q: Query<(Entity, &Ball, &MoveDirection)>,
+    ball_paused_q: Query<
+        (),
+        (
+            With<Ball>,
+            Or<(With<MovementPaused>, With<Cooldown<MovementPaused>>)>,
+        ),
+    >,
+    mut particles_q: Query<(&mut Transform, &mut ParticleSpawnerState)>,
+    factor: Res<MaxBallSpeedFactor>,
+) {
+    // todo: properly use change detection
+    for (e, ball, dir) in &ball_q {
+        if let Ok((mut t, mut particles)) = particles_q.get_mut(ball.particles_e) {
+            t.rotation = dir.0.to_quat();
+            particles.active = !ball_paused_q.contains(e) && factor.0 > 0.25;
         }
     }
 }

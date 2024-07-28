@@ -84,6 +84,7 @@ pub struct ParticleAssets {
     pub reflection: Handle<Particle2dEffect>,
     pub core: Handle<Particle2dEffect>,
     pub bg: Handle<Particle2dEffect>,
+    pub ball: Handle<Particle2dEffect>,
 }
 
 impl ParticleAssets {
@@ -130,5 +131,6 @@ fn setup_particles(
         reflection: ass.load("particles/reflection.particle.ron"),
         core: ass.load("particles/core.particle.ron"),
         bg: ass.load("particles/bg.particle.ron"),
+        ball: ass.load("particles/ball.particle.ron"),
     });
 }

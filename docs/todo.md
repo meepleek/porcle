@@ -87,9 +87,7 @@
 - [x] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
 - [x] enemy death particles on core hit
 - [x] bg particles
-- [ ] ball move particles
-- [ ] paddle move particles
-- [ ] enemy move particles
+- [x] ball move particles
 - [ ] resize cam to fit the game
 - [ ] add black bars to sides
 - [ ] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
@@ -124,6 +122,8 @@
 
 - [ ] add vignette?
 - [ ] add chromatic abberation
+- [ ] paddle move particles
+- [ ] enemy move particles
 
 ## scrapped
 
