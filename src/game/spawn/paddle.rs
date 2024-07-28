@@ -121,8 +121,9 @@ fn spawn_paddle(
     let color: Color = tailwind::SKY_400.into();
 
     // rails/paddle radius
-    for offset in [-10., 15.] {
+    for (i, offset) in [-10., 15.].into_iter().enumerate() {
         cmd.spawn((
+            Name::new("rail"),
             MaterialMesh2dBundle {
                 mesh: Mesh2dHandle(meshes.add(Annulus::new(
                     PADDLE_RADIUS + offset,
@@ -133,6 +134,10 @@ fn spawn_paddle(
                 )),
                 ..default()
             },
+            Animator::new(delay_tween(
+                get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
+                650 + i as u64 * 150,
+            )),
             StateScoped(Screen::Game),
         ));
     }

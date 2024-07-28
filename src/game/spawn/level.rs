@@ -6,9 +6,13 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
-    game::assets::{ParticleAssets, SpriteAssets},
+    game::{
+        assets::{ParticleAssets, SpriteAssets},
+        tween::{delay_tween, get_relative_scale_tween},
+    },
     screen::Screen,
     WINDOW_SIZE,
 };
@@ -69,7 +73,8 @@ fn spawn_level(
                 SpriteBundle {
                     texture: sprites.gear_small.clone(),
                     transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
-                        .with_rotation(Quat::from_rotation_z(angle)),
+                        .with_rotation(Quat::from_rotation_z(angle))
+                        .with_scale(Vec2::ZERO.extend(1.)),
                     ..default()
                 },
                 RotateWithPaddle {
@@ -77,6 +82,10 @@ fn spawn_level(
                     offset: Rot2::radians(angle),
                     multiplier: 1.0,
                 },
+                Animator::new(delay_tween(
+                    get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
+                    350 + i as u64 * 100,
+                )),
             ))
             .id()
         })
@@ -100,37 +109,46 @@ fn spawn_level(
     ))
     .push_children(&cog_entity_ids)
     .with_children(|b| {
-        // big gear
         b.spawn((
-            Name::new("ammo_sprite"),
-            SpriteBundle {
-                texture: sprites.ammo_icon.clone(),
-                transform: Transform::from_translation(Vec3::Z * 0.3),
-                ..default()
-            },
-        ));
+            SpatialBundle::from_transform(Transform::from_scale(Vec2::ZERO.extend(1.))),
+            Animator::new(delay_tween(
+                get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
+                300,
+            )),
+        ))
+        .with_children(|b| {
+            // ammo UI
+            b.spawn((
+                Name::new("ammo_sprite"),
+                SpriteBundle {
+                    texture: sprites.ammo_icon.clone(),
+                    transform: Transform::from_translation(Vec3::Z * 0.3),
+                    ..default()
+                },
+            ));
 
-        b.spawn((
-            Name::new("ammo_fill"),
-            AmmoFill,
-            MaterialMesh2dBundle {
-                // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
-                material: materials.add(ColorMaterial::from_color(tailwind::GREEN_400)),
-                transform: Transform::from_translation(Vec3::Z * 0.2)
-                    .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
-                ..default()
-            },
-        ));
+            b.spawn((
+                Name::new("ammo_fill"),
+                AmmoFill,
+                MaterialMesh2dBundle {
+                    // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
+                    material: materials.add(ColorMaterial::from_color(tailwind::GREEN_400)),
+                    transform: Transform::from_translation(Vec3::Z * 0.2)
+                        .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
+                    ..default()
+                },
+            ));
 
-        b.spawn((
-            Name::new("ammo_bg"),
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS))),
-                material: materials.add(ColorMaterial::from_color(tailwind::GRAY_800)),
-                transform: Transform::from_translation(Vec3::Z * 0.1),
-                ..default()
-            },
-        ));
+            b.spawn((
+                Name::new("ammo_bg"),
+                MaterialMesh2dBundle {
+                    mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS))),
+                    material: materials.add(ColorMaterial::from_color(tailwind::GRAY_800)),
+                    transform: Transform::from_translation(Vec3::Z * 0.1),
+                    ..default()
+                },
+            ));
+        });
 
         //particles
         b.spawn((particles.particle_spawner(particles.core.clone(), Transform::default()),));
