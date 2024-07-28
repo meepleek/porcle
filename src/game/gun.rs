@@ -14,6 +14,7 @@ use crate::{
 use super::{
     assets::ParticleAssets,
     ball::MaxBallSpeedFactor,
+    input::{PlayerAction, PlayerInput},
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     spawn::{
         enemy::Enemy,
@@ -54,13 +55,13 @@ fn fire_gun(
         ),
         Without<Cooldown<PaddleAmmo>>,
     >,
-    input: Res<ButtonInput<MouseButton>>,
+    input: PlayerInput,
     mut cmd: Commands,
     mut shake: Shakes,
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
 ) {
-    if input.pressed(MouseButton::Left) {
+    if input.pressed(&PlayerAction::Shoot) {
         for (e, paddle, mut ammo, t, cooldown) in &mut ammo_q {
             if ammo.ammo() > 0 {
                 let mut rng = thread_rng();

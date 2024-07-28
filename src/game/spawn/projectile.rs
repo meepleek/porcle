@@ -49,8 +49,8 @@ fn spawn_projectile(
         SpatialBundle::from_transform(ev.transform),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        MovementBundle::new(ev.dir.as_vec2(), 1200.),
-        Damping(1.5),
+        MovementBundle::new(ev.dir.as_vec2(), 1600.),
+        Damping(0.8),
         Projectile {
             size: Vec2::new(x, y),
             mesh_e: sprite_e,

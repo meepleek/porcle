@@ -1,15 +1,16 @@
 //! The screen state for the main game loop.
 
 use bevy::{
-    input::common_conditions::input_just_pressed,
     prelude::*,
     window::{CursorGrabMode, PrimaryWindow},
 };
+use leafwing_input_manager::common_conditions::action_just_pressed;
 
 use super::{NextTransitionedState, Screen};
 use crate::game::{
     // assets::SoundtrackKey,
     audio::soundtrack::PlayMusic,
+    input::PlayerAction,
     score::Score,
     spawn::level::SpawnLevel,
 };
@@ -21,10 +22,12 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(
             Update,
             (
-                return_to_title_screen
-                    .run_if(in_state(Screen::Game).and_then(input_just_pressed(KeyCode::Escape))),
-                restart_game
-                    .run_if(in_state(Screen::Game).and_then(input_just_pressed(KeyCode::KeyR))),
+                return_to_title_screen.run_if(
+                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Quit)),
+                ),
+                restart_game.run_if(
+                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Restart)),
+                ),
             ),
         );
 }

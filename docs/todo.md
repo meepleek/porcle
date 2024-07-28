@@ -91,7 +91,9 @@
 - [x] resize cam to fit the game
 - [x] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
 - [x] add black bars to sides (letterboxing)
-- [ ] add gamepad controls
+- [x] add gamepad controls
+- [ ] despawn out of bounds projectiles
+- [ ] pick a color palette
 - [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0
