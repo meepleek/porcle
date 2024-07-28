@@ -11,7 +11,7 @@ use super::{
     movement::MovementPaused,
     spawn::{
         enemy::Enemy,
-        level::{AmmoFill, Core, Gear, Health, AMMO_FILL_RADIUS},
+        level::{AmmoFill, Core, Health, RotateWithPaddle, AMMO_FILL_RADIUS},
         paddle::{PaddleAmmo, PaddleRotation},
     },
     tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
@@ -62,13 +62,17 @@ fn handle_collisions(
 
 fn rotate_gears(
     paddle_rot_q: Query<&Transform, With<PaddleRotation>>,
-    mut gear_q: Query<(&mut Transform, &Gear), (Without<PaddleRotation>, Without<MovementPaused>)>,
+    mut gear_q: Query<
+        (&mut Transform, &RotateWithPaddle),
+        (Without<PaddleRotation>, Without<MovementPaused>),
+    >,
 ) {
     if let Some(paddle_t) = paddle_rot_q.iter().next() {
         for (mut gear_t, gear) in &mut gear_q {
             gear_t.rotation = Quat::from_rotation_z(
                 (gear.offset.as_radians() + paddle_t.rotation.z_angle_rad())
-                    * (if gear.even { 1. } else { -1. }),
+                    * (if gear.invert { 1. } else { -1. })
+                    * gear.multiplier,
             );
         }
     }

@@ -12,6 +12,8 @@ use crate::{
     screen::Screen,
 };
 
+use super::level::RotateWithPaddle;
+
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_paddle);
 }
@@ -125,7 +127,6 @@ fn spawn_paddle(
                     texture: sprites.paddle_barrel.clone(),
                     sprite: Sprite { color, ..default() },
                     transform: Transform::from_xyz(0., 55., 0.),
-                    // .with_rotation(Quat::from_rotation_z(90f32.to_radians())),
                     ..default()
                 },
             ));
@@ -144,6 +145,24 @@ fn spawn_paddle(
             },
         ))
         .add_child(barrel_e)
+        .with_children(|b| {
+            for sign in [1., -1.] {
+                b.spawn((
+                    Name::new("wheel"),
+                    SpriteBundle {
+                        texture: sprites.paddle_wheel.clone(),
+                        sprite: Sprite { color, ..default() },
+                        transform: Transform::from_xyz(98. * sign, -16., 0.),
+                        ..default()
+                    },
+                    RotateWithPaddle {
+                        invert: true,
+                        offset: Rot2::default(),
+                        multiplier: 10.,
+                    },
+                ));
+            }
+        })
         .id();
 
     let paddle_e = cmd

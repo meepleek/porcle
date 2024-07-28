@@ -42,9 +42,10 @@ pub struct Health(pub u8);
 pub struct Wall;
 
 #[derive(Component, Debug)]
-pub struct Gear {
-    pub even: bool,
+pub struct RotateWithPaddle {
+    pub invert: bool,
     pub offset: Rot2,
+    pub multiplier: f32,
 }
 
 #[derive(Component, Debug)]
@@ -71,9 +72,10 @@ fn spawn_level(
                         .with_rotation(Quat::from_rotation_z(angle)),
                     ..default()
                 },
-                Gear {
-                    even: i % 2 == 0,
+                RotateWithPaddle {
+                    invert: i % 2 == 0,
                     offset: Rot2::radians(angle),
+                    multiplier: 1.0,
                 },
             ))
             .id()
