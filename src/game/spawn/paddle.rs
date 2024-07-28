@@ -6,9 +6,14 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
+use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
-    game::{assets::SpriteAssets, movement::AccumulatedRotation},
+    game::{
+        assets::SpriteAssets,
+        movement::AccumulatedRotation,
+        tween::{delay_tween, get_relative_scale_tween},
+    },
     screen::Screen,
 };
 
@@ -171,9 +176,14 @@ fn spawn_paddle(
                     texture: sprites.paddle_base.clone(),
                     sprite: Sprite { color, ..default() },
                     transform: Transform::from_xyz(7., 0., 0.)
-                        .with_rotation(Quat::from_rotation_z(-90f32.to_radians())),
+                        .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
+                        .with_scale(Vec2::ZERO.extend(1.)),
                     ..default()
                 },
+                Animator::new(delay_tween(
+                    get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
+                    450,
+                )),
             ))
             .add_child(barrel_e)
             .with_children(|b| {

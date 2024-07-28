@@ -71,7 +71,6 @@ fn spawn_ball(
                     transform: Transform::from_scale(Vec3::Z),
                     ..default()
                 },
-                // todo: delay
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
                     ev.tween_delay_ms,
