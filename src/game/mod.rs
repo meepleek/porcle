@@ -10,6 +10,7 @@ mod gun;
 pub mod input;
 mod movement;
 pub mod paddle;
+pub mod score;
 pub mod spawn;
 pub mod time;
 pub mod tween;
@@ -27,5 +28,6 @@ pub(super) fn plugin(app: &mut App) {
         tween::plugin,
         ball::plugin,
         paddle::plugin,
+        score::plugin,
     ));
 }

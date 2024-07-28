@@ -20,6 +20,7 @@ use crate::{
 use super::{
     assets::ParticleAssets,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
+    score::Score,
     spawn::{
         ball::{Ball, InsidePaddleRadius},
         enemy::Enemy,
@@ -132,6 +133,7 @@ fn handle_ball_collisions(
     mut shake: Shakes,
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
+    mut score: ResMut<Score>,
 ) {
     for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -295,6 +297,7 @@ fn handle_ball_collisions(
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 ball_speed.0 *= 0.9;
+                score.0 += 1;
             }
         }
 

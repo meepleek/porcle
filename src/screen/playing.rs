@@ -10,6 +10,7 @@ use super::{NextTransitionedState, Screen};
 use crate::game::{
     // assets::SoundtrackKey,
     audio::soundtrack::PlayMusic,
+    score::Score,
     spawn::level::SpawnLevel,
 };
 
@@ -28,11 +29,17 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
-fn enter_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
-    commands.trigger(SpawnLevel);
+fn enter_playing(
+    mut cmd: Commands,
+    mut window_q: Query<&mut Window, With<PrimaryWindow>>,
+    mut score: ResMut<Score>,
+) {
+    cmd.trigger(SpawnLevel);
     // commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
     let mut win = window_q.single_mut();
     win.cursor.grab_mode = CursorGrabMode::Confined;
+    // reset score
+    score.0 = 0;
 }
 
 fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {

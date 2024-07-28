@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 use super::{NextTransitionedState, Screen};
-use crate::ui::prelude::*;
+use crate::{game::score::Score, ui::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::GameOver), enter_game_over)
@@ -19,13 +19,13 @@ enum BtnAction {
     Play,
 }
 
-fn enter_game_over(mut commands: Commands) {
+fn enter_game_over(mut commands: Commands, score: Res<Score>) {
     commands
         .ui_root()
         .insert(StateScoped(Screen::GameOver))
         .with_children(|children| {
             children.label("GAME OVER");
-            children.label("todo: score");
+            children.label(format!("Score: {}", score.0));
             children.button("Try again").insert(BtnAction::Play);
         });
 }

@@ -82,22 +82,22 @@
 - [x] health UI
 - [x] circle/anullus transition
 - [x] tween in lvl elements
-- [ ] score - just kill count
-- [ ] spawn rate based on score
+- [x] score - just kill count
 - [ ] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
 - [x] add capture UI
-- [ ] add reflection/aim prediction UI
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
 - [ ] resize cam to fit the game
 - [ ] add black bars to sides
 - [ ] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
+- [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0
 
 ## enemies - v0.7.0
 
+- [ ] spawn rate based on score
 - [ ] improve crawler
 - [ ] slower crawler that has to be hit by the ball (shielded)
 - [ ] shooty enemy/turret
