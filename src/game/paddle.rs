@@ -16,6 +16,7 @@ use super::{
         level::AmmoUi,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
+    time::{process_cooldown, Cooldown},
     tween::{get_relative_scale_tween, get_relative_sprite_color_anim},
 };
 
@@ -27,6 +28,7 @@ pub(super) fn plugin(app: &mut App) {
             process_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
             apply_cycle_effects,
+            process_cooldown::<PaddleMode>,
         ),
     );
 }
@@ -35,12 +37,16 @@ pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.45;
 
 fn process_input(
     input: PlayerInput,
-    mut paddle_mode_q: Query<(&Paddle, &mut PaddleMode, &GlobalTransform)>,
+    mut paddle_mode_q: Query<
+        (Entity, &Paddle, &mut PaddleMode, &GlobalTransform),
+        Without<Cooldown<PaddleMode>>,
+    >,
     mut cmd: Commands,
     mut ball_q: Query<&mut MoveDirection, With<Ball>>,
 ) {
+    // todo: cooldown?
     if input.just_pressed(&PlayerAction::TogglePaddleMode) {
-        for (paddle, mut pm, paddle_t) in &mut paddle_mode_q {
+        for (e, paddle, mut pm, paddle_t) in &mut paddle_mode_q {
             *pm = match *pm {
                 PaddleMode::Reflect => PaddleMode::Capture,
                 PaddleMode::Capture => PaddleMode::Reflect,
@@ -67,6 +73,7 @@ fn process_input(
                     150,
                     Some(EaseFunction::QuadraticOut),
                 ));
+            cmd.entity(e).try_insert(Cooldown::<PaddleMode>::new(0.15));
         }
     }
 }
