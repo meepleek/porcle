@@ -20,7 +20,7 @@ use super::{
     assets::ParticleAssets,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     spawn::{
-        ball::{Ball, InsidePaddleRadius, BALL_BASE_RADIUS},
+        ball::{Ball, InsidePaddleRadius},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
@@ -38,7 +38,7 @@ pub(super) fn plugin(app: &mut App) {
             update_ball_speed,
             handle_ball_collisions,
             color_ball,
-            scale_ball,
+            rotate_ball,
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
             update_trauma_based_on_ball_speed,
@@ -344,14 +344,6 @@ fn color_ball(
     }
 }
 
-fn scale_ball(mut ball_q: Query<(&mut Transform, &mut Ball)>, factor: Res<MaxBallSpeedFactor>) {
-    for (mut ball_t, mut ball) in &mut ball_q {
-        let scale = 1.0 + factor.0 * 0.35;
-        ball.radius = scale * BALL_BASE_RADIUS;
-        ball_t.scale = Vec2::splat(scale).extend(1.);
-    }
-}
-
 fn update_ball_speed_factor(
     ball_q: Query<&BallSpeed, With<Ball>>,
     mut factor: ResMut<MaxBallSpeedFactor>,
@@ -386,5 +378,20 @@ fn update_trauma_based_on_ball_speed(
         shake.decay_per_second = 0.9 + 0.1 * factor.0;
         shake.amplitude = 25.0 - 10. * factor.0;
         shake.trauma_power = 1.5 + 0.5 * factor.0;
+    }
+}
+
+fn rotate_ball(
+    ball_q: Query<&Ball>,
+    mut trans_q: Query<&mut Transform>,
+    factor: Res<MaxBallSpeedFactor>,
+    time: Res<Time>,
+) {
+    let base_speed = -480f32.to_radians();
+    let factor = 1.0 + factor.0 * 1.5;
+    for ball in &ball_q {
+        if let Ok(mut t) = trans_q.get_mut(ball.sprite_e) {
+            t.rotate_z(base_speed * factor * time.delta_seconds());
+        }
     }
 }
