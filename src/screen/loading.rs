@@ -4,7 +4,7 @@
 use bevy::prelude::*;
 
 use super::{NextTransitionedState, Screen};
-use crate::ui::prelude::*;
+use crate::{game::assets::ParticleAssets, ui::prelude::*};
 
 // todo: use transition
 pub(super) fn plugin(app: &mut App) {
@@ -21,6 +21,12 @@ fn enter_loading(mut commands: Commands) {
         });
 }
 
-fn on_loaded(mut next_screen: ResMut<NextTransitionedState>) {
+fn on_loaded(
+    mut next_screen: ResMut<NextTransitionedState>,
+    mut cmd: Commands,
+    particles: Res<ParticleAssets>,
+) {
     next_screen.set(Screen::Title);
+    // bg particles
+    cmd.spawn((particles.particle_spawner(particles.bg.clone(), Transform::default()),));
 }

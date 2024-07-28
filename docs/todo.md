@@ -86,6 +86,7 @@
 - [x] add capture UI
 - [x] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
 - [x] enemy death particles on core hit
+- [x] bg particles
 - [ ] ball move particles
 - [ ] paddle move particles
 - [ ] enemy move particles
