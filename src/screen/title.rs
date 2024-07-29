@@ -51,6 +51,6 @@ fn handle_title_action(
     }
 }
 
-fn exit_app(#[cfg(not(target_family = "wasm"))] mut app_exit: EventWriter<AppExit>) {
+fn exit_app(mut app_exit: EventWriter<AppExit>) {
     app_exit.send(AppExit::Success);
 }
