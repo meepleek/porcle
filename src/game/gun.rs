@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{Animator, AssetAnimator, Delay, EaseFunction};
+use bevy_tweening::{Animator, Delay, EaseFunction};
 use rand::thread_rng;
 use std::time::Duration;
 
@@ -25,7 +25,7 @@ use super::{
     },
     time::{process_cooldown, Cooldown},
     tween::{
-        delay_tween, get_relative_color_material_color_tween, get_relative_translation_tween,
+        delay_tween, get_relative_sprite_color_tween, get_relative_translation_tween,
         DespawnOnTweenCompleted,
     },
 };
@@ -175,7 +175,7 @@ fn handle_collisions(
                 enemy_hp.0 -= 1;
                 if enemy_hp.0 == 0 {
                     cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
-                    cmd.entity(enemy.mesh_e).insert((
+                    cmd.entity(enemy.sprite_e).insert((
                         get_relative_scale_anim(
                             Vec2::ZERO.extend(1.),
                             150,
@@ -192,14 +192,14 @@ fn handle_collisions(
                     ));
                 } else {
                     // flash
-                    cmd.entity(enemy.mesh_e).insert(AssetAnimator::new(
-                        get_relative_color_material_color_tween(
+                    cmd.entity(enemy.sprite_e).insert(Animator::new(
+                        get_relative_sprite_color_tween(
                             COL_ENEMY_FLASH,
                             50,
                             Some(EaseFunction::QuadraticIn),
                         )
                         .then(delay_tween(
-                            get_relative_color_material_color_tween(
+                            get_relative_sprite_color_tween(
                                 enemy.color,
                                 50,
                                 Some(EaseFunction::QuadraticOut),

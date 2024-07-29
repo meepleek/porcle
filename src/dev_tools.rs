@@ -19,7 +19,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(Update, log_transitions::<Screen>)
         .add_systems(Update, process_debug_input);
 
-    // app.add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
+    app.add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
 
     #[cfg(feature = "dev")]
     app.add_plugins(

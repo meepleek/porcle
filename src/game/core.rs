@@ -57,7 +57,7 @@ fn handle_collisions(
                 cmd.entity(*coll_e)
                     .remove::<Enemy>()
                     .try_insert(Damping(5.));
-                cmd.entity(enemy.mesh_e).try_insert((
+                cmd.entity(enemy.sprite_e).try_insert((
                     get_relative_scale_anim(
                         Vec2::ZERO.extend(1.),
                         150,
