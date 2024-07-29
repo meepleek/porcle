@@ -98,19 +98,14 @@
 - [x] UI color palette
 - [x] captured ball can't destroy enemies
 
-## audio - v0.6.0
+## enemies - v0.6.0
 
-## enemies - v0.7.0
+- [x] spawn rate based on score
+- [x] improve crawler (add a sprite, too)
+- [x] bigger/chunkier crawler (add a sprite, too)
+- [x] slower crawler that has to be hit by the ball (shielded)
 
-- [ ] spawn rate based on score
-- [ ] improve crawler (add a sprite, too)
-- [ ] consider limiting crawlers to just 2 HP
-- [ ] bigger/chunkier crawler (add a sprite, too)
-- [ ] slower crawler that has to be hit by the ball (shielded)
-- [ ] shooty enemy/turret
-- [ ] turret that has to be destroyed by the ball (shielded)
-- [ ] paddle blocks enemy projectiles
-- [ ] ball destroys enemy projectiles
+## audio - v0.7.0
 
 ## upgrades - v0.x.0
 
@@ -134,6 +129,11 @@
 ## Nice to haves
 
 - [ ] add reflection/aim prediction UI
+- [ ] shooty enemy/turret
+- [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] paddle blocks enemy projectiles
+- [ ] ball destroys enemy projectiles
+
 
 ## scrapped
 

@@ -44,6 +44,12 @@ pub struct SpriteAssets {
     pub paddle_barrel: Handle<Image>,
     #[asset(path = "images/ball.png")]
     pub ball: Handle<Image>,
+    #[asset(path = "images/enemy_creepinek.png")]
+    pub enemy_creepinek: Handle<Image>,
+    #[asset(path = "images/enemy_creepy_shield.png")]
+    pub enemy_creepy_shield: Handle<Image>,
+    #[asset(path = "images/enemy_big_boi.png")]
+    pub enemy_big_boi: Handle<Image>,
 }
 
 #[derive(AssetCollection, Resource)]
