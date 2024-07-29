@@ -98,9 +98,7 @@
 - [x] UI color palette
 - [x] captured ball can't destroy enemies
 
-## audio - v0.6.0
-
-## enemies - v0.7.0
+## enemies - v0.6.0
 
 - [ ] spawn rate based on score
 - [ ] improve crawler (add a sprite, too)
@@ -111,6 +109,8 @@
 - [ ] turret that has to be destroyed by the ball (shielded)
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
+
+## audio - v0.7.0
 
 ## upgrades - v0.x.0
 
