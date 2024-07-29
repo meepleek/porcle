@@ -23,7 +23,7 @@ use super::{
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     score::Score,
     spawn::{
-        ball::{Ball, InsidePaddleRadius},
+        ball::{Ball, InsidePaddleRadius, BALL_BASE_RADIUS},
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
@@ -40,6 +40,7 @@ pub(super) fn plugin(app: &mut App) {
             balls_inside_core,
             update_ball_speed,
             handle_ball_collisions,
+            draw_trajectory_prediction,
             color_ball,
             rotate_ball,
             rotate_ball_particles,
@@ -342,6 +343,28 @@ fn handle_ball_collisions(
                 }
             }
         }
+    }
+}
+
+fn draw_trajectory_prediction(
+    mut gizmos: Gizmos,
+    ball_q: Query<
+        (&GlobalTransform, &MoveDirection, &Speed),
+        (
+            With<Ball>,
+            Without<MovementPaused>,
+            Without<Cooldown<MovementPaused>>,
+        ),
+    >,
+) {
+    if let Some((ball_t, dir, speed)) = ball_q.iter().next() {
+        let trajectory_len = PADDLE_RADIUS * 1.5 * (1. + (speed.0 / BALL_BASE_SPEED) * 0.25);
+        let origin = ball_t.translation().truncate() + dir.0 * BALL_BASE_RADIUS;
+        let mut line_points = vec![(origin, COL_BALL)];
+
+        // todo: shapecast here
+        line_points.push((origin + dir.0 * trajectory_len, Color::NONE));
+        gizmos.linestrip_gradient_2d(line_points);
     }
 }
 
