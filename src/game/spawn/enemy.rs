@@ -28,7 +28,6 @@ pub(super) fn plugin(app: &mut App) {
 pub struct SpawnEnemy {
     pub kind: EnemyKind,
     pub position: Vec2,
-    pub speed: f32,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -37,25 +36,41 @@ pub struct Enemy {
     pub color: Color,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum EnemyKind {
     Creepinek,
     CreepyShield,
     BigBoi,
 }
 
+impl EnemyKind {
+    fn base_speed(&self) -> f32 {
+        match self {
+            EnemyKind::Creepinek => 25.,
+            EnemyKind::CreepyShield => 15.,
+            EnemyKind::BigBoi => 10.,
+        }
+    }
+}
+
 fn spawner(mut cmd: Commands) {
     let mut rng = thread_rng();
     let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
+
+    let spawnable = [EnemyKind::Creepinek, EnemyKind::BigBoi];
+
     cmd.trigger(SpawnEnemy {
-        kind: EnemyKind::Creepinek,
+        kind: *spawnable.choose(&mut rng).expect("Kind randomly selected"),
         position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * spawn_dist,
-        speed: rng.gen_range(25.0..40.0),
     });
 }
 
 fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<SpriteAssets>) {
+    let mut rng = thread_rng();
+
     let ev = trigger.event();
+    let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
+
     match ev.kind {
         EnemyKind::Creepinek => {
             let size = 45.;
@@ -82,7 +97,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                     ),
                 ),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), ev.speed),
+                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
                 Enemy {
                     sprite_e: mesh_e,
@@ -94,6 +109,41 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             .add_child(mesh_e);
         }
         EnemyKind::CreepyShield => todo!(),
-        EnemyKind::BigBoi => todo!(),
+        EnemyKind::BigBoi => {
+            let size = 95.;
+            let a = Vec2::Y * (size - 15.);
+            let b = Vec2::new(-size, -size + 10.);
+            let c = Vec2::new(size, -size + 10.);
+
+            let sprite_e = cmd
+                .spawn(SpriteBundle {
+                    texture: sprites.enemy_big_boi.clone(),
+                    sprite: Sprite {
+                        color: COL_ENEMY,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .id();
+
+            cmd.spawn((
+                Name::new("Crawler"),
+                SpatialBundle::from_transform(
+                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
+                    ),
+                ),
+                Collider::triangle(a, b, c),
+                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                HomingTarget,
+                Enemy {
+                    sprite_e,
+                    color: COL_ENEMY,
+                },
+                Health(8),
+                StateScoped(Screen::Game),
+            ))
+            .add_child(sprite_e);
+        }
     }
 }
