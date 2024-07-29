@@ -97,7 +97,6 @@
 - [x] particle color palette
 - [x] UI color palette
 - [x] captured ball can't destroy enemies
-- [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0
 
@@ -131,6 +130,10 @@
 - [ ] add chromatic abberation
 - [ ] paddle move particles
 - [ ] enemy move particles
+
+## Nice to haves
+
+- [ ] add reflection/aim prediction UI
 
 ## scrapped
 
