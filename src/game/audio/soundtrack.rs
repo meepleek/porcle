@@ -32,6 +32,7 @@ fn play_soundtrack(
 
 #[derive(Event)]
 pub enum PlayMusic {
+    #[allow(dead_code)]
     Track(Handle<AudioSource>),
     Disable,
 }

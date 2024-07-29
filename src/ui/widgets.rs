@@ -92,8 +92,8 @@ impl<T: Spawn> Widgets for T {
             Name::new("Label"),
             NodeBundle {
                 style: Style {
-                    width: Px(500.0),
-                    justify_content: JustifyContent::Center,
+                    width: Percent(85.0),
+                    justify_content: JustifyContent::Start,
                     align_items: AlignItems::Center,
                     ..default()
                 },

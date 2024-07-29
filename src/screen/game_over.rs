@@ -25,8 +25,8 @@ fn enter_game_over(mut commands: Commands, score: Res<Score>) {
         .insert(StateScoped(Screen::GameOver))
         .with_children(|children| {
             children.label("GAME OVER");
-            children.label(format!("Score: {}", score.0));
-            children.button("Try again").insert(BtnAction::Play);
+            children.label(format!("SCORE: {}", score.0));
+            children.button("TRY AGAIN").insert(BtnAction::Play);
         });
 }
 

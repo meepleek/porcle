@@ -6,6 +6,7 @@ mod loading;
 mod playing;
 mod splash;
 mod title;
+mod tutorial;
 
 use bevy::{prelude::*, window::WindowResized};
 
@@ -28,6 +29,7 @@ pub(super) fn plugin(app: &mut App) {
             credits::plugin,
             playing::plugin,
             game_over::plugin,
+            tutorial::plugin,
         ))
         .add_systems(OnExit(Screen::Loading), setup_transition_overlay)
         .add_systems(Startup, setup_letterbox)
@@ -57,6 +59,7 @@ pub enum Screen {
     Loaded,
     Title,
     Credits,
+    Tutorial,
     Game,
     RestartGame,
     GameOver,
