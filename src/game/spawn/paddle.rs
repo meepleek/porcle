@@ -3,6 +3,7 @@ use std::time::Duration;
 use avian2d::prelude::*;
 use bevy::{
     prelude::*,
+    render::mesh::AnnulusMeshBuilder,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_tweening::{Animator, EaseFunction};
@@ -120,13 +121,13 @@ fn spawn_paddle(
 ) {
     // rails/paddle radius
     for (i, offset) in [-10., 15.].into_iter().enumerate() {
+        let annulus_builder =
+            AnnulusMeshBuilder::new(PADDLE_RADIUS + offset, PADDLE_RADIUS + offset + 10., 128);
+        annulus_builder.build();
         cmd.spawn((
             Name::new("rail"),
             MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(Annulus::new(
-                    PADDLE_RADIUS + offset,
-                    PADDLE_RADIUS + offset + 10.,
-                ))),
+                mesh: Mesh2dHandle(meshes.add(annulus_builder.build())),
                 material: materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
                 transform: Transform::zero_scale_2d(),
                 ..default()
