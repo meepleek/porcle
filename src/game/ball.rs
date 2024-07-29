@@ -340,13 +340,13 @@ fn handle_ball_collisions(
 }
 
 fn color_ball(
-    ball_q: Query<&Handle<ColorMaterial>, With<Ball>>,
-    mut mats: ResMut<Assets<ColorMaterial>>,
+    ball_q: Query<&Ball>,
+    mut sprite_q: Query<&mut Sprite>,
     factor: Res<MaxBallSpeedFactor>,
 ) {
-    for handle in &ball_q {
-        if let Some(mat) = mats.get_mut(handle) {
-            mat.color = lerp_color(COL_BALL, COL_BALL_FAST, factor.0);
+    for ball in &ball_q {
+        if let Ok(mut sprite) = sprite_q.get_mut(ball.sprite_e) {
+            sprite.color = lerp_color(COL_BALL, COL_BALL_FAST, factor.0);
         }
     }
 }

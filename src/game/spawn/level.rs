@@ -13,7 +13,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_GEARS},
+    ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_AMMO_OUT, COL_GEARS},
     GAME_SIZE,
 };
 
@@ -154,8 +154,8 @@ fn spawn_level(
             b.spawn((
                 Name::new("ammo_bg"),
                 MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS))),
-                    material: materials.add(ColorMaterial::from_color(COL_AMMO_BG)),
+                    mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
+                    material: materials.add(ColorMaterial::from_color(COL_AMMO_OUT)),
                     transform: Transform::from_translation(Vec3::Z * 0.1),
                     ..default()
                 },

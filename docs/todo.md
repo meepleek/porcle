@@ -93,7 +93,10 @@
 - [x] add black bars to sides (letterboxing)
 - [x] add gamepad controls
 - [x] despawn out of bounds projectiles
-- [ ] pick a color palette
+- [x] pick a color palette
+- [ ] particle color palette
+- [ ] UI color palette
+- [ ] captured ball can't destroy enemies
 - [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0
