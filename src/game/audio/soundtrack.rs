@@ -1,4 +1,7 @@
-use bevy::{audio::PlaybackMode, prelude::*};
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<Music>();
@@ -23,6 +26,7 @@ fn play_soundtrack(
             source: handle,
             settings: PlaybackSettings {
                 mode: PlaybackMode::Loop,
+                volume: Volume::new(0.275),
                 ..default()
             },
         },
