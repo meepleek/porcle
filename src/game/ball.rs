@@ -96,8 +96,23 @@ fn balls_inside_core(
     }
 }
 
-fn update_ball_speed(mut ball_q: Query<(&GlobalTransform, &mut Speed, &BallSpeed), With<Ball>>) {
-    for (_t, mut speed, ball_speed) in &mut ball_q {
+fn update_ball_speed(
+    mut ball_q: Query<(&GlobalTransform, &mut Speed, &mut BallSpeed), With<Ball>>,
+    paddle_mode_q: Query<&PaddleMode>,
+    time: Res<Time>,
+) {
+    let ball_captured = paddle_mode_q
+        .iter()
+        .any(|pm| matches!(pm, &PaddleMode::Captured { .. }));
+
+    for (_t, mut speed, mut ball_speed) in &mut ball_q {
+        if ball_captured {
+            // slow down captured ball
+            ball_speed.0 =
+                (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.4)).max(BALL_BASE_SPEED);
+            debug!(speed = speed.0, "captured ball");
+        }
+
         // let dist = t.translation().length();
         // let factor = ((dist - PADDLE_RADIUS) / 120.0).clamp(0., 1.).powf(2.0);
         // speed.0 = ball_speed.0 * (1. + factor * 0.5);
@@ -159,9 +174,6 @@ fn handle_ball_collisions(
                 paddle_q.get_mut(hit_e)
             {
                 if let PaddleMode::Captured { .. } = *paddle_mode {
-                    ball_speed.0 = (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.25))
-                        .max(BALL_BASE_SPEED);
-                    debug!(speed = speed.0, "captured ball");
                     continue;
                 }
 
