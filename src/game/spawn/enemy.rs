@@ -36,10 +36,13 @@ pub struct Enemy {
     pub color: Color,
 }
 
+#[derive(Component, Debug, Clone)]
+pub struct Shielded;
+
 #[derive(Debug, Clone, Copy)]
 pub enum EnemyKind {
     Creepinek,
-    CreepyShield,
+    Shieldy,
     BigBoi,
 }
 
@@ -47,7 +50,7 @@ impl EnemyKind {
     fn base_speed(&self) -> f32 {
         match self {
             EnemyKind::Creepinek => 25.,
-            EnemyKind::CreepyShield => 15.,
+            EnemyKind::Shieldy => 15.,
             EnemyKind::BigBoi => 10.,
         }
     }
@@ -57,7 +60,7 @@ fn spawner(mut cmd: Commands) {
     let mut rng = thread_rng();
     let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
 
-    let spawnable = [EnemyKind::Creepinek, EnemyKind::BigBoi];
+    let spawnable = [EnemyKind::Creepinek, EnemyKind::Shieldy, EnemyKind::BigBoi];
 
     cmd.trigger(SpawnEnemy {
         kind: *spawnable.choose(&mut rng).expect("Kind randomly selected"),
@@ -70,6 +73,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
 
     let ev = trigger.event();
     let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
+    // let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5)) * 5.;
 
     match ev.kind {
         EnemyKind::Creepinek => {
@@ -90,7 +94,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 .id();
 
             cmd.spawn((
-                Name::new("Crawler"),
+                Name::new("creepinek"),
                 SpatialBundle::from_transform(
                     Transform::from_translation(ev.position.extend(0.1)).with_rotation(
                         Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
@@ -108,7 +112,38 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             ))
             .add_child(mesh_e);
         }
-        EnemyKind::CreepyShield => todo!(),
+        EnemyKind::Shieldy => {
+            let mesh_e = cmd
+                .spawn(SpriteBundle {
+                    texture: sprites.enemy_creepy_shield.clone(),
+                    sprite: Sprite {
+                        color: COL_ENEMY,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .id();
+
+            cmd.spawn((
+                Name::new("shieldy"),
+                SpatialBundle::from_transform(
+                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
+                    ),
+                ),
+                Collider::ellipse(75., 60.),
+                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                HomingTarget,
+                Enemy {
+                    sprite_e: mesh_e,
+                    color: COL_ENEMY,
+                },
+                Health(3),
+                Shielded,
+                StateScoped(Screen::Game),
+            ))
+            .add_child(mesh_e);
+        }
         EnemyKind::BigBoi => {
             let size = 95.;
             let a = Vec2::Y * (size - 15.);
@@ -127,7 +162,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 .id();
 
             cmd.spawn((
-                Name::new("Crawler"),
+                Name::new("big_boi"),
                 SpatialBundle::from_transform(
                     Transform::from_translation(ev.position.extend(0.1)).with_rotation(
                         Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),

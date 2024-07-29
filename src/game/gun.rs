@@ -18,7 +18,7 @@ use super::{
     input::{PlayerAction, PlayerInput},
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     spawn::{
-        enemy::Enemy,
+        enemy::{Enemy, Shielded},
         level::Health,
         paddle::{Paddle, PaddleAmmo},
         projectile::Projectile,
@@ -140,7 +140,13 @@ fn handle_collisions(
         &MoveDirection,
         &Speed,
     )>,
-    mut enemy_q: Query<(&GlobalTransform, &Enemy, &mut Health, &mut Impulse)>,
+    mut enemy_q: Query<(
+        &GlobalTransform,
+        &Enemy,
+        &mut Health,
+        &mut Impulse,
+        Option<&Shielded>,
+    )>,
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
@@ -162,7 +168,9 @@ fn handle_collisions(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-            if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse)) = enemy_q.get_mut(hit_e) {
+            if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse, shielded)) =
+                enemy_q.get_mut(hit_e)
+            {
                 cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
                 cmd.entity(projectile.mesh_e).insert((
                     get_relative_scale_anim(
@@ -172,8 +180,12 @@ fn handle_collisions(
                     ),
                     DespawnOnTweenCompleted::Entity(e),
                 ));
-                enemy_hp.0 -= 1;
-                if enemy_hp.0 == 0 {
+
+                if shielded.is_none() {
+                    enemy_hp.0 -= 1;
+                }
+
+                if enemy_hp.0 == 0 && shielded.is_none() {
                     cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
                     cmd.entity(enemy.sprite_e).insert((
                         get_relative_scale_anim(
@@ -191,22 +203,24 @@ fn handle_collisions(
                         OneShot::Despawn,
                     ));
                 } else {
-                    // flash
-                    cmd.entity(enemy.sprite_e).insert(Animator::new(
-                        get_relative_sprite_color_tween(
-                            COL_ENEMY_FLASH,
-                            50,
-                            Some(EaseFunction::QuadraticIn),
-                        )
-                        .then(delay_tween(
+                    if shielded.is_none() {
+                        // flash
+                        cmd.entity(enemy.sprite_e).insert(Animator::new(
                             get_relative_sprite_color_tween(
-                                enemy.color,
+                                COL_ENEMY_FLASH,
                                 50,
-                                Some(EaseFunction::QuadraticOut),
-                            ),
-                            150,
-                        )),
-                    ));
+                                Some(EaseFunction::QuadraticIn),
+                            )
+                            .then(delay_tween(
+                                get_relative_sprite_color_tween(
+                                    enemy.color,
+                                    50,
+                                    Some(EaseFunction::QuadraticOut),
+                                ),
+                                150,
+                            )),
+                        ));
+                    }
                     // knockback
                     impulse.0 += move_dir.0 * 30.;
                 }
