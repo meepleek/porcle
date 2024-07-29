@@ -283,6 +283,12 @@ fn handle_ball_collisions(
                 let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
                 direction.0 = reflect;
             } else if enemy_q.contains(hit_e) {
+                if let Some((_, _, _, _, paddle_mode, ..)) = paddle_q.iter().next() {
+                    if matches!(paddle_mode, PaddleMode::Captured { .. }) {
+                        continue;
+                    }
+                }
+
                 cmd.entity(hit_e).despawn_recursive();
                 shake.add_trauma(0.15);
                 // particles

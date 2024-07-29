@@ -96,7 +96,7 @@
 - [x] pick a color palette
 - [x] particle color palette
 - [x] UI color palette
-- [ ] captured ball can't destroy enemies
+- [x] captured ball can't destroy enemies
 - [ ] add reflection/aim prediction UI
 
 ## audio - v0.6.0
