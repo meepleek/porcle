@@ -1,13 +1,14 @@
 use std::time::Duration;
 
 use avian2d::prelude::*;
-use bevy::{prelude::*, time::common_conditions::on_timer};
-use rand::prelude::*;
+use bevy::prelude::*;
+use rand::{distributions::WeightedIndex, prelude::*};
 
 use crate::{
     game::{
         assets::SpriteAssets,
         movement::{HomingTarget, MovementBundle},
+        score::Score,
     },
     screen::Screen,
     ui::palette::COL_ENEMY,
@@ -18,10 +19,7 @@ use super::level::Health;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
-    app.add_systems(
-        Update,
-        spawner.run_if(in_state(Screen::Game).and_then(on_timer(Duration::from_millis(1500)))),
-    );
+    app.add_systems(Update, spawner.run_if(in_state(Screen::Game)));
 }
 
 #[derive(Event, Debug)]
@@ -49,23 +47,57 @@ pub enum EnemyKind {
 impl EnemyKind {
     fn base_speed(&self) -> f32 {
         match self {
-            EnemyKind::Creepinek => 25.,
-            EnemyKind::Shieldy => 15.,
-            EnemyKind::BigBoi => 10.,
+            EnemyKind::Creepinek => 35.,
+            EnemyKind::Shieldy => 20.,
+            EnemyKind::BigBoi => 15.,
+        }
+    }
+
+    fn base_time(&self) -> f32 {
+        match self {
+            EnemyKind::Creepinek => 2.0,
+            EnemyKind::Shieldy => 3.0,
+            EnemyKind::BigBoi => 4.5,
         }
     }
 }
 
-fn spawner(mut cmd: Commands) {
-    let mut rng = thread_rng();
-    let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
+fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, score: Res<Score>) {
+    next_timer.tick(time.delta());
 
-    let spawnable = [EnemyKind::Creepinek, EnemyKind::Shieldy, EnemyKind::BigBoi];
+    if next_timer.just_finished() {
+        let mut rng = thread_rng();
+        let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
 
-    cmd.trigger(SpawnEnemy {
-        kind: *spawnable.choose(&mut rng).expect("Kind randomly selected"),
-        position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * spawn_dist,
-    });
+        let spawnable_kinds = [EnemyKind::Creepinek, EnemyKind::Shieldy, EnemyKind::BigBoi];
+        let weights = WeightedIndex::new(match score.0 {
+            0..=2 => [1, 0, 0],
+            3..=10 => [5, 2, 0],
+            11..=25 => [4, 2, 1],
+            26.. => [4, 2, 1],
+        })
+        .expect("Create weighted index");
+
+        let kind = spawnable_kinds[weights.sample(&mut rng)];
+        cmd.trigger(SpawnEnemy {
+            kind,
+            position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize()
+                * spawn_dist,
+        });
+        let time_mult_range = match score.0 {
+            0..=5 => 1.0..1.3,
+            6..=15 => 0.9..1.2,
+            16..=30 => 0.8..1.1,
+            31..=50 => 0.7..1.0,
+            51..=70 => 0.5..0.8,
+            71..=90 => 0.4..0.7,
+            91.. => 0.3..0.5,
+        };
+        next_timer.set_duration(Duration::from_secs_f32(
+            kind.base_time() * rng.gen_range(time_mult_range),
+        ));
+        next_timer.reset();
+    }
 }
 
 fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<SpriteAssets>) {

@@ -100,14 +100,10 @@
 
 ## enemies - v0.6.0
 
-- [ ] spawn rate based on score
-- [ ] improve crawler (add a sprite, too)
-- [ ] bigger/chunkier crawler (add a sprite, too)
-- [ ] slower crawler that has to be hit by the ball (shielded)
-- [ ] shooty enemy/turret
-- [ ] turret that has to be destroyed by the ball (shielded)
-- [ ] paddle blocks enemy projectiles
-- [ ] ball destroys enemy projectiles
+- [x] spawn rate based on score
+- [x] improve crawler (add a sprite, too)
+- [x] bigger/chunkier crawler (add a sprite, too)
+- [x] slower crawler that has to be hit by the ball (shielded)
 
 ## audio - v0.7.0
 
@@ -133,6 +129,11 @@
 ## Nice to haves
 
 - [ ] add reflection/aim prediction UI
+- [ ] shooty enemy/turret
+- [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] paddle blocks enemy projectiles
+- [ ] ball destroys enemy projectiles
+
 
 ## scrapped
 
