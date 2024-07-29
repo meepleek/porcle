@@ -77,7 +77,7 @@ fn fire_gun(
                     .with_rotation(rot),
                 });
                 ammo.offset(-1);
-                shake.add_trauma(0.175 - 0.07 * ball_speed_factor.0);
+                shake.add_trauma(0.165 - 0.08 * ball_speed_factor.0);
                 cmd.entity(e).insert(Cooldown::<PaddleAmmo>::new(
                     0.17 - 0.08 * ball_speed_factor.0,
                 ));

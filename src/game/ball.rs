@@ -258,7 +258,7 @@ fn handle_ball_collisions(
                 let speed_factor = speed.speed_factor(BALL_BASE_SPEED * 0.5, BALL_BASE_SPEED * 2.0);
 
                 // shake
-                shake.add_trauma(0.1 + 0.225 * speed_factor);
+                shake.add_trauma(0.2 + 0.125 * speed_factor);
 
                 // freeze movement
                 let cooldown = 0.085 + speed_factor * 0.125;
@@ -382,8 +382,8 @@ fn update_trauma_based_on_ball_speed(
     mut shake_q: Query<&mut ShakeSettings>,
 ) {
     for mut shake in &mut shake_q {
-        shake.decay_per_second = 0.9 + 0.3 * factor.0;
-        shake.amplitude = 25.0 - 15. * factor.0;
+        shake.decay_per_second = 0.8 + 0.35 * factor.0;
+        shake.amplitude = 35.0 - 10. * factor.0;
     }
 }
 
