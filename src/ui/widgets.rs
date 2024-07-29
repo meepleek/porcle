@@ -93,7 +93,7 @@ impl<T: Spawn> Widgets for T {
             NodeBundle {
                 style: Style {
                     width: Percent(85.0),
-                    justify_content: JustifyContent::Start,
+                    justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
                 },
