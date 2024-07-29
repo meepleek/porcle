@@ -95,7 +95,7 @@
 - [x] despawn out of bounds projectiles
 - [x] pick a color palette
 - [x] particle color palette
-- [ ] UI color palette
+- [x] UI color palette
 - [ ] captured ball can't destroy enemies
 - [ ] add reflection/aim prediction UI
 

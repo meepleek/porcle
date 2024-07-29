@@ -1,19 +1,20 @@
 use bevy::prelude::*;
 
-pub const BUTTON_HOVERED_BACKGROUND: Color = Color::srgb(0.186, 0.328, 0.573);
-pub const BUTTON_PRESSED_BACKGROUND: Color = Color::srgb(0.286, 0.478, 0.773);
+pub const NODE_BG: Color = COL_BULLET;
+pub const BUTTON_BG: Color = COL_TRANSITION_1;
+pub const BUTTON_HOVERED_BG: Color = COL_TRANSITION_2;
+pub const BUTTON_PRESSED_BG: Color = COL_TRANSITION_3;
 
-pub const BUTTON_TEXT: Color = Color::srgb(0.925, 0.925, 0.925);
-pub const LABEL_TEXT: Color = Color::srgb(0.867, 0.827, 0.412);
-pub const HEADER_TEXT: Color = Color::srgb(0.867, 0.827, 0.412);
-
-pub const NODE_BACKGROUND: Color = Color::srgb(0.286, 0.478, 0.773);
+pub const BUTTON_TEXT: Color = COL_BALL_FAST;
+pub const LABEL_TEXT: Color = COL_BALL_FAST;
+pub const HEADER_TEXT: Color = COL_BG;
 
 // looks pretty nice
 // todo: couple contrast issues
 // also should probly replace the white with something slightly darker
 // https://lospec.com/palette-list/citrink
 pub const COL_BG: Color = Color::srgb(0.13, 0.08, 0.20);
+pub const COL_LETTERBOX: Color = Color::BLACK;
 pub const COL_TRANSITION_1: Color = Color::srgb(0.09, 0.43, 0.48);
 pub const COL_TRANSITION_2: Color = Color::srgb(0.15, 0.30, 0.44);
 pub const COL_TRANSITION_3: Color = Color::srgb(0.15, 0.14, 0.27);

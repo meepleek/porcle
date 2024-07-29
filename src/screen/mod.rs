@@ -14,7 +14,7 @@ use crate::{
         assets::{assets_exist, SpriteAssets},
         tween::{tween_factor, TweenFactor},
     },
-    ui::palette::{COL_BG, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
+    ui::palette::{COL_BG, COL_LETTERBOX, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -153,7 +153,7 @@ fn setup_letterbox(mut cmd: Commands) {
         },
     ))
     .with_children(|b| {
-        let color: BackgroundColor = Color::BLACK.into();
+        let color: BackgroundColor = COL_LETTERBOX.into();
         b.spawn((
             Name::new("letterbox_left"),
             NodeBundle {
