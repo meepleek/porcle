@@ -2,9 +2,9 @@
 
 use bevy::prelude::*;
 
-use super::Screen;
+use super::{NextTransitionedState, Screen};
 use crate::{
-    game::{assets::SoundtrackKey, audio::soundtrack::PlaySoundtrack},
+    game::{assets::MusicAssets, audio::soundtrack::PlayMusic},
     ui::prelude::*,
 };
 
@@ -25,7 +25,7 @@ enum CreditsAction {
     Back,
 }
 
-fn enter_credits(mut commands: Commands) {
+fn enter_credits(mut commands: Commands, music: Res<MusicAssets>) {
     commands
         .ui_root()
         .insert(StateScoped(Screen::Credits))
@@ -42,15 +42,15 @@ fn enter_credits(mut commands: Commands) {
             children.button("Back").insert(CreditsAction::Back);
         });
 
-    commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Credits));
+    commands.trigger(PlayMusic::Track(music.credits.clone()));
 }
 
 fn exit_credits(mut commands: Commands) {
-    commands.trigger(PlaySoundtrack::Disable);
+    commands.trigger(PlayMusic::Disable);
 }
 
 fn handle_credits_action(
-    mut next_screen: ResMut<NextState<Screen>>,
+    mut next_screen: ResMut<NextTransitionedState>,
     mut button_query: InteractionQuery<&CreditsAction>,
 ) {
     for (interaction, action) in &mut button_query {

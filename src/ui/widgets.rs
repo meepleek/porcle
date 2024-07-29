@@ -28,13 +28,14 @@ impl<T: Spawn> Widgets for T {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                background_color: BackgroundColor(NODE_BACKGROUND),
+                background_color: BackgroundColor(BUTTON_BG),
+                border_radius: BorderRadius::all(Val::Px(12.)),
                 ..default()
             },
             InteractionPalette {
-                none: NODE_BACKGROUND,
-                hovered: BUTTON_HOVERED_BACKGROUND,
-                pressed: BUTTON_PRESSED_BACKGROUND,
+                none: BUTTON_BG,
+                hovered: BUTTON_HOVERED_BG,
+                pressed: BUTTON_PRESSED_BG,
             },
         ));
         entity.with_children(|children| {
@@ -62,9 +63,11 @@ impl<T: Spawn> Widgets for T {
                     height: Px(65.0),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
+                    margin: UiRect::top(Val::Px(24.)).with_bottom(Val::Px(12.)),
                     ..default()
                 },
-                background_color: BackgroundColor(NODE_BACKGROUND),
+                border_radius: BorderRadius::all(Val::Px(12.)),
+                background_color: BackgroundColor(NODE_BG),
                 ..default()
             },
         ));
@@ -132,7 +135,7 @@ impl Containers for Commands<'_, '_> {
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     flex_direction: FlexDirection::Column,
-                    row_gap: Px(10.0),
+                    row_gap: Px(12.0),
                     position_type: PositionType::Absolute,
                     ..default()
                 },

@@ -2,24 +2,13 @@
 
 ## Overview
 
-- circle pong
+- circle pong - the core holds the ball
 - reflecting the ball adds the current mult to points
-- circling the paddle around raises the mult
-- points can be used for upgrades
-- possibly add a timer
-- upgrading slows ball, but also resets mult
-- upgrades initially show only the price, but the upgrade itself are just ???
-
-
-## Upgrades
-
-- shield
-- bigger paddle
-- add another paddle
-- raise starting mult
-- add time
-- slowmo meter
-- add extra scoring ball (different color?) that scores but doesn't lose the game
+- circling the paddle around adds ammo or respawns ball
+- enemies come from outside & try to attack the core
+- hitting the core lowers it's HP
+- both the paddle gun & the ball are effective weapons
+- kill count as score
 
 ## proto - v0.1.0
 
@@ -56,38 +45,99 @@
 
 ## Juiiiice - v0.4.0
 
-- [ ] screen shake
-- [ ] paddle recoil on reflect
-- [ ] move gun barrel on shot
-- [ ] tween stuff
-- [ ] enemy death particles
-- [ ] enemy death flash
-- [ ] enemy shockwave
-- [ ] reflect particles
-- [ ] reflect shockwave
-- [ ] freeze frames on reflect?
-- [ ] freeze frames on enemy kill
-- [ ] try auto-targeting closing ball enemy in cone of vision instead of homing
-- [ ] change color
-- [ ] add bloom (does it work on web yet?)
-- [ ] add vignette?
-- [ ] add chromatic abberation
-- [ ] boost PP effects based on current ball speed
-- [ ] circle/anullus transition
-- [ ] add reflection/aim prediction UI
-- [ ] ball trail
-- [ ] paddle trail
+- [x] screen shake
+- [x] paddle recoil on reflect
+- [x] move gun barrel on shot
+- [x] tween stuff
+- [x] enemy death particles
+- [x] enemy health
+- [x] enemy knockback
+- [x] enemy hit flash
+- [x] reflect particles
+- [x] reflect freeze frames
+- [x] freeze frames on enemy kill
+- [x] try auto-targeting closing ball enemy in cone of vision instead of homing
+- [x] change ball color
+- [x] add bloom
+- [x] boost PP effects based on current ball speed
 
-## audio - v0.5.0
+## Missing stuff - v0.5.0
 
-## enemies - v0.6.0
+- [x] CCW rotation adds ammo, CW twice reloads ball
+- [x] randomise initial ball angle
+- [x] gun accurracy (couple degrees rng)
+- [x] ball reflects back from paddle hit outside
+- [x] captured ball loses speed
+- [x] ammo bonus based on ball speed instead of reflection count (to encourage making the ball go fast)
+- [x] disallow catching ball from outside
+- [x] spawn ball in captured position instead of in the center
+- [x] reset capture status on ball respawn
+- [x] grow ball based on speed
+- [x] fix initial ball boost (probably incorrect value when no balls)
+- [x] boost speed outside core?
+- [x] make core actually smaller than paddle radius
+- [x] fix initial ball respawn direction (incorrect after rotating)
+- [x] ammo capacity
+- [x] ammo UI
+- [x] health UI
+- [x] circle/anullus transition
+- [x] tween in lvl elements
+- [x] score - just kill count
+- [x] add capture UI
+- [x] cycle effect (reload ammo, respawn ball) juice effects - shake, particles, color
+- [x] enemy death particles on core hit
+- [x] bg particles
+- [x] ball move particles
+- [x] resize cam to fit the game
+- [x] try to zoom out & make paddle radius bigger (but still zoomed out, so smaller on screen)
+- [x] add black bars to sides (letterboxing)
+- [x] add gamepad controls
+- [x] despawn out of bounds projectiles
+- [x] pick a color palette
+- [x] particle color palette
+- [x] UI color palette
+- [x] captured ball can't destroy enemies
 
-- [ ] improve crawler
+## audio - v0.6.0
+
+## enemies - v0.7.0
+
+- [ ] spawn rate based on score
+- [ ] improve crawler (add a sprite, too)
+- [ ] consider limiting crawlers to just 2 HP
+- [ ] bigger/chunkier crawler (add a sprite, too)
 - [ ] slower crawler that has to be hit by the ball (shielded)
 - [ ] shooty enemy/turret
 - [ ] turret that has to be destroyed by the ball (shielded)
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
 
-
 ## upgrades - v0.x.0
+
+- [ ] health
+- [ ] max health
+- [ ] more homing
+- [ ] ball grows bigger
+- [ ] faster shooting
+- [ ] bigger ammo reflection
+- [ ] greater ammo capacity
+- [ ] paddle size
+- [ ] better accuracy
+
+## extra VFX - v0.7.0
+
+- [ ] add vignette?
+- [ ] add chromatic abberation
+- [ ] paddle move particles
+- [ ] enemy move particles
+
+## Nice to haves
+
+- [ ] add reflection/aim prediction UI
+
+## scrapped
+
+- [ ] enemy death shockwave
+- [ ] reflect shockwave
+- [ ] ball trail
+- [ ] paddle trail

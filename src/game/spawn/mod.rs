@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 
 pub mod ball;
+pub mod despawn;
 pub mod enemy;
 pub mod level;
 pub mod paddle;
@@ -17,5 +18,6 @@ pub(super) fn plugin(app: &mut App) {
         ball::plugin,
         enemy::plugin,
         projectile::plugin,
+        despawn::plugin,
     ));
 }

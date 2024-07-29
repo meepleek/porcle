@@ -1,55 +1,97 @@
-use std::f32::consts::TAU;
+use std::ops::Range;
 
-use avian2d::prelude::*;
-// use bevy::color::palettes::tailwind;
+use avian2d::math::Vector2;
 use bevy::prelude::*;
 
-use crate::{
-    ext::{QuatExt, Vec2Ext},
-    game::spawn::paddle::PADDLE_COLL_HEIGHT,
-    AppSet,
-};
+use crate::{ext::QuatExt, GAME_SIZE};
 
-use super::{
-    input::CursorCoords,
-    spawn::{
-        ball::{Ball, InsideCore, PaddleReflectionCount, SpawnBall},
-        enemy::Enemy,
-        level::Wall,
-        paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation, PADDLE_RADIUS},
-    },
-};
+use super::time::{process_cooldown, Cooldown};
 
 pub(super) fn plugin(app: &mut App) {
-    // Record directional input as movement controls.
-    app.add_systems(
-        Update,
-        (
-            process_input.in_set(AppSet::ProcessInput),
-            rotate_paddle,
-            reload_balls,
-            balls_inside_core,
-            reflect_ball,
-            accumulate_angle,
-            apply_velocity,
-            apply_homing_velocity,
-            apply_damping,
-            follow,
-        ),
-    );
+    app.register_type::<MoveDirection>()
+        .register_type::<Damping>()
+        .register_type::<Speed>()
+        .register_type::<Velocity>()
+        .add_systems(First, insert_velocity)
+        .add_systems(
+            Update,
+            (
+                process_cooldown::<MovementPaused>,
+                (
+                    apply_damping,
+                    compute_velocity.after(apply_damping),
+                    apply_impulse.after(compute_velocity),
+                    home.after(apply_impulse),
+                )
+                    .before(ApplyVelocitySet),
+                apply_velocity.in_set(ApplyVelocitySet),
+                (accumulate_angle, follow).after(ApplyVelocitySet),
+            ),
+        );
 }
 
-pub const BALL_BASE_SPEED: f32 = 250.;
-pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.35;
+#[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash)]
+pub struct ApplyVelocitySet;
 
-#[derive(Component, Debug)]
-pub struct Velocity(pub Vec2);
+#[derive(Bundle, Default)]
+pub struct MovementBundle {
+    direction: MoveDirection,
+    speed: Speed,
+    impulse: Impulse,
+}
 
-#[derive(Component, Debug)]
+impl MovementBundle {
+    pub fn new(dir: Vec2, speed: f32) -> Self {
+        Self {
+            direction: MoveDirection(dir),
+            speed: Speed(speed),
+            impulse: Impulse(Vector2::ZERO),
+        }
+    }
+}
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct Velocity(Vec2);
+
+impl Velocity {
+    pub fn velocity(&self) -> Vec2 {
+        self.0
+    }
+}
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct MoveDirection(pub Vec2);
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Damping(pub f32);
 
-#[derive(Component, Debug)]
-pub struct BaseSpeed(pub f32);
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct Speed(pub f32);
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct SpeedMultiplier(pub f32);
+
+#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+pub struct Impulse(pub Vec2);
+
+#[derive(Component, Debug, Reflect)]
+pub struct MovementPaused;
+
+impl MovementPaused {
+    pub fn cooldown(duration_s: f32) -> Cooldown<MovementPaused> {
+        Cooldown::new(duration_s)
+    }
+}
+
+impl Speed {
+    pub fn speed_factor(&self, min: f32, max: f32) -> f32 {
+        speed_factor(self.0, min, max)
+    }
+}
+
+pub fn speed_factor(speed: f32, min: f32, max: f32) -> f32 {
+    ((speed - min) / max).clamp(0., 1.)
+}
 
 #[derive(Component, Debug)]
 pub struct Homing {
@@ -57,6 +99,7 @@ pub struct Homing {
     pub max_factor: f32,
     pub factor_decay: f32,
     pub max_angle: f32,
+    pub speed_mult: Option<Range<f32>>,
 }
 
 #[derive(Component, Debug)]
@@ -68,33 +111,96 @@ pub struct Follow {
     pub entity: Entity,
 }
 
-fn apply_velocity(
-    mut move_q: Query<(&mut Transform, &Velocity), Without<Homing>>,
-    time: Res<Time>,
-) {
-    for (mut t, vel) in &mut move_q {
-        t.translation += (vel.0 * time.delta_seconds()).extend(0.);
+#[derive(Component, Debug, Default)]
+pub struct AccumulatedRotation {
+    prev: Option<Rot2>,
+    pub rotation: f32,
+}
+
+fn insert_velocity(add_q: Query<Entity, Added<MoveDirection>>, mut cmd: Commands) {
+    for e in &add_q {
+        cmd.entity(e).try_insert(Velocity::default());
     }
 }
 
-fn apply_homing_velocity(
-    mut move_q: Query<(&mut Transform, &mut Velocity, &Homing)>,
+fn compute_velocity(
+    mut move_q: Query<
+        (
+            &MoveDirection,
+            &Speed,
+            Option<&SpeedMultiplier>,
+            &mut Velocity,
+        ),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
+    time: Res<Time>,
+) {
+    for (dir, speed, speed_mult, mut vel) in &mut move_q {
+        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_seconds();
+    }
+}
+
+fn apply_impulse(
+    mut impulse_q: Query<
+        (&mut Impulse, &mut Velocity),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
+    time: Res<Time>,
+) {
+    for (mut impulse, mut vel) in &mut impulse_q {
+        let mult_delta = time.delta_seconds() * 6.5;
+        vel.0 += impulse.0 * mult_delta;
+        // fixme: this is incorrect, but that can wait after the jam
+        impulse.0 *= 1. - mult_delta;
+    }
+}
+
+fn apply_velocity(
+    mut move_q: Query<
+        (&mut Transform, &Velocity),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
+) {
+    for (mut t, vel) in &mut move_q {
+        t.translation += vel.0.extend(0.);
+    }
+}
+
+fn home(
+    mut move_q: Query<
+        (&Transform, &mut Velocity, &MoveDirection, &Homing, &Speed),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
     time: Res<Time>,
     target_q: Query<&GlobalTransform, With<HomingTarget>>,
 ) {
-    for (mut homing_t, mut vel, homing) in &mut move_q {
-        let dir = vel.0.normalize_or_zero();
+    for (homing_t, mut vel, move_dir, homing, speed) in &mut move_q {
+        let speed_factor = homing
+            .speed_mult
+            .as_ref()
+            .map_or(1., |range| speed.speed_factor(range.start, range.end));
+
+        if speed_factor <= 0. {
+            continue;
+        }
+
         let mut closest_distance = f32::MAX;
         let mut homing_target_dir = None;
 
         for target_t in target_q.iter() {
+            // todo: need to fix this
+            if target_t.translation().abs().max_element() > (GAME_SIZE / 2.0 - 50.) {
+                // outside window
+                continue;
+            }
+
             let distance = homing_t.translation.distance(target_t.translation());
 
             if distance < closest_distance && distance <= homing.max_distance {
                 let target_dir = (target_t.translation() - homing_t.translation)
                     .normalize()
                     .truncate();
-                let angle = dir.angle_between(target_dir).to_degrees().abs();
+                let angle = move_dir.angle_between(target_dir).to_degrees().abs();
 
                 if angle > homing.max_angle {
                     continue;
@@ -110,22 +216,24 @@ fn apply_homing_velocity(
             let distance_factor = (1.0 - (closest_distance / homing.max_distance))
                 .powf(homing.factor_decay)
                 * homing.max_factor
+                * speed_factor
                 * time.delta_seconds();
-            let homing_dir =
-                (dir * (1.0 - distance_factor) + target_dir * distance_factor).normalize_or_zero();
+            let homing_dir = (move_dir.0 * (1.0 - distance_factor) + target_dir * distance_factor)
+                .normalize_or_zero();
             let speed = vel.0.length();
             vel.0 = homing_dir * speed;
 
             // todo: use if rotation is ever needed
             // homing_t.rotation = homing_dir.to_quat();
         }
-
-        homing_t.translation += (vel.0 * time.delta_seconds()).extend(0.);
     }
 }
 
 fn apply_damping(
-    mut damping_q: Query<(&mut Velocity, &Damping, Option<&mut BaseSpeed>)>,
+    mut damping_q: Query<
+        (&mut Velocity, &Damping, Option<&mut Speed>),
+        (Without<MovementPaused>, Without<Cooldown<MovementPaused>>),
+    >,
     time: Res<Time>,
 ) {
     for (mut vel, damping, speed) in &mut damping_q {
@@ -145,133 +253,6 @@ fn follow(mut follow_q: Query<(&mut Transform, &Follow)>, followed_q: Query<&Glo
     }
 }
 
-fn process_input(
-    input: Res<ButtonInput<MouseButton>>,
-    mut paddle_mode_q: Query<(&mut PaddleMode, &GlobalTransform)>,
-    mut cmd: Commands,
-    ball_q: Query<&BaseSpeed, With<Ball>>,
-) {
-    if input.just_pressed(MouseButton::Right) {
-        for (mut pm, paddle_t) in &mut paddle_mode_q {
-            *pm = match *pm {
-                PaddleMode::Reflect => PaddleMode::Capture,
-                PaddleMode::Capture => PaddleMode::Reflect,
-                PaddleMode::Captured {
-                    shoot_rotation: rotation,
-                    ball_e,
-                } => {
-                    if let Ok(speed) = ball_q.get(ball_e) {
-                        let dir = (Quat::from_rotation_z(rotation.as_radians())
-                            * -paddle_t.right())
-                        .truncate()
-                        .normalize_or_zero();
-                        cmd.entity(ball_e)
-                            .remove_parent_in_place()
-                            .insert(Velocity(dir * speed.0));
-                    }
-                    PaddleMode::Reflect
-                }
-            };
-        }
-    }
-}
-
-fn rotate_paddle(
-    mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
-    cursor: Res<CursorCoords>,
-    time: Res<Time<Real>>,
-) {
-    for mut t in rot_q.iter_mut() {
-        // limit rotation in the very center/deadzone
-        let deadzone_radius = 70.0;
-        let radius = cursor.0.length();
-        // deadzone multiplier with exponential decay
-        let deadzone_mult = (radius / deadzone_radius).min(1.).powf(3.0);
-        let current_angle = t.rotation.to_rot2();
-        let target_angle = cursor.0.to_rot2();
-        let max_delta =
-            (time.delta_seconds() / PADDLE_REVOLUTION_DURATION_MIN) * TAU * deadzone_mult;
-        let target_delta = current_angle.angle_between(target_angle);
-        let clamped_angle =
-            current_angle * Rot2::radians(target_delta.clamp(-max_delta, max_delta));
-        t.rotation = Quat::from_rotation_z(clamped_angle.as_radians());
-    }
-}
-
-fn balls_inside_core(
-    mut cmd: Commands,
-    ball_q: Query<(Entity, &GlobalTransform, Option<&InsideCore>), With<Ball>>,
-) {
-    for (e, t, inside) in &ball_q {
-        let inside_core = t.translation().length() < PADDLE_RADIUS * 1.1;
-        if inside_core && inside.is_none() {
-            cmd.entity(e).insert(InsideCore);
-            cmd.entity(e).remove::<Damping>();
-            cmd.entity(e).remove::<Homing>();
-        } else if !inside_core && inside.is_some() {
-            cmd.entity(e).remove::<InsideCore>();
-            cmd.entity(e).insert(Damping(0.5));
-            cmd.entity(e).insert(Homing {
-                max_distance: 300.,
-                max_factor: 10.,
-                factor_decay: 2.0,
-                max_angle: 25.,
-            });
-        }
-    }
-}
-
-fn reload_balls(
-    mut rot_q: Query<(&mut PaddleRotation, &AccumulatedRotation)>,
-    mut cmd: Commands,
-    time: Res<Time>,
-    ball_q: Query<Option<&InsideCore>, With<Ball>>,
-) {
-    if !ball_q.is_empty() && ball_q.iter().any(|inside| inside.is_some()) {
-        for (mut paddle_rot, angle) in rot_q.iter_mut() {
-            paddle_rot.reset(angle.rotation);
-        }
-        return;
-    }
-
-    // todo: limit speed
-    for (mut paddle_rot, angle) in rot_q.iter_mut() {
-        let min_rot = 355.0f32.to_radians();
-
-        // CW (negative angle)
-        if ((angle.rotation - paddle_rot.cw_start) <= -min_rot) ||
-            // CCW (positive angle)
-            ((angle.rotation - paddle_rot.ccw_start) >= min_rot)
-        {
-            paddle_rot.reset(angle.rotation);
-            cmd.trigger(SpawnBall);
-        } else if angle.rotation > paddle_rot.cw_start {
-            paddle_rot.cw_start = angle.rotation;
-        } else if angle.rotation < paddle_rot.ccw_start {
-            paddle_rot.ccw_start = angle.rotation;
-        }
-
-        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_seconds();
-        if delta < 1. {
-            // reset if rotation doesn't change for a while
-            paddle_rot.timer.tick(time.delta());
-            if paddle_rot.timer.just_finished() {
-                paddle_rot.reset(angle.rotation);
-            }
-        } else {
-            paddle_rot.timer.reset()
-        }
-
-        paddle_rot.prev_rot = angle.rotation;
-    }
-}
-
-#[derive(Component, Debug, Default)]
-pub struct AccumulatedRotation {
-    prev: Option<Rot2>,
-    rotation: f32,
-}
-
 fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Changed<Transform>>) {
     for (mut acc, t) in &mut acc_q {
         let rot = t.rotation.to_rot2();
@@ -279,119 +260,5 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
             acc.rotation += prev.angle_between(rot);
         }
         acc.prev = Some(rot);
-    }
-}
-
-fn reflect_ball(
-    phys_spatial: SpatialQuery,
-    mut ball_q: Query<(
-        Entity,
-        &GlobalTransform,
-        &mut Transform,
-        &mut Ball,
-        &mut Velocity,
-        &mut BaseSpeed,
-        &mut PaddleReflectionCount,
-    )>,
-    mut paddle_q: Query<(Entity, &mut PaddleAmmo, &GlobalTransform, &mut PaddleMode), With<Paddle>>,
-    enemy_q: Query<(), With<Enemy>>,
-    wall_q: Query<(), With<Wall>>,
-    mut cmd: Commands,
-    time: Res<Time>,
-    // mut gizmos: Gizmos,
-) {
-    for (
-        ball_e,
-        ball_t,
-        mut ball_local_t,
-        mut ball,
-        mut vel,
-        mut speed,
-        mut paddle_reflection_count,
-    ) in &mut ball_q
-    {
-        if (vel.0 - Vec2::ZERO).length() < f32::EPSILON {
-            // stationary ball
-            continue;
-        }
-        // gizmos.circle_2d(t.translation().truncate(), ball.0, tailwind::AMBER_600);
-
-        for hit in phys_spatial.shape_hits(
-            &Collider::circle(ball.radius),
-            ball_t.translation().truncate(),
-            0.,
-            Dir2::new(vel.0).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
-            100,
-            false,
-            SpatialQueryFilter::default(),
-        ) {
-            let hit_e = hit.entity;
-            if let Ok((paddle_e, mut ammo, paddle_t, mut paddle_mode)) = paddle_q.get_mut(hit_e) {
-                if let PaddleMode::Captured { .. } = *paddle_mode {
-                    continue;
-                }
-
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.2 {
-                    // ignore consecutive hits
-                    continue;
-                }
-
-                let hit_point_local = paddle_t
-                    .affine()
-                    .inverse()
-                    .transform_point(hit.point1.extend(0.));
-                // limit upper treshold to 1 to account for the collider rounding
-                let angle_factor = (hit_point_local.y / (PADDLE_COLL_HEIGHT / 2.)).min(1.0);
-                let angle = angle_factor * -30.0;
-                debug!(angle_factor, angle, "paddle hit");
-
-                if let PaddleMode::Capture = *paddle_mode {
-                    *paddle_mode = PaddleMode::Captured {
-                        shoot_rotation: Rot2::radians(angle.to_radians()),
-                        ball_e,
-                    };
-                    cmd.entity(ball_e).set_parent(paddle_e).remove::<Velocity>();
-                    ball_local_t.translation = paddle_t
-                        .affine()
-                        .inverse()
-                        .transform_point(ball_t.translation());
-                } else {
-                    // clamp to min speed in case the ball has come back to core
-                    speed.0 = (speed.0 * 1.15).max(BALL_BASE_SPEED);
-                    // aim the ball based on where it landed on the paddle
-                    // the further it lands from the center, the greater the reflection angle
-                    // if x is positive, then the hit is from outside => this aims the new dir back into the core
-                    let new_dir = (Quat::from_rotation_z(angle.to_radians()) * -paddle_t.right())
-                        .truncate()
-                        .normalize_or_zero();
-                    vel.0 = new_dir * speed.0;
-                    paddle_reflection_count.0 += 1;
-                    ammo.0 += match paddle_reflection_count.0 {
-                        0 => 0,
-                        1..=2 => 1,
-                        3..=5 => 2,
-                        _ => 3,
-                    };
-
-                    ball.last_reflection_time = time.elapsed_seconds();
-                    debug!(ammo=?ammo.0, "added ammo");
-                }
-            } else if wall_q.contains(hit_e) {
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
-                    // ignore consecutive hits
-                    continue;
-                }
-                speed.0 *= 0.7;
-                let dir = vel.0.normalize_or_zero();
-                let reflect = dir - (2.0 * dir.dot(hit.normal1) * hit.normal1);
-                vel.0 = reflect * speed.0;
-                ball.last_reflection_time = time.elapsed_seconds();
-            } else if enemy_q.contains(hit_e) {
-                cmd.entity(hit_e).despawn_recursive();
-
-                // todo: try - boost speed on hit
-            }
-        }
     }
 }

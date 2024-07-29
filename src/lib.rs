@@ -2,18 +2,24 @@
 mod dev_tools;
 mod ext;
 mod game;
+mod math;
 mod screen;
 mod ui;
 
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
+    core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
     prelude::*,
+    render::camera::ScalingMode,
 };
+use bevy_trauma_shake::ShakeSettings;
 
 pub struct AppPlugin;
 
-pub const WINDOW_SIZE: f32 = 1024.;
+pub const GAME_SIZE: f32 = 1600.;
+pub const MIN_WINDOW_SIZE: f32 = 720.;
+pub const BLOOM_BASE: f32 = 0.15;
 
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
@@ -41,7 +47,12 @@ impl Plugin for AppPlugin {
                         title: "Porcle".to_string(),
                         canvas: Some("#bevy".to_string()),
                         fit_canvas_to_parent: true,
-                        resolution: Vec2::splat(WINDOW_SIZE).into(),
+                        resolution: Vec2::splat(1024.).into(),
+                        resize_constraints: WindowResizeConstraints {
+                            min_width: MIN_WINDOW_SIZE,
+                            min_height: MIN_WINDOW_SIZE,
+                            ..default()
+                        },
                         prevent_default_event_handling: true,
                         ..default()
                     }
@@ -49,7 +60,7 @@ impl Plugin for AppPlugin {
                     ..default()
                 })
                 // pixelart
-                .set(ImagePlugin::default_nearest())
+                .set(ImagePlugin::default_linear())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
                         volume: Volume::new(0.3),
@@ -62,7 +73,11 @@ impl Plugin for AppPlugin {
         app.add_plugins((game::plugin, screen::plugin, ui::plugin));
 
         // Add external plugins
-        app.add_plugins(avian2d::PhysicsPlugins::default());
+        app.add_plugins((
+            avian2d::PhysicsPlugins::default(),
+            bevy_trauma_shake::TraumaPlugin,
+            bevy_enoki::EnokiPlugin,
+        ));
 
         // Enable dev tools for dev builds.
         #[cfg(feature = "dev")]
@@ -84,9 +99,22 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
+    let mut cam_bundle = Camera2dBundle {
+        camera: Camera {
+            hdr: true,
+            ..default()
+        },
+        tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
+        ..default()
+    };
+    cam_bundle.projection.scaling_mode = ScalingMode::AutoMin {
+        min_width: GAME_SIZE,
+        min_height: GAME_SIZE,
+    };
+
     commands.spawn((
         Name::new("Camera"),
-        Camera2dBundle::default(),
+        cam_bundle,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
@@ -94,5 +122,15 @@ fn spawn_camera(mut commands: Commands) {
         // [ui node outlines](https://bevyengine.org/news/bevy-0-14/#ui-node-outline-gizmos)
         // for debugging. So it's good to have this here for future-proofing.
         IsDefaultUiCamera,
+        bevy_trauma_shake::Shake::default(),
+        ShakeSettings::default(),
+        BloomSettings {
+            intensity: BLOOM_BASE,
+            high_pass_frequency: 0.5,
+            low_frequency_boost: 0.3,
+            low_frequency_boost_curvature: 0.7,
+            composite_mode: BloomCompositeMode::Additive,
+            ..default()
+        },
     ));
 }

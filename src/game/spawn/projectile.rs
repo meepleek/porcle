@@ -1,14 +1,16 @@
 use avian2d::prelude::*;
-use bevy::{
-    color::palettes::tailwind,
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::prelude::*;
 
 use crate::{
-    game::movement::{BaseSpeed, Damping, Velocity},
+    game::{
+        assets::SpriteAssets,
+        movement::{Damping, MovementBundle},
+    },
     screen::Screen,
+    ui::palette::COL_BULLET,
 };
+
+use super::despawn::DespawnOutOfBounds;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_projectile);
@@ -23,34 +25,41 @@ pub struct SpawnProjectile {
 #[derive(Component, Debug)]
 pub struct Projectile {
     pub size: Vec2,
+    pub mesh_e: Entity,
 }
 
 fn spawn_projectile(
     trigger: Trigger<SpawnProjectile>,
     mut cmd: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    sprites: Res<SpriteAssets>,
 ) {
     let ev = trigger.event();
-    let x = 15.;
-    let y = 40.;
-    let speed = 3000.;
+    let x = 16.;
+    let y = 30.;
+    let sprite_e = cmd
+        .spawn(SpriteBundle {
+            texture: sprites.bullet.clone(),
+            sprite: Sprite {
+                color: COL_BULLET,
+                ..default()
+            },
+            transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
+            ..default()
+        })
+        .id();
     cmd.spawn((
         Name::new("Projectile"),
-        MaterialMesh2dBundle {
-            mesh: Mesh2dHandle(meshes.add(Rectangle::new(x, y))),
-            material: materials.add(ColorMaterial::from_color(tailwind::RED_400)),
-            transform: ev.transform,
-            ..default()
-        },
+        SpatialBundle::from_transform(ev.transform),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        Velocity(ev.dir.as_vec2() * speed),
-        Damping(3.5),
-        BaseSpeed(speed),
+        MovementBundle::new(ev.dir.as_vec2(), 1600.),
+        Damping(0.8),
         Projectile {
             size: Vec2::new(x, y),
+            mesh_e: sprite_e,
         },
+        DespawnOutOfBounds,
         StateScoped(Screen::Game),
-    ));
+    ))
+    .add_child(sprite_e);
 }
