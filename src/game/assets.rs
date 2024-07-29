@@ -62,8 +62,8 @@ pub struct SfxAssets {
 
 #[derive(AssetCollection, Resource)]
 pub struct MusicAssets {
-    #[asset(path = "audio/soundtracks/Monkeys Spinning Monkeys.ogg")]
-    pub credits: Handle<AudioSource>,
+    #[asset(path = "audio/soundtracks/track_1.ogg")]
+    pub track_1: Handle<AudioSource>,
 }
 
 // todo: use asset_loader for particles too

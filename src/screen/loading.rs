@@ -4,7 +4,13 @@
 use bevy::prelude::*;
 
 use super::{NextTransitionedState, Screen};
-use crate::{game::assets::ParticleAssets, ui::prelude::*};
+use crate::{
+    game::{
+        assets::{MusicAssets, ParticleAssets},
+        audio::soundtrack::PlayMusic,
+    },
+    ui::prelude::*,
+};
 
 // todo: use transition
 pub(super) fn plugin(app: &mut App) {
@@ -25,8 +31,10 @@ fn on_loaded(
     mut next_screen: ResMut<NextTransitionedState>,
     mut cmd: Commands,
     particles: Res<ParticleAssets>,
+    music: Res<MusicAssets>,
 ) {
     next_screen.set(Screen::Title);
     // bg particles
     cmd.spawn((particles.particle_spawner(particles.bg.clone(), Transform::default()),));
+    cmd.trigger(PlayMusic::Track(music.track_1.clone()));
 }
