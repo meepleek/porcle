@@ -36,7 +36,6 @@ pub struct SpawnEnemy {
 #[derive(Component, Debug, Clone)]
 pub struct Enemy {
     pub sprite_e: Entity,
-    pub color: Color,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -156,10 +155,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 Collider::triangle(a, b, c),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
-                Enemy {
-                    sprite_e: mesh_e,
-                    color: COL_ENEMY,
-                },
+                Enemy { sprite_e: mesh_e },
                 Health(3),
                 StateScoped(Screen::Game),
             ))
@@ -187,10 +183,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 Collider::ellipse(75., 60.),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
-                Enemy {
-                    sprite_e: mesh_e,
-                    color: COL_ENEMY,
-                },
+                Enemy { sprite_e: mesh_e },
                 Health(3),
                 Shielded,
                 StateScoped(Screen::Game),
@@ -224,10 +217,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 Collider::triangle(a, b, c),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
-                Enemy {
-                    sprite_e,
-                    color: COL_ENEMY,
-                },
+                Enemy { sprite_e },
                 Health(8),
                 StateScoped(Screen::Game),
             ))
@@ -272,10 +262,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 Collider::triangle(a, b, c),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
-                Enemy {
-                    sprite_e,
-                    color: COL_ENEMY,
-                },
+                Enemy { sprite_e },
                 Health(5),
                 StateScoped(Screen::Game),
             ))
@@ -288,12 +275,12 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
 
 // todo: extract to template
 fn enemy_flash_on_hit(
-    enemy_q: Query<(Entity, &Enemy, &Health), Changed<Health>>,
+    enemy_q: Query<(Entity, &Health), (Changed<Health>, With<Enemy>)>,
     child_q: Query<&Children>,
     sprite_q: Query<&Sprite>,
     mut cmd: Commands,
 ) {
-    for (enemy_e, enemy, hp) in &enemy_q {
+    for (enemy_e, hp) in &enemy_q {
         if hp.0 > 0 {
             for child_e in child_q.iter_descendants(enemy_e) {
                 if sprite_q.contains(child_e) {
@@ -305,7 +292,7 @@ fn enemy_flash_on_hit(
                         )
                         .then(delay_tween(
                             get_relative_sprite_color_tween(
-                                enemy.color,
+                                COL_ENEMY,
                                 50,
                                 Some(EaseFunction::QuadraticOut),
                             ),
