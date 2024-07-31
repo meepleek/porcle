@@ -105,7 +105,18 @@
 - [x] bigger/chunkier crawler (add a sprite, too)
 - [x] slower crawler that has to be hit by the ball (shielded)
 
-## audio - v0.7.0
+# shooty enemies - v0.7.0
+
+- shooty enemy/turret
+  - [x] enemies stop at a given distance from the core
+  - [x] spawn only in corners
+  - [ ] enemies start shooting after reaching their stop position
+  - [ ] enemy projectiles dmg core
+- [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] paddle blocks enemy projectiles
+- [ ] ball destroys enemy projectiles
+
+## audio - v0.8.0
 
 ## upgrades - v0.x.0
 
@@ -114,7 +125,7 @@
 - [ ] more homing
 - [ ] ball grows bigger
 - [ ] faster shooting
-- [ ] bigger ammo reflection
+- [ ] bigger ammo reflection bonus
 - [ ] greater ammo capacity
 - [ ] paddle size
 - [ ] better accuracy
@@ -129,11 +140,6 @@
 ## Nice to haves
 
 - [ ] add reflection/aim prediction UI
-- [ ] shooty enemy/turret
-- [ ] turret that has to be destroyed by the ball (shielded)
-- [ ] paddle blocks enemy projectiles
-- [ ] ball destroys enemy projectiles
-
 
 ## scrapped
 

@@ -8,7 +8,7 @@ use rand::{distributions::WeightedIndex, prelude::*};
 use crate::{
     game::{
         assets::SpriteAssets,
-        movement::{HomingTarget, MovementBundle},
+        movement::{Damping, HomingTarget, MovementBundle, Speed},
         score::Score,
         tween::{delay_tween, get_relative_sprite_color_tween},
     },
@@ -17,13 +17,19 @@ use crate::{
     GAME_SIZE,
 };
 
-use super::level::Health;
+use super::{level::Health, paddle::PADDLE_RADIUS};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
     app.add_systems(
         Update,
-        (spawner, enemy_flash_on_hit).run_if(in_state(Screen::Game)),
+        (
+            spawner,
+            enemy_flash_on_hit,
+            slow_down_near_core,
+            stop_near_core,
+        )
+            .run_if(in_state(Screen::Game)),
     );
 }
 
@@ -40,6 +46,9 @@ pub struct Enemy {
 
 #[derive(Component, Debug, Clone)]
 pub struct Shielded;
+
+#[derive(Component, Debug, Clone)]
+pub struct StopNearCore(f32);
 
 #[derive(Debug, Clone, Copy)]
 pub enum EnemyKind {
@@ -101,8 +110,16 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
         let kind = spawnable_kinds[weights.sample(&mut rng)];
         cmd.trigger(SpawnEnemy {
             kind,
-            position: (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize()
-                * spawn_dist,
+            position: match kind {
+                EnemyKind::Creepinek | EnemyKind::Shieldy | EnemyKind::BigBoi => {
+                    (Rot2::degrees(rng.gen_range(-360.0..360.0)) * Vec2::X).normalize() * spawn_dist
+                }
+                EnemyKind::BangBang | EnemyKind::ShieldedBang => {
+                    let base_angle = Rot2::degrees(rng.gen_range(30.0..60.0));
+                    let angle = base_angle * Rot2::degrees(90.0 * (rng.gen_range(0..=3) as f32));
+                    (angle * Vec2::X).normalize() * spawn_dist
+                }
+            },
         });
         let time_mult_range = match score.0 {
             0..=5 => 1.0..1.3,
@@ -114,7 +131,7 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
             91.. => 0.3..0.5,
         };
         next_timer.set_duration(Duration::from_secs_f32(
-            kind.base_time() * rng.gen_range(time_mult_range),
+            kind.base_time() * rng.gen_range(time_mult_range) * 0.1,
         ));
         next_timer.reset();
     }
@@ -124,8 +141,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
     let mut rng = thread_rng();
 
     let ev = trigger.event();
-    let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
-    // let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5)) * 5.;
+    // let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
+    let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5)) * 5.;
 
     match ev.kind {
         EnemyKind::Creepinek => {
@@ -264,6 +281,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 HomingTarget,
                 Enemy { sprite_e },
                 Health(5),
+                StopNearCore(rng.gen_range((PADDLE_RADIUS * 2.6)..(PADDLE_RADIUS * 3.1))),
                 StateScoped(Screen::Game),
             ))
             .add_child(sprite_e)
@@ -301,6 +319,29 @@ fn enemy_flash_on_hit(
                     ));
                 }
             }
+        }
+    }
+}
+
+fn slow_down_near_core(
+    stop_q: Query<(Entity, &StopNearCore, &GlobalTransform), Without<Damping>>,
+    mut cmd: Commands,
+) {
+    for (e, stop, t) in &stop_q {
+        if t.translation().length() <= stop.0 {
+            cmd.entity(e).try_insert(Damping(1.));
+        }
+    }
+}
+
+fn stop_near_core(
+    stop_q: Query<(Entity, &Speed), (With<Damping>, With<StopNearCore>)>,
+    mut cmd: Commands,
+) {
+    for (e, speed) in &stop_q {
+        if speed.0 <= f32::EPSILON {
+            // todo: insert - shoot
+            cmd.entity(e).remove::<StopNearCore>().remove::<Damping>();
         }
     }
 }
