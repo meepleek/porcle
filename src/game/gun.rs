@@ -9,7 +9,6 @@ use std::time::Duration;
 use crate::{
     ext::{RandExt, Vec2Ext},
     game::{spawn::projectile::SpawnProjectile, tween::get_relative_scale_anim},
-    ui::palette::COL_ENEMY_FLASH,
 };
 
 use super::{
@@ -24,10 +23,7 @@ use super::{
         projectile::Projectile,
     },
     time::{process_cooldown, Cooldown},
-    tween::{
-        delay_tween, get_relative_sprite_color_tween, get_relative_translation_tween,
-        DespawnOnTweenCompleted,
-    },
+    tween::{get_relative_translation_tween, DespawnOnTweenCompleted},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -203,24 +199,6 @@ fn handle_collisions(
                         OneShot::Despawn,
                     ));
                 } else {
-                    if shielded.is_none() {
-                        // flash
-                        cmd.entity(enemy.sprite_e).insert(Animator::new(
-                            get_relative_sprite_color_tween(
-                                COL_ENEMY_FLASH,
-                                50,
-                                Some(EaseFunction::QuadraticIn),
-                            )
-                            .then(delay_tween(
-                                get_relative_sprite_color_tween(
-                                    enemy.color,
-                                    50,
-                                    Some(EaseFunction::QuadraticOut),
-                                ),
-                                150,
-                            )),
-                        ));
-                    }
                     // knockback
                     impulse.0 += move_dir.0 * 30.;
                 }

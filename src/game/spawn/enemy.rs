@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_tweening::{Animator, EaseFunction};
 use rand::{distributions::WeightedIndex, prelude::*};
 
 use crate::{
@@ -9,9 +10,10 @@ use crate::{
         assets::SpriteAssets,
         movement::{HomingTarget, MovementBundle},
         score::Score,
+        tween::{delay_tween, get_relative_sprite_color_tween},
     },
     screen::Screen,
-    ui::palette::COL_ENEMY,
+    ui::palette::{COL_ENEMY, COL_ENEMY_FLASH},
     GAME_SIZE,
 };
 
@@ -19,7 +21,10 @@ use super::level::Health;
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
-    app.add_systems(Update, spawner.run_if(in_state(Screen::Game)));
+    app.add_systems(
+        Update,
+        (spawner, enemy_flash_on_hit).run_if(in_state(Screen::Game)),
+    );
 }
 
 #[derive(Event, Debug)]
@@ -42,6 +47,8 @@ pub enum EnemyKind {
     Creepinek,
     Shieldy,
     BigBoi,
+    BangBang,
+    ShieldedBang,
 }
 
 impl EnemyKind {
@@ -50,6 +57,8 @@ impl EnemyKind {
             EnemyKind::Creepinek => 35.,
             EnemyKind::Shieldy => 20.,
             EnemyKind::BigBoi => 15.,
+            EnemyKind::BangBang => 30.,
+            EnemyKind::ShieldedBang => 15.,
         }
     }
 
@@ -58,6 +67,8 @@ impl EnemyKind {
             EnemyKind::Creepinek => 2.0,
             EnemyKind::Shieldy => 3.0,
             EnemyKind::BigBoi => 4.5,
+            EnemyKind::BangBang => 3.,
+            EnemyKind::ShieldedBang => 4.5,
         }
     }
 }
@@ -69,12 +80,22 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
         let mut rng = thread_rng();
         let spawn_dist = (2.0 * (GAME_SIZE / 2.0).powi(2)).sqrt() + 100.;
 
-        let spawnable_kinds = [EnemyKind::Creepinek, EnemyKind::Shieldy, EnemyKind::BigBoi];
+        let spawnable_kinds = [
+            EnemyKind::Creepinek,
+            EnemyKind::Shieldy,
+            EnemyKind::BangBang,
+            EnemyKind::BigBoi,
+            EnemyKind::ShieldedBang,
+        ];
         let weights = WeightedIndex::new(match score.0 {
-            0..=2 => [1, 0, 0],
-            3..=10 => [5, 2, 0],
-            11..=25 => [4, 2, 1],
-            26.. => [4, 2, 1],
+            0..=2 => [0, 0, 1, 0, 0],
+            // 0..=2 => [1, 0, 0, 0, 0],
+            3..=10 => [5, 2, 0, 0, 0],
+            11..=22 => [4, 1, 1, 0, 0],
+            23..=36 => [4, 1, 1, 1, 0],
+            37..=50 => [4, 1, 1, 1, 1],
+            51..=65 => [3, 1, 1, 1, 1],
+            66.. => [3, 2, 2, 1, 1],
         })
         .expect("Create weighted index");
 
@@ -211,6 +232,88 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 StateScoped(Screen::Game),
             ))
             .add_child(sprite_e);
+        }
+        EnemyKind::BangBang => {
+            let size = 50.;
+            let a = Vec2::Y * (size + 30.);
+            let b = Vec2::new(-size, -size);
+            let c = Vec2::new(size, -size);
+
+            let sprite_e = cmd
+                .spawn(SpriteBundle {
+                    texture: sprites.enemy_bang.clone(),
+                    sprite: Sprite {
+                        color: COL_ENEMY,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .id();
+
+            let barrel_e = cmd
+                .spawn(SpriteBundle {
+                    texture: sprites.enemy_bang_barrel.clone(),
+                    sprite: Sprite {
+                        color: COL_ENEMY,
+                        ..default()
+                    },
+                    transform: Transform::from_translation(Vec3::Y * (size + 10.)),
+                    ..default()
+                })
+                .id();
+
+            cmd.spawn((
+                Name::new("bang_bang"),
+                SpatialBundle::from_transform(
+                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
+                    ),
+                ),
+                Collider::triangle(a, b, c),
+                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                HomingTarget,
+                Enemy {
+                    sprite_e,
+                    color: COL_ENEMY,
+                },
+                Health(5),
+                StateScoped(Screen::Game),
+            ))
+            .add_child(sprite_e)
+            .add_child(barrel_e);
+        }
+        EnemyKind::ShieldedBang => todo!(),
+    }
+}
+
+// todo: extract to template
+fn enemy_flash_on_hit(
+    enemy_q: Query<(Entity, &Enemy, &Health), Changed<Health>>,
+    child_q: Query<&Children>,
+    sprite_q: Query<&Sprite>,
+    mut cmd: Commands,
+) {
+    for (enemy_e, enemy, hp) in &enemy_q {
+        if hp.0 > 0 {
+            for child_e in child_q.iter_descendants(enemy_e) {
+                if sprite_q.contains(child_e) {
+                    cmd.entity(child_e).try_insert(Animator::new(
+                        get_relative_sprite_color_tween(
+                            COL_ENEMY_FLASH,
+                            50,
+                            Some(EaseFunction::QuadraticIn),
+                        )
+                        .then(delay_tween(
+                            get_relative_sprite_color_tween(
+                                enemy.color,
+                                50,
+                                Some(EaseFunction::QuadraticOut),
+                            ),
+                            150,
+                        )),
+                    ));
+                }
+            }
         }
     }
 }
