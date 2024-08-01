@@ -45,6 +45,9 @@ pub struct Enemy {
 }
 
 #[derive(Component, Debug, Clone)]
+pub struct EnemyGunBarrel;
+
+#[derive(Component, Debug, Clone)]
 pub struct Shielded;
 
 #[derive(Component, Debug, Clone)]
@@ -131,7 +134,7 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
             91.. => 0.3..0.5,
         };
         next_timer.set_duration(Duration::from_secs_f32(
-            kind.base_time() * rng.gen_range(time_mult_range) * 0.1,
+            kind.base_time() * rng.gen_range(time_mult_range),
         ));
         next_timer.reset();
     }
@@ -258,15 +261,18 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 .id();
 
             let barrel_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_bang_barrel.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
+                .spawn((
+                    SpriteBundle {
+                        texture: sprites.enemy_bang_barrel.clone(),
+                        sprite: Sprite {
+                            color: COL_ENEMY,
+                            ..default()
+                        },
+                        transform: Transform::from_translation(Vec3::Y * (size + 10.)),
                         ..default()
                     },
-                    transform: Transform::from_translation(Vec3::Y * (size + 10.)),
-                    ..default()
-                })
+                    EnemyGunBarrel,
+                ))
                 .id();
 
             cmd.spawn((
