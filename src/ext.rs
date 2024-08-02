@@ -85,3 +85,27 @@ impl RandExt for ThreadRng {
         Dir2::new(self.rotation() * Vec2::X).expect("Non-zero direction")
     }
 }
+
+pub trait EventReaderExt<T> {
+    fn read_only_last(&mut self) -> Option<&T>;
+    fn clear_any(&mut self) -> bool;
+}
+
+impl<'w, 's, T: Event> EventReaderExt<T> for EventReader<'w, 's, T> {
+    fn read_only_last(&mut self) -> Option<&T> {
+        let mut res = None;
+        for ev in self.read() {
+            res = Some(ev)
+        }
+        res
+    }
+
+    fn clear_any(&mut self) -> bool {
+        if !self.is_empty() {
+            self.clear();
+            true
+        } else {
+            false
+        }
+    }
+}
