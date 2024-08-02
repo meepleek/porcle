@@ -4,6 +4,7 @@ use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, Delay, EaseFunction};
 use std::time::Duration;
+use tiny_bail::or_continue;
 
 use crate::{
     event::SendDelayedEventExt,
@@ -30,18 +31,23 @@ use super::{
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
-    app.add_systems(
-        Update,
-        (
-            fire_player_gun,
-            fire_enemy_gun,
-            handle_collisions,
-            process_cooldown::<NoAmmoShake>,
-            process_cooldown::<PaddleAmmo>,
-            process_cooldown::<EnemyGunBarrel>,
-        ),
-    );
+    app.add_event::<ProjectileHit>()
+        .add_systems(Last, despawn_projectile_on_hit)
+        .add_systems(
+            Update,
+            (
+                fire_player_gun,
+                fire_enemy_gun,
+                handle_collisions,
+                process_cooldown::<NoAmmoShake>,
+                process_cooldown::<PaddleAmmo>,
+                process_cooldown::<EnemyGunBarrel>,
+            ),
+        );
 }
+
+#[derive(Event, Debug)]
+pub struct ProjectileHit(pub Entity);
 
 struct NoAmmoShake;
 
@@ -213,6 +219,7 @@ fn handle_collisions(
     particles: Res<ParticleAssets>,
     mut taken_dmg_w: EventWriter<TakeDamage>,
     mut knockback_paddle_w: EventWriter<PaddleKnockback>,
+    mut projectile_hit_w: EventWriter<ProjectileHit>,
 ) {
     for (e, t, projectile, vel, move_dir, speed) in &projectile_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -277,18 +284,27 @@ fn handle_collisions(
                 }
             }
 
-            // todo: if  rmvd
             if despawn {
-                cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
-                cmd.entity(projectile.sprite_e).insert((
-                    get_relative_scale_anim(
-                        Vec2::ZERO.extend(1.),
-                        80,
-                        Some(EaseFunction::QuadraticOut),
-                    ),
-                    DespawnOnTweenCompleted::Entity(e),
-                ));
+                projectile_hit_w.send(ProjectileHit(e));
             }
         }
+    }
+}
+
+fn despawn_projectile_on_hit(
+    mut ev_r: EventReader<ProjectileHit>,
+    mut cmd: Commands,
+    projectile_q: Query<&Projectile>,
+) {
+    for ev in ev_r.read() {
+        cmd.entity(ev.0)
+            .remove::<Projectile>()
+            .try_insert(Damping(30.));
+
+        let projectile = or_continue!(projectile_q.get(ev.0));
+        cmd.entity(projectile.sprite_e).insert((
+            get_relative_scale_anim(Vec2::ZERO.extend(1.), 80, Some(EaseFunction::QuadraticOut)),
+            DespawnOnTweenCompleted::Entity(ev.0),
+        ));
     }
 }

@@ -66,6 +66,13 @@ pub enum Screen {
     Exit,
 }
 
+pub fn in_game_state(current_state: Option<Res<State<Screen>>>) -> bool {
+    match current_state {
+        Some(current_state) => *current_state == Screen::Game,
+        None => false,
+    }
+}
+
 #[derive(Component, Debug, Default)]
 pub struct TransitionCircle;
 

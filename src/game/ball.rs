@@ -13,12 +13,14 @@ use crate::{
         tween::get_relative_sprite_color_anim,
     },
     math::asymptotic_smoothing_with_delta_time,
+    screen::in_game_state,
     ui::palette::{COL_BALL, COL_BALL_FAST},
     BLOOM_BASE, GAME_SIZE,
 };
 
 use super::{
     assets::ParticleAssets,
+    gun::ProjectileHit,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     paddle::PaddleKnockback,
     score::Score,
@@ -27,6 +29,7 @@ use super::{
         enemy::Enemy,
         level::Wall,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
+        projectile::Projectile,
     },
     time::Cooldown,
     tween::lerp_color,
@@ -46,7 +49,8 @@ pub(super) fn plugin(app: &mut App) {
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
             update_trauma_based_on_ball_speed,
-        ),
+        )
+            .run_if(in_game_state),
     );
 }
 
@@ -145,6 +149,7 @@ fn handle_ball_collisions(
         &mut PaddleMode,
     )>,
     enemy_q: Query<&GlobalTransform, With<Enemy>>,
+    projectile_q: Query<(), With<Projectile>>,
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
@@ -153,6 +158,7 @@ fn handle_ball_collisions(
     ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut score: ResMut<Score>,
     mut knockback_paddle_ev_w: EventWriter<PaddleKnockback>,
+    mut projectile_hit_w: EventWriter<ProjectileHit>,
 ) {
     for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -312,6 +318,8 @@ fn handle_ball_collisions(
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 score.0 += 1;
+            } else if projectile_q.contains(hit_e) {
+                projectile_hit_w.send(ProjectileHit(hit_e));
             }
         }
 
