@@ -4,14 +4,13 @@ use avian2d::prelude::*;
 use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::EaseFunction;
 
 use crate::{
     ext::Vec2Ext,
     game::{
-        movement::MovementPaused,
-        spawn::paddle::PADDLE_COLL_HEIGHT,
-        tween::{get_relative_sprite_color_anim, get_relative_translation_tween},
+        movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
+        tween::get_relative_sprite_color_anim,
     },
     math::asymptotic_smoothing_with_delta_time,
     ui::palette::{COL_BALL, COL_BALL_FAST},
@@ -21,6 +20,7 @@ use crate::{
 use super::{
     assets::ParticleAssets,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
+    paddle::PaddleKnockback,
     score::Score,
     spawn::{
         ball::{Ball, InsidePaddleRadius},
@@ -152,6 +152,7 @@ fn handle_ball_collisions(
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut score: ResMut<Score>,
+    mut knockback_paddle_ev_w: EventWriter<PaddleKnockback>,
 ) {
     for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -195,7 +196,8 @@ fn handle_ball_collisions(
                 // aim the ball based on where it landed on the paddle
                 // the further it lands from the center, the greater the reflection angle
                 // if x is positive, then the hit is from outside => reflect it back outside
-                let origit_rot = if hit_point_local.x > 0. { 180. } else { 0. };
+                let hit_from_outside = hit_point_local.x > 0.;
+                let origit_rot = if hit_from_outside { 180. } else { 0. };
                 let max_reflection_angle = 20.0;
                 let angle = angle_factor
                     * ratio.signum()
@@ -247,19 +249,11 @@ fn handle_ball_collisions(
                         .insert(MovementPaused::cooldown(cooldown));
                     ball.last_reflection_time = time.elapsed_seconds() + cooldown;
 
-                    // tween
-                    cmd.entity(paddle.sprite_e).insert(Animator::new(
-                        get_relative_translation_tween(
-                            ((rot / 3.) * Vec3::X) * 50.,
-                            60,
-                            Some(EaseFunction::QuadraticOut),
-                        )
-                        .then(get_relative_translation_tween(
-                            Vec3::ZERO,
-                            110,
-                            Some(EaseFunction::BackOut),
-                        )),
-                    ));
+                    knockback_paddle_ev_w.send(PaddleKnockback(if hit_from_outside {
+                        -15.
+                    } else {
+                        15.
+                    }));
                 }
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {

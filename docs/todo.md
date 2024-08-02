@@ -112,7 +112,7 @@
   - [x] spawn only in corners
   - [x] enemies start shooting after reaching their stop position
   - [x] enemy projectiles dmg core
-- [ ] paddle blocks enemy projectiles
+- [x] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
 - [ ] turret that has to be destroyed by the ball (shielded)
 - [ ] when taking damage, then destroy all enemies and projectiles in paddle radius

@@ -120,11 +120,10 @@ fn take_damage(
 ) {
     let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
     if !ev_r.is_empty() {
-        shake.add_trauma(0.6);
-    }
+        ev_r.clear();
+        shake.add_trauma(0.7);
 
-    for _ in ev_r.read() {
-        let (e, active) = or_continue!(core.gear_entity_ids.iter_mut().find(|(_, active)| *active));
+        let (e, active) = or_return!(core.gear_entity_ids.iter_mut().find(|(_, active)| *active));
         *active = false;
         cmd.entity(*e).try_insert((
             get_relative_scale_anim(
@@ -137,6 +136,7 @@ fn take_damage(
         ));
 
         // todo: spawn take dmg particles
+        // and destroy all enemies and projectiles inside the core
 
         hp.0 -= 1;
         if hp.0 == 0 {

@@ -6,6 +6,7 @@ use bevy_tweening::{Animator, Delay, EaseFunction};
 use std::time::Duration;
 
 use crate::{
+    event::SendDelayedEventExt,
     ext::Vec2Ext,
     game::{spawn::projectile::SpawnProjectile, tween::get_relative_scale_anim},
 };
@@ -16,6 +17,7 @@ use super::{
     core::TakeDamage,
     input::{PlayerAction, PlayerInput},
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
+    paddle::PaddleKnockback,
     spawn::{
         enemy::{Enemy, EnemyGunBarrel, Shielded},
         level::{Core, Health},
@@ -92,7 +94,8 @@ fn fire_player_gun(
                         Some(EaseFunction::BackOut),
                     )),
                 ));
-                // paddle
+                cmd.send_delayed_event(PaddleKnockback(-8.), 40);
+
                 cmd.entity(paddle.sprite_e).insert(Animator::new(
                     Delay::new(Duration::from_millis(40))
                         .then(get_relative_translation_tween(
@@ -147,6 +150,7 @@ fn fire_enemy_gun(
         cmd.entity(barrel_e)
             .try_insert(Cooldown::<EnemyGunBarrel>::new(2.5));
 
+        // todo
         // // tween
         // // barrel
         // cmd.entity(barrel_e).insert(Animator::new(
@@ -202,11 +206,13 @@ fn handle_collisions(
         &mut Impulse,
         Option<&Shielded>,
     )>,
+    paddle_q: Query<&GlobalTransform, With<Paddle>>,
     core_q: Query<(), With<Core>>,
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
     mut taken_dmg_w: EventWriter<TakeDamage>,
+    mut knockback_paddle_w: EventWriter<PaddleKnockback>,
 ) {
     for (e, t, projectile, vel, move_dir, speed) in &projectile_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -264,6 +270,9 @@ fn handle_collisions(
                     if core_q.contains(hit_e) {
                         despawn = true;
                         taken_dmg_w.send_default();
+                    } else if paddle_q.contains(hit_e) {
+                        knockback_paddle_w.send(PaddleKnockback(-12.));
+                        despawn = true;
                     }
                 }
             }
