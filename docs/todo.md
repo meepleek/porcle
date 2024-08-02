@@ -110,11 +110,12 @@
 - shooty enemy/turret
   - [x] enemies stop at a given distance from the core
   - [x] spawn only in corners
-  - [ ] enemies start shooting after reaching their stop position
-  - [ ] enemy projectiles dmg core
-- [ ] turret that has to be destroyed by the ball (shielded)
+  - [x] enemies start shooting after reaching their stop position
+  - [x] enemy projectiles dmg core
 - [ ] paddle blocks enemy projectiles
 - [ ] ball destroys enemy projectiles
+- [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] when taking damage, then destroy all enemies and projectiles in paddle radius
 
 ## audio - v0.8.0
 

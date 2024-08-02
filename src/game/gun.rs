@@ -13,6 +13,7 @@ use crate::{
 use super::{
     assets::ParticleAssets,
     ball::MaxBallSpeedFactor,
+    core::TakeDamage,
     input::{PlayerAction, PlayerInput},
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     spawn::{
@@ -205,6 +206,7 @@ fn handle_collisions(
     mut cmd: Commands,
     time: Res<Time>,
     particles: Res<ParticleAssets>,
+    mut taken_dmg_w: EventWriter<TakeDamage>,
 ) {
     for (e, t, projectile, vel, move_dir, speed) in &projectile_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -223,21 +225,13 @@ fn handle_collisions(
             SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
-
+            let mut despawn = false;
             match projectile.target {
                 ProjectileTarget::Enemy => {
                     if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse, shielded)) =
                         enemy_q.get_mut(hit_e)
                     {
-                        cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
-                        cmd.entity(projectile.sprite_e).insert((
-                            get_relative_scale_anim(
-                                Vec2::ZERO.extend(1.),
-                                80,
-                                Some(EaseFunction::QuadraticOut),
-                            ),
-                            DespawnOnTweenCompleted::Entity(e),
-                        ));
+                        despawn = true;
 
                         if shielded.is_none() {
                             enemy_hp.0 -= 1;
@@ -268,10 +262,23 @@ fn handle_collisions(
                 }
                 ProjectileTarget::Core => {
                     if core_q.contains(hit_e) {
-                        // todo
-                        info!("core hit by bullet!");
+                        despawn = true;
+                        taken_dmg_w.send_default();
                     }
                 }
+            }
+
+            // todo: if  rmvd
+            if despawn {
+                cmd.entity(e).remove::<Projectile>().insert(Damping(30.));
+                cmd.entity(projectile.sprite_e).insert((
+                    get_relative_scale_anim(
+                        Vec2::ZERO.extend(1.),
+                        80,
+                        Some(EaseFunction::QuadraticOut),
+                    ),
+                    DespawnOnTweenCompleted::Entity(e),
+                ));
             }
         }
     }

@@ -3,6 +3,7 @@ use bevy::{prelude::*, sprite::Mesh2dHandle};
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::EaseFunction;
+use tiny_bail::prelude::*;
 
 use crate::{
     ext::QuatExt,
@@ -24,36 +25,32 @@ use super::{
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
-    app.add_event::<TakenDamage>().add_systems(
+    app.add_event::<TakeDamage>().add_systems(
         Update,
         (
             handle_collisions,
             rotate_gears,
-            disable_gears,
+            take_damage,
             update_ammo_fill,
         ),
     );
 }
 
 #[derive(Event, Default)]
-pub struct TakenDamage;
+pub struct TakeDamage;
 
 fn handle_collisions(
-    mut core_q: Query<(&mut Health, &CollidingEntities), With<Core>>,
+    core_q: Query<&CollidingEntities, With<Core>>,
     enemy_q: Query<(&Enemy, &GlobalTransform)>,
     mut cmd: Commands,
-    mut next: ResMut<NextTransitionedState>,
-    mut shake: Shakes,
-    mut taken_dmg_w: EventWriter<TakenDamage>,
+    mut taken_dmg_w: EventWriter<TakeDamage>,
     particles: Res<ParticleAssets>,
 ) {
-    for (mut hp, coll) in &mut core_q {
+    for coll in &core_q {
         for coll_e in coll.iter() {
             if let Ok((enemy, enemy_t)) = enemy_q.get(*coll_e) {
                 cmd.entity(*coll_e).despawn_recursive();
-                hp.0 = hp.0.saturating_sub(1);
                 taken_dmg_w.send_default();
-                debug!("ouch!");
                 cmd.entity(*coll_e)
                     .remove::<Enemy>()
                     .try_insert(Damping(5.));
@@ -72,13 +69,6 @@ fn handle_collisions(
                     ),
                     OneShot::Despawn,
                 ));
-
-                if hp.0 == 0 {
-                    next.set(Screen::GameOver);
-                    shake.add_trauma(0.6);
-                } else {
-                    shake.add_trauma(0.6);
-                }
             }
         }
     }
@@ -120,25 +110,37 @@ fn update_ammo_fill(
     }
 }
 
-fn disable_gears(
-    mut ev_r: EventReader<TakenDamage>,
-    mut core_q: Query<&mut Core>,
+fn take_damage(
+    mut ev_r: EventReader<TakeDamage>,
+    mut core_q: Query<(&mut Core, &mut Health)>,
     mut cmd: Commands,
+    mut next: ResMut<NextTransitionedState>,
+    mut shake: Shakes,
+    _particles: Res<ParticleAssets>,
 ) {
-    if let Ok(mut core) = core_q.get_single_mut() {
-        for _ in ev_r.read() {
-            if let Some((e, active)) = core.gear_entity_ids.iter_mut().find(|(_, active)| *active) {
-                *active = false;
-                cmd.entity(*e).try_insert((
-                    get_relative_scale_anim(
-                        Vec2::splat(0.7).extend(1.),
-                        350,
-                        Some(bevy_tweening::EaseFunction::BackIn),
-                    ),
-                    get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
-                    MovementPaused,
-                ));
-            }
+    let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
+    if !ev_r.is_empty() {
+        shake.add_trauma(0.6);
+    }
+
+    for _ in ev_r.read() {
+        let (e, active) = or_continue!(core.gear_entity_ids.iter_mut().find(|(_, active)| *active));
+        *active = false;
+        cmd.entity(*e).try_insert((
+            get_relative_scale_anim(
+                Vec2::splat(0.7).extend(1.),
+                350,
+                Some(bevy_tweening::EaseFunction::BackIn),
+            ),
+            get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
+            MovementPaused,
+        ));
+
+        // todo: spawn take dmg particles
+
+        hp.0 -= 1;
+        if hp.0 == 0 {
+            next.set(Screen::GameOver);
         }
     }
 }
