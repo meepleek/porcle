@@ -4,14 +4,16 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_tweening::{Animator, EaseFunction};
 use rand::{distributions::WeightedIndex, prelude::*};
+use tiny_bail::c;
 
 use crate::{
     game::{
         assets::SpriteAssets,
-        movement::{Damping, HomingTarget, MovementBundle, Speed},
+        movement::{HomingTarget, MovementBundle, SpeedMultiplier},
         score::Score,
         tween::{delay_tween, get_relative_sprite_color_tween},
     },
+    math::inverse_lerp_clamped,
     screen::Screen,
     ui::palette::{COL_ENEMY, COL_ENEMY_FLASH},
     GAME_SIZE,
@@ -23,13 +25,7 @@ pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
     app.add_systems(
         Update,
-        (
-            spawner,
-            enemy_flash_on_hit,
-            slow_down_near_core,
-            stop_near_core,
-        )
-            .run_if(in_state(Screen::Game)),
+        (spawner, enemy_flash_on_hit, slow_down_near_core).run_if(in_state(Screen::Game)),
     );
 }
 
@@ -44,8 +40,11 @@ pub struct Enemy {
     pub sprite_e: Entity,
 }
 
-#[derive(Component, Debug, Clone)]
-pub struct EnemyGunBarrel;
+#[derive(Component, Debug, Clone, PartialEq, Eq)]
+pub enum EnemyGunBarrel {
+    Inactive,
+    Active,
+}
 
 #[derive(Component, Debug, Clone)]
 pub struct Shielded;
@@ -271,7 +270,7 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                         transform: Transform::from_translation(Vec3::Y * (size + 10.)),
                         ..default()
                     },
-                    EnemyGunBarrel,
+                    EnemyGunBarrel::Inactive,
                 ))
                 .id();
 
@@ -287,7 +286,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 HomingTarget,
                 Enemy { sprite_e },
                 Health(5),
-                StopNearCore(rng.gen_range((PADDLE_RADIUS * 2.6)..(PADDLE_RADIUS * 3.1))),
+                StopNearCore(rng.gen_range((PADDLE_RADIUS * 2.0)..(PADDLE_RADIUS * 2.4))),
+                SpeedMultiplier::default(),
                 StateScoped(Screen::Game),
             ))
             .add_child(sprite_e)
@@ -330,24 +330,32 @@ fn enemy_flash_on_hit(
 }
 
 fn slow_down_near_core(
-    stop_q: Query<(Entity, &StopNearCore, &GlobalTransform), Without<Damping>>,
-    mut cmd: Commands,
+    mut stop_q: Query<(
+        Entity,
+        &StopNearCore,
+        &mut SpeedMultiplier,
+        &GlobalTransform,
+    )>,
+    child_q: Query<&Children>,
+    mut barrel_q: Query<&mut EnemyGunBarrel>,
 ) {
-    for (e, stop, t) in &stop_q {
-        if t.translation().length() <= stop.0 {
-            cmd.entity(e).try_insert(Damping(1.));
-        }
-    }
-}
+    for (e, stop, mut speed_mult, t) in &mut stop_q {
+        let core_dist = t.translation().length();
+        let prev_speed_mult = speed_mult.0;
+        speed_mult.0 = inverse_lerp_clamped(stop.0, stop.0 + 50.0, core_dist).powf(1.7);
+        let cutoff = 0.05;
+        let has_stopped = speed_mult.0 <= cutoff && prev_speed_mult > cutoff;
+        let has_started = speed_mult.0 > cutoff && prev_speed_mult <= cutoff;
 
-fn stop_near_core(
-    stop_q: Query<(Entity, &Speed), (With<Damping>, With<StopNearCore>)>,
-    mut cmd: Commands,
-) {
-    for (e, speed) in &stop_q {
-        if speed.0 <= f32::EPSILON {
-            // todo: insert - shoot
-            cmd.entity(e).remove::<StopNearCore>().remove::<Damping>();
+        if has_stopped || has_started {
+            for child_e in child_q.iter_descendants(e) {
+                let mut barrel = c!(barrel_q.get_mut(child_e));
+                *barrel = if has_stopped {
+                    EnemyGunBarrel::Active
+                } else {
+                    EnemyGunBarrel::Inactive
+                };
+            }
         }
     }
 }

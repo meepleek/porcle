@@ -124,13 +124,17 @@ fn fire_player_gun(
 
 fn fire_enemy_gun(
     mut enemy_q: Query<
-        (Entity, &GlobalTransform),
-        (With<EnemyGunBarrel>, Without<Cooldown<EnemyGunBarrel>>),
+        (Entity, &GlobalTransform, &EnemyGunBarrel),
+        Without<Cooldown<EnemyGunBarrel>>,
     >,
     mut cmd: Commands,
     // particles: Res<ParticleAssets>,
 ) {
-    for (barrel_e, t) in &mut enemy_q {
+    for (barrel_e, t, barrel) in &mut enemy_q {
+        if barrel == &EnemyGunBarrel::Inactive {
+            continue;
+        }
+
         let dir = Dir2::new(t.up().truncate()).expect("Valid direction");
         let rot = t.right().truncate().to_quat();
         cmd.trigger(SpawnProjectile {
