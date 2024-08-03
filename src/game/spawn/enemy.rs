@@ -124,9 +124,11 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
                 }
             },
         });
+        // todo: fix the spawn rates
         let time_mult_range = match score.0 {
-            0..=5 => 1.0..1.3,
-            6..=15 => 0.9..1.2,
+            0..=1 => 3.0..3.1,
+            2..=5 => 1.5..2.0,
+            6..=15 => 1.2..0.9,
             16..=30 => 0.8..1.1,
             31..=50 => 0.7..1.0,
             51..=70 => 0.5..0.8,
@@ -144,8 +146,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
     let mut rng = thread_rng();
 
     let ev = trigger.event();
-    // let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
-    let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5)) * 5.;
+    let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5));
+    // let speed = rng.gen_range(ev.kind.base_speed()..(ev.kind.base_speed() * 1.5)) * 5.;
 
     match ev.kind {
         EnemyKind::Creepinek => {
