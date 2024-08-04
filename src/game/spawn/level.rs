@@ -19,7 +19,7 @@ use crate::{
 
 use super::{
     ball::SpawnBall,
-    paddle::{Paddle, SpawnPaddle},
+    paddle::{Paddle, SpawnPaddle, PADDLE_RADIUS},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -36,7 +36,8 @@ pub struct SpawnLevel;
 
 #[derive(Component, Debug)]
 pub struct Core {
-    pub gear_entity_ids: Vec<(Entity, bool)>,
+    pub gear_entities: Vec<(Entity, bool)>,
+    pub clear_mesh_e: Entity,
 }
 
 #[derive(Component, Debug)]
@@ -98,18 +99,31 @@ fn spawn_level(
         })
         .collect();
 
+    let clear_mesh_id = cmd
+        .spawn((
+            Name::new("clear_flash"),
+            MaterialMesh2dBundle {
+                mesh: Mesh2dHandle(meshes.add(Circle::new(PADDLE_RADIUS))),
+                material: materials.add(ColorMaterial::from_color(Color::NONE)),
+                transform: Transform::from_translation(Vec3::Z * 0.001),
+                ..default()
+            },
+        ))
+        .id();
+
     cmd.spawn((
         Name::new("core"),
         SpatialBundle::default(),
         Collider::circle(CORE_RADIUS),
         RigidBody::Static,
         Core {
-            gear_entity_ids: cog_entity_ids
+            gear_entities: cog_entity_ids
                 .iter()
                 .cloned()
                 .map(|e| (e, true))
                 .rev()
                 .collect(),
+            clear_mesh_e: clear_mesh_id,
         },
         Health(GEAR_COUNT),
         StateScoped(Screen::Game),
@@ -143,7 +157,6 @@ fn spawn_level(
                 Name::new("ammo_fill"),
                 AmmoFill,
                 MaterialMesh2dBundle {
-                    // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
                     material: materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
                     transform: Transform::from_translation(Vec3::Z * 0.2)
                         .with_rotation(Quat::from_rotation_z(180f32.to_radians())),

@@ -1,15 +1,18 @@
 use avian2d::prelude::*;
 use bevy::{prelude::*, sprite::Mesh2dHandle};
+use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
+use bevy_tweening::{AssetAnimator, EaseFunction};
 use tiny_bail::prelude::*;
 
 use crate::{
     ext::{EventReaderExt, QuatExt},
     screen::{in_game_state, NextTransitionedState, Screen},
-    ui::palette::COL_GEARS_DISABLED,
+    ui::palette::{COL_ENEMY_FLASH, COL_GEARS_DISABLED},
 };
 
 use super::{
+    assets::ParticleAssets,
     gun::ProjectileDespawn,
     movement::MovementPaused,
     spawn::{
@@ -18,7 +21,10 @@ use super::{
         paddle::{PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
         projectile::{Projectile, ProjectileTarget},
     },
-    tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
+    tween::{
+        get_relative_color_material_color_tween, get_relative_scale_anim,
+        get_relative_sprite_color_anim,
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -99,9 +105,9 @@ fn take_damage(
     let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
     if !ev_r.is_empty() {
         ev_r.clear();
-        shake.add_trauma(0.7);
+        shake.add_trauma(0.9);
 
-        let (e, active) = or_return!(core.gear_entity_ids.iter_mut().find(|(_, active)| *active));
+        let (e, active) = or_return!(core.gear_entities.iter_mut().find(|(_, active)| *active));
         *active = false;
         cmd.entity(*e).try_insert((
             get_relative_scale_anim(
@@ -112,9 +118,6 @@ fn take_damage(
             get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
             MovementPaused,
         ));
-
-        // todo: spawn take dmg particles
-        // and destroy all enemies and projectiles inside the core
 
         hp.0 -= 1;
         if hp.0 == 0 {
@@ -127,13 +130,14 @@ fn clear_paddle_radius_on_dmg(
     mut ev_r: EventReader<TakeDamage>,
     projectile_q: Query<(Entity, &Projectile, &GlobalTransform)>,
     enemy_q: Query<(Entity, &GlobalTransform), With<Enemy>>,
+    core_q: Query<(&Core, &GlobalTransform)>,
     mut projectile_despawn_w: EventWriter<ProjectileDespawn>,
     mut despawn_enemy_w: EventWriter<DespawnEnemy>,
+    mut cmd: Commands,
+    particles: Res<ParticleAssets>,
 ) {
+    let (core, core_t) = or_return_quiet!(core_q.get_single());
     if ev_r.clear_any() {
-        // todo: spawn take dmg particles
-        // and destroy all enemies and projectiles inside the core
-
         for (projectile_e, ..) in projectile_q.iter().filter(|(_, p, t, ..)| {
             p.target == ProjectileTarget::Core && t.translation().length() < PADDLE_RADIUS
         }) {
@@ -146,5 +150,28 @@ fn clear_paddle_radius_on_dmg(
         {
             despawn_enemy_w.send(DespawnEnemy(enemy_e));
         }
+
+        // flash
+        cmd.entity(core.clear_mesh_e).insert(AssetAnimator::new(
+            get_relative_color_material_color_tween(
+                COL_ENEMY_FLASH,
+                170,
+                Some(EaseFunction::QuadraticOut),
+            )
+            .then(get_relative_color_material_color_tween(
+                Color::NONE,
+                320,
+                Some(EaseFunction::QuadraticIn),
+            )),
+        ));
+
+        // particles
+        cmd.spawn((
+            particles.particle_spawner(
+                particles.core_clear.clone(),
+                Transform::from_translation(core_t.translation().with_z(0.51)),
+            ),
+            OneShot::Despawn,
+        ));
     }
 }

@@ -95,6 +95,7 @@ pub struct ParticleAssets {
     pub enemy: Handle<Particle2dEffect>,
     pub reflection: Handle<Particle2dEffect>,
     pub core: Handle<Particle2dEffect>,
+    pub core_clear: Handle<Particle2dEffect>,
     pub bg: Handle<Particle2dEffect>,
     pub ball: Handle<Particle2dEffect>,
 }
@@ -142,6 +143,7 @@ fn setup_particles(
         enemy: ass.load("particles/enemy.particle.ron"),
         reflection: ass.load("particles/reflection.particle.ron"),
         core: ass.load("particles/core.particle.ron"),
+        core_clear: ass.load("particles/core_clear.particle.ron"),
         bg: ass.load("particles/bg.particle.ron"),
         ball: ass.load("particles/ball.particle.ron"),
     });
