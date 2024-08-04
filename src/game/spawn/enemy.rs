@@ -136,10 +136,10 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
         });
         // todo: balance the spawn rates
         let time_mult_range = match score.0 {
-            0..=1 => 3.0..3.1,
+            0..=1 => 2.5..3.0,
             2..=5 => 1.5..2.0,
-            6..=15 => 1.2..0.9,
-            16..=30 => 0.8..1.1,
+            6..=15 => 1.2..1.5,
+            16..=30 => 0.9..1.2,
             31..=50 => 0.7..1.0,
             51..=70 => 0.5..0.8,
             71..=90 => 0.4..0.7,
