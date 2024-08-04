@@ -1,24 +1,22 @@
 use avian2d::prelude::*;
 use bevy::{prelude::*, sprite::Mesh2dHandle};
-use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::EaseFunction;
 use tiny_bail::prelude::*;
 
 use crate::{
-    ext::QuatExt,
-    game::{movement::Damping, tween::DespawnOnTweenCompleted},
-    screen::{NextTransitionedState, Screen},
+    ext::{EventReaderExt, QuatExt},
+    screen::{in_game_state, NextTransitionedState, Screen},
     ui::palette::COL_GEARS_DISABLED,
 };
 
 use super::{
-    assets::ParticleAssets,
+    gun::ProjectileDespawn,
     movement::MovementPaused,
     spawn::{
-        enemy::Enemy,
+        enemy::{DespawnEnemy, Enemy},
         level::{AmmoFill, Core, Health, RotateWithPaddle, AMMO_FILL_RADIUS},
-        paddle::{PaddleAmmo, PaddleRotation},
+        paddle::{PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
+        projectile::{Projectile, ProjectileTarget},
     },
     tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
 };
@@ -32,7 +30,9 @@ pub(super) fn plugin(app: &mut App) {
             rotate_gears,
             take_damage,
             update_ammo_fill,
-        ),
+            clear_paddle_radius_on_dmg,
+        )
+            .run_if(in_game_state),
     );
 }
 
@@ -42,34 +42,13 @@ pub struct TakeDamage;
 fn handle_collisions(
     core_q: Query<&CollidingEntities, With<Core>>,
     enemy_q: Query<(&Enemy, &GlobalTransform)>,
-    mut cmd: Commands,
     mut taken_dmg_w: EventWriter<TakeDamage>,
-    particles: Res<ParticleAssets>,
+    mut despawn_enemy_w: EventWriter<DespawnEnemy>,
 ) {
     for coll in &core_q {
-        for coll_e in coll.iter() {
-            if let Ok((enemy, enemy_t)) = enemy_q.get(*coll_e) {
-                cmd.entity(*coll_e).despawn_recursive();
-                taken_dmg_w.send_default();
-                cmd.entity(*coll_e)
-                    .remove::<Enemy>()
-                    .try_insert(Damping(5.));
-                cmd.entity(enemy.sprite_e).try_insert((
-                    get_relative_scale_anim(
-                        Vec2::ZERO.extend(1.),
-                        150,
-                        Some(EaseFunction::BounceIn),
-                    ),
-                    DespawnOnTweenCompleted::Entity(*coll_e),
-                ));
-                cmd.spawn((
-                    particles.square_particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(enemy_t.translation()),
-                    ),
-                    OneShot::Despawn,
-                ));
-            }
+        for coll_e in coll.iter().filter(|e| enemy_q.contains(**e)) {
+            taken_dmg_w.send_default();
+            despawn_enemy_w.send(DespawnEnemy(*coll_e));
         }
     }
 }
@@ -116,7 +95,6 @@ fn take_damage(
     mut cmd: Commands,
     mut next: ResMut<NextTransitionedState>,
     mut shake: Shakes,
-    _particles: Res<ParticleAssets>,
 ) {
     let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
     if !ev_r.is_empty() {
@@ -141,6 +119,32 @@ fn take_damage(
         hp.0 -= 1;
         if hp.0 == 0 {
             next.set(Screen::GameOver);
+        }
+    }
+}
+
+fn clear_paddle_radius_on_dmg(
+    mut ev_r: EventReader<TakeDamage>,
+    projectile_q: Query<(Entity, &Projectile, &GlobalTransform)>,
+    enemy_q: Query<(Entity, &GlobalTransform), With<Enemy>>,
+    mut projectile_despawn_w: EventWriter<ProjectileDespawn>,
+    mut despawn_enemy_w: EventWriter<DespawnEnemy>,
+) {
+    if ev_r.clear_any() {
+        // todo: spawn take dmg particles
+        // and destroy all enemies and projectiles inside the core
+
+        for (projectile_e, ..) in projectile_q.iter().filter(|(_, p, t, ..)| {
+            p.target == ProjectileTarget::Core && t.translation().length() < PADDLE_RADIUS
+        }) {
+            projectile_despawn_w.send(ProjectileDespawn(projectile_e));
+        }
+
+        for (enemy_e, ..) in enemy_q
+            .iter()
+            .filter(|(_, t, ..)| t.translation().length() < PADDLE_RADIUS)
+        {
+            despawn_enemy_w.send(DespawnEnemy(enemy_e));
         }
     }
 }

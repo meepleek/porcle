@@ -20,7 +20,7 @@ use super::{
     movement::{Damping, Impulse, MoveDirection, Speed, Velocity},
     paddle::PaddleKnockback,
     spawn::{
-        enemy::{Enemy, EnemyGunBarrel, Shielded},
+        enemy::{DespawnEnemy, Enemy, EnemyGunBarrel, Shielded},
         level::{Core, Health},
         paddle::{Paddle, PaddleAmmo},
         projectile::{Projectile, ProjectileTarget},
@@ -31,7 +31,7 @@ use super::{
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
-    app.add_event::<ProjectileHit>()
+    app.add_event::<ProjectileDespawn>()
         .add_systems(Last, despawn_projectile_on_hit)
         .add_systems(
             Update,
@@ -47,7 +47,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Event, Debug)]
-pub struct ProjectileHit(pub Entity);
+pub struct ProjectileDespawn(pub Entity);
 
 struct NoAmmoShake;
 
@@ -205,21 +205,14 @@ fn handle_collisions(
         &MoveDirection,
         &Speed,
     )>,
-    mut enemy_q: Query<(
-        &GlobalTransform,
-        &Enemy,
-        &mut Health,
-        &mut Impulse,
-        Option<&Shielded>,
-    )>,
+    mut enemy_q: Query<(&mut Health, &mut Impulse, Option<&Shielded>), With<Enemy>>,
     paddle_q: Query<&GlobalTransform, With<Paddle>>,
     core_q: Query<(), With<Core>>,
-    mut cmd: Commands,
     time: Res<Time>,
-    particles: Res<ParticleAssets>,
     mut taken_dmg_w: EventWriter<TakeDamage>,
     mut knockback_paddle_w: EventWriter<PaddleKnockback>,
-    mut projectile_hit_w: EventWriter<ProjectileHit>,
+    mut projectile_hit_w: EventWriter<ProjectileDespawn>,
+    mut despawn_enemy_w: EventWriter<DespawnEnemy>,
 ) {
     for (e, t, projectile, vel, move_dir, speed) in &projectile_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -241,9 +234,7 @@ fn handle_collisions(
             let mut despawn = false;
             match projectile.target {
                 ProjectileTarget::Enemy => {
-                    if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse, shielded)) =
-                        enemy_q.get_mut(hit_e)
-                    {
+                    if let Ok((mut enemy_hp, mut impulse, shielded)) = enemy_q.get_mut(hit_e) {
                         despawn = true;
 
                         if shielded.is_none() {
@@ -251,22 +242,7 @@ fn handle_collisions(
                         }
 
                         if enemy_hp.0 == 0 && shielded.is_none() {
-                            cmd.entity(hit_e).remove::<Enemy>().insert(Damping(5.));
-                            cmd.entity(enemy.sprite_e).insert((
-                                get_relative_scale_anim(
-                                    Vec2::ZERO.extend(1.),
-                                    150,
-                                    Some(EaseFunction::BounceIn),
-                                ),
-                                DespawnOnTweenCompleted::Entity(hit_e),
-                            ));
-                            cmd.spawn((
-                                particles.square_particle_spawner(
-                                    particles.enemy.clone(),
-                                    Transform::from_translation(enemy_t.translation()),
-                                ),
-                                OneShot::Despawn,
-                            ));
+                            despawn_enemy_w.send(DespawnEnemy(hit_e));
                         } else {
                             // knockback
                             impulse.0 += move_dir.0 * 30.;
@@ -285,22 +261,20 @@ fn handle_collisions(
             }
 
             if despawn {
-                projectile_hit_w.send(ProjectileHit(e));
+                projectile_hit_w.send(ProjectileDespawn(e));
             }
         }
     }
 }
 
 fn despawn_projectile_on_hit(
-    mut ev_r: EventReader<ProjectileHit>,
+    mut ev_r: EventReader<ProjectileDespawn>,
     mut cmd: Commands,
     projectile_q: Query<&Projectile>,
 ) {
     for ev in ev_r.read() {
-        cmd.entity(ev.0)
-            .remove::<Projectile>()
-            .try_insert(Damping(30.));
-
+        let mut e_cmd = or_continue!(cmd.get_entity(ev.0));
+        e_cmd.remove::<Projectile>().try_insert(Damping(30.));
         let projectile = or_continue!(projectile_q.get(ev.0));
         cmd.entity(projectile.sprite_e).insert((
             get_relative_scale_anim(Vec2::ZERO.extend(1.), 80, Some(EaseFunction::QuadraticOut)),

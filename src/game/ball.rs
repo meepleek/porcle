@@ -20,7 +20,7 @@ use crate::{
 
 use super::{
     assets::ParticleAssets,
-    gun::ProjectileHit,
+    gun::ProjectileDespawn,
     movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
     paddle::PaddleKnockback,
     score::Score,
@@ -158,7 +158,7 @@ fn handle_ball_collisions(
     ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut score: ResMut<Score>,
     mut knockback_paddle_ev_w: EventWriter<PaddleKnockback>,
-    mut projectile_hit_w: EventWriter<ProjectileHit>,
+    mut projectile_hit_w: EventWriter<ProjectileDespawn>,
 ) {
     for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -319,7 +319,7 @@ fn handle_ball_collisions(
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 score.0 += 1;
             } else if projectile_q.contains(hit_e) {
-                projectile_hit_w.send(ProjectileHit(hit_e));
+                projectile_hit_w.send(ProjectileDespawn(hit_e));
             }
         }
 

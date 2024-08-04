@@ -114,8 +114,10 @@
   - [x] enemy projectiles dmg core
 - [x] paddle blocks enemy projectiles
 - [x] ball destroys enemy projectiles
-- [ ] turret that has to be destroyed by the ball (shielded)
 - [ ] when taking damage, then destroy all enemies and projectiles in paddle radius
+- [ ] enemy barrel tweening
+- [ ] telegraph enemy shots/shot charge/cooldown
+- [ ] turret that has to be destroyed by the ball (shielded)
 
 ## audio - v0.8.0
 

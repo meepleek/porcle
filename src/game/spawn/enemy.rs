@@ -2,16 +2,20 @@ use std::time::Duration;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_enoki::prelude::OneShot;
 use bevy_tweening::{Animator, EaseFunction};
 use rand::{distributions::WeightedIndex, prelude::*};
-use tiny_bail::c;
+use tiny_bail::{c, or_continue};
 
 use crate::{
     game::{
-        assets::SpriteAssets,
-        movement::{HomingTarget, MovementBundle, SpeedMultiplier},
+        assets::{ParticleAssets, SpriteAssets},
+        movement::{Damping, HomingTarget, MovementBundle, SpeedMultiplier},
         score::Score,
-        tween::{delay_tween, get_relative_sprite_color_tween},
+        tween::{
+            delay_tween, get_relative_scale_anim, get_relative_sprite_color_tween,
+            DespawnOnTweenCompleted,
+        },
     },
     math::inverse_lerp_clamped,
     screen::Screen,
@@ -23,11 +27,17 @@ use super::{level::Health, paddle::PADDLE_RADIUS};
 
 pub(super) fn plugin(app: &mut App) {
     app.observe(spawn_enemy);
-    app.add_systems(
-        Update,
-        (spawner, enemy_flash_on_hit, slow_down_near_core).run_if(in_state(Screen::Game)),
-    );
+    app.add_event::<DespawnEnemy>()
+        .add_systems(Last, despawn_enemy)
+        .add_systems(
+            Update,
+            (spawner, enemy_flash_on_hit, slow_down_near_core).run_if(in_state(Screen::Game)),
+        );
 }
+
+// todo: try to generalise this - it's pretty similar to ProjectileDespawn
+#[derive(Event, Debug)]
+pub struct DespawnEnemy(pub Entity);
 
 #[derive(Event, Debug)]
 pub struct SpawnEnemy {
@@ -124,7 +134,7 @@ fn spawner(mut cmd: Commands, mut next_timer: Local<Timer>, time: Res<Time>, sco
                 }
             },
         });
-        // todo: fix the spawn rates
+        // todo: balance the spawn rates
         let time_mult_range = match score.0 {
             0..=1 => 3.0..3.1,
             2..=5 => 1.5..2.0,
@@ -360,5 +370,28 @@ fn slow_down_near_core(
                 };
             }
         }
+    }
+}
+
+fn despawn_enemy(
+    mut ev_r: EventReader<DespawnEnemy>,
+    mut cmd: Commands,
+    enemy_q: Query<(&Enemy, &GlobalTransform)>,
+    particles: Res<ParticleAssets>,
+) {
+    for ev in ev_r.read() {
+        let (enemy, t) = or_continue!(enemy_q.get(ev.0));
+        cmd.entity(ev.0).remove::<Enemy>().try_insert(Damping(5.));
+        cmd.entity(enemy.sprite_e).try_insert((
+            get_relative_scale_anim(Vec2::ZERO.extend(1.), 150, Some(EaseFunction::BounceIn)),
+            DespawnOnTweenCompleted::Entity(ev.0),
+        ));
+        cmd.spawn((
+            particles.square_particle_spawner(
+                particles.enemy.clone(),
+                Transform::from_translation(t.translation()),
+            ),
+            OneShot::Despawn,
+        ));
     }
 }
