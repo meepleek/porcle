@@ -101,7 +101,7 @@ jobs:
                   lfs: ${{ env.USE_GIT_LFS }}
 
             - name: Install Rust toolchain
-              uses: dtolnay/rust-toolchain@main
+              uses: dtolnay/rust-toolchain@master
               with:
                   toolchain: ${{ env.RUST_TOOLCHAIN }}
                   targets: ${{ matrix.targets }}
