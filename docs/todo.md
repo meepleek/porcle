@@ -118,6 +118,7 @@
 - [ ] enemy barrel tweening
 - [ ] telegraph enemy shots/shot charge/cooldown
 - [ ] turret that has to be destroyed by the ball (shielded)
+- [ ] make big_boi just reflect the ball and take about 5 dmg (enough to make everything else a 1 hit)
 
 ## audio - v0.8.0
 
