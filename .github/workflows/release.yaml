@@ -108,6 +108,8 @@ jobs:
 
             - name: Setup mold linker
               uses: rui314/setup-mold@v1
+              with:
+                make-default: false
               
             - name: Populate target directory from cache
               uses: Leafwing-Studios/cargo-cache@v2

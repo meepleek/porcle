@@ -13,7 +13,7 @@ linker = "clang"
 rustflags = [
   # Mold linker
   # - Arch: `sudo pacman -S mold clang`
-  "-Clink-arg=-fuse-ld=/usr/bin/mold",
+  "-Clink-arg=-fuse-ld=mold",
 
   # # Nightly
   "-Zshare-generics=y",
