@@ -106,6 +106,9 @@ jobs:
                   toolchain: ${{ env.RUST_TOOLCHAIN }}
                   targets: ${{ matrix.targets }}
 
+            - name: Setup mold linker
+              uses: rui314/setup-mold@v1
+              
             - name: Populate target directory from cache
               uses: Leafwing-Studios/cargo-cache@v2
 
