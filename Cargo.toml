@@ -2,17 +2,17 @@
 name = "porcle"
 authors = ["Jiří H. <jiri@bacehub.de>"]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 avian2d = "0.1.1"
-bevy = { version = "0.14", features = ["wayland"] }
-bevy-inspector-egui = { version = "0.25.1", optional = true }
-bevy_asset_loader = { version = "0.21.0", features = ["2d"] }
-bevy_enoki = "0.2.2"
-bevy_trauma_shake = "0.3.0"
-bevy_tweening = { git = "https://github.com/SecretPocketCat/bevy_tweening.git", rev = "5f0edc7a9cb3cd39740582015c419f02cb2cbd71" }
-leafwing-input-manager = "0.14.0"
+bevy = { version = "0.15", features = ["wayland"] }
+bevy-inspector-egui = { version = "0.30.0", optional = true }
+bevy_asset_loader = { version = "0.22.0", features = ["2d"] }
+bevy_enoki = "0.3.3"
+bevy_trauma_shake = "0.4.0"
+bevy_tweening = { git = "https://github.com/meepleek/bevy_tweening.git", branch = "revert_tween_settings" }
+leafwing-input-manager = "0.16.0"
 # Disable low-severity logs at compile time for performance.
 log = { version = "0.4", features = [
   "max_level_debug",
