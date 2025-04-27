@@ -18,7 +18,7 @@ use crate::{
 use super::level::Health;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_enemy);
+    app.add_observer(spawn_enemy);
     app.add_systems(Update, spawner.run_if(in_state(Screen::Game)));
 }
 

@@ -7,6 +7,7 @@ use bevy_trauma_shake::{ShakeSettings, Shakes};
 use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
+    BLOOM_BASE, GAME_SIZE,
     ext::Vec2Ext,
     game::{
         movement::MovementPaused,
@@ -15,18 +16,17 @@ use crate::{
     },
     math::asymptotic_smoothing_with_delta_time,
     ui::palette::{COL_BALL, COL_BALL_FAST},
-    BLOOM_BASE, GAME_SIZE,
 };
 
 use super::{
     assets::ParticleAssets,
-    movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
+    movement::{Homing, MoveDirection, Speed, Velocity, speed_factor},
     score::Score,
     spawn::{
         ball::{Ball, InsidePaddleRadius},
         enemy::Enemy,
         level::Wall,
-        paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
+        paddle::{PADDLE_RADIUS, Paddle, PaddleAmmo, PaddleMode},
     },
     time::Cooldown,
     tween::lerp_color,
@@ -108,7 +108,7 @@ fn update_ball_speed(
         if ball_captured {
             // slow down captured ball
             ball_speed.0 =
-                (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.4)).max(BALL_BASE_SPEED);
+                (speed.0 - (BALL_BASE_SPEED * time.delta_secs() * 0.4)).max(BALL_BASE_SPEED);
             debug!(speed = speed.0, "captured ball");
         }
 
@@ -163,7 +163,7 @@ fn handle_ball_collisions(
             ball_t.translation().truncate(),
             0.,
             Dir2::new(vel.velocity()).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
+            (speed.0 * 1.05) * time.delta_secs(),
             100,
             false,
             SpatialQueryFilter::default(),
@@ -332,7 +332,7 @@ fn handle_ball_collisions(
                     origin,
                     0.,
                     Dir2::new(direction.0).expect("Non zero velocity"),
-                    (speed.0 * 1.05) * time.delta_seconds(),
+                    (speed.0 * 1.05) * time.delta_secs(),
                     100,
                     true,
                     SpatialQueryFilter::default(),
@@ -382,7 +382,7 @@ fn update_ball_speed_factor(
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal))
             .unwrap_or_default(),
         0.1,
-        time.delta_seconds(),
+        time.delta_secs(),
     );
 }
 
@@ -415,7 +415,7 @@ fn rotate_ball(
     let factor = 1.0 + factor.0 * 1.5;
     for ball in &ball_q {
         if let Ok(mut t) = trans_q.get_mut(ball.sprite_e) {
-            t.rotate_z(base_speed * factor * time.delta_seconds());
+            t.rotate_z(base_speed * factor * time.delta_secs());
         }
     }
 }

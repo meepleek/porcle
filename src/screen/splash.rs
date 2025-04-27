@@ -8,7 +8,7 @@ use bevy::{
 use self::ui_palette::COL_BG;
 
 use super::Screen;
-use crate::{ui::prelude::*, AppSet};
+use crate::{AppSet, ui::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.insert_resource(ClearColor(COL_BG));
@@ -103,7 +103,7 @@ impl UiImageFadeInOut {
 
 fn tick_fade_in_out(time: Res<Time>, mut animation_query: Query<&mut UiImageFadeInOut>) {
     for mut anim in &mut animation_query {
-        anim.t += time.delta_seconds();
+        anim.t += time.delta_secs();
     }
 }
 

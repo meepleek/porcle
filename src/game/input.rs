@@ -6,8 +6,8 @@ use bevy::window::PrimaryWindow;
 use leafwing_input_manager::plugin::InputManagerSystem;
 use leafwing_input_manager::prelude::*;
 
-use crate::math::asymptotic_smoothing_with_delta_time;
 use crate::AppSet;
+use crate::math::asymptotic_smoothing_with_delta_time;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CursorCoords>()
@@ -59,14 +59,14 @@ impl PlayerAction {
             Self::AimGamepad,
             DualAxis::right_stick().with_deadzone(deadzone),
         );
-        input_map.insert(Self::Shoot, GamepadButtonType::RightTrigger);
-        input_map.insert(Self::Shoot, GamepadButtonType::RightTrigger2);
-        input_map.insert(Self::Shoot, GamepadButtonType::South);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::LeftTrigger);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::LeftTrigger2);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::West);
-        input_map.insert(Self::Restart, GamepadButtonType::Start);
-        input_map.insert(Self::Quit, GamepadButtonType::Select);
+        input_map.insert(Self::Shoot, GamepadButton::RightTrigger);
+        input_map.insert(Self::Shoot, GamepadButton::RightTrigger2);
+        input_map.insert(Self::Shoot, GamepadButton::South);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::LeftTrigger);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::LeftTrigger2);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::West);
+        input_map.insert(Self::Restart, GamepadButton::Start);
+        input_map.insert(Self::Quit, GamepadButton::Select);
 
         // KB & Mouse
         input_map.insert(Self::Shoot, MouseButton::Left);
@@ -108,7 +108,7 @@ fn update_aim_direction(
                     aim_dir.0,
                     cursor.0,
                     (dist / deadzone_radius).powi(3),
-                    time.delta_seconds(),
+                    time.delta_secs(),
                 )
                 // aim_dir.0
             }

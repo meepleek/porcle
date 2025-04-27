@@ -24,7 +24,7 @@ use crate::{
 use super::level::RotateWithPaddle;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_paddle);
+    app.add_observer(spawn_paddle);
 }
 
 pub const PADDLE_RADIUS: f32 = 350.0;

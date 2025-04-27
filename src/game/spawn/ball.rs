@@ -4,7 +4,7 @@ use bevy_tweening::{Animator, EaseFunction};
 use crate::{
     game::{
         assets::{ParticleAssets, SpriteAssets},
-        ball::{BallSpeed, BALL_BASE_SPEED},
+        ball::{BALL_BASE_SPEED, BallSpeed},
         movement::{MovementBundle, MovementPaused},
         tween::{delay_tween, get_relative_scale_tween},
     },
@@ -15,7 +15,7 @@ use crate::{
 use super::paddle::PaddleMode;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_ball);
+    app.add_observer(spawn_ball);
 }
 
 pub const BALL_BASE_RADIUS: f32 = 40.;

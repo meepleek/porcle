@@ -136,7 +136,7 @@ fn compute_velocity(
     time: Res<Time>,
 ) {
     for (dir, speed, speed_mult, mut vel) in &mut move_q {
-        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_seconds();
+        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_secs();
     }
 }
 
@@ -148,7 +148,7 @@ fn apply_impulse(
     time: Res<Time>,
 ) {
     for (mut impulse, mut vel) in &mut impulse_q {
-        let mult_delta = time.delta_seconds() * 6.5;
+        let mult_delta = time.delta_secs() * 6.5;
         vel.0 += impulse.0 * mult_delta;
         // fixme: this is incorrect, but that can wait after the jam
         impulse.0 *= 1. - mult_delta;
@@ -217,7 +217,7 @@ fn home(
                 .powf(homing.factor_decay)
                 * homing.max_factor
                 * speed_factor
-                * time.delta_seconds();
+                * time.delta_secs();
             let homing_dir = (move_dir.0 * (1.0 - distance_factor) + target_dir * distance_factor)
                 .normalize_or_zero();
             let speed = vel.0.length();
@@ -237,7 +237,7 @@ fn apply_damping(
     time: Res<Time>,
 ) {
     for (mut vel, damping, speed) in &mut damping_q {
-        let mult = 1. - (damping.0 * time.delta_seconds());
+        let mult = 1. - (damping.0 * time.delta_secs());
         vel.0 *= mult;
         if let Some(mut speed) = speed {
             speed.0 *= mult;

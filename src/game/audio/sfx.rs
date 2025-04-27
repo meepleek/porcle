@@ -4,7 +4,7 @@ use bevy::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(play_sfx);
+    app.add_observer(play_sfx);
 }
 
 fn play_sfx(trigger: Trigger<PlaySfx>, mut commands: Commands) {

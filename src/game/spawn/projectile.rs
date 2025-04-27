@@ -13,7 +13,7 @@ use crate::{
 use super::despawn::DespawnOutOfBounds;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_projectile);
+    app.add_observer(spawn_projectile);
 }
 
 #[derive(Event, Debug)]

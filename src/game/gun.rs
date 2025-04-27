@@ -162,7 +162,7 @@ fn handle_collisions(
             t.translation().truncate(),
             0.,
             Dir2::new(move_dir.0).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
+            (speed.0 * 1.05) * time.delta_secs(),
             100,
             false,
             SpatialQueryFilter::default(),

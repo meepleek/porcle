@@ -8,13 +8,13 @@ use bevy::{
 use bevy_tweening::{Animator, EaseFunction};
 
 use crate::{
+    GAME_SIZE,
     game::{
         assets::{ParticleAssets, SpriteAssets},
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
     ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_AMMO_OUT, COL_GEARS},
-    GAME_SIZE,
 };
 
 use super::{
@@ -23,7 +23,7 @@ use super::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_level)
+    app.add_observer(spawn_level)
         .add_systems(Update, (add_ball_to_paddle,));
 }
 
