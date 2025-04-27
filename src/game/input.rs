@@ -47,17 +47,13 @@ impl PlayerAction {
 
         // Gamepad
         let deadzone_radius = 0.15;
-        let deadzone = DeadZoneShape::Ellipse {
-            radius_x: deadzone_radius,
-            radius_y: deadzone_radius,
-        };
-        input_map.insert(
+        input_map.insert_dual_axis(
             Self::AimGamepad,
-            DualAxis::left_stick().with_deadzone(deadzone),
+            GamepadStick::LEFT.with_circle_deadzone(deadzone_radius),
         );
-        input_map.insert(
+        input_map.insert_dual_axis(
             Self::AimGamepad,
-            DualAxis::right_stick().with_deadzone(deadzone),
+            GamepadStick::RIGHT.with_circle_deadzone(deadzone_radius),
         );
         input_map.insert(Self::Shoot, GamepadButton::RightTrigger);
         input_map.insert(Self::Shoot, GamepadButton::RightTrigger2);
@@ -115,7 +111,7 @@ fn update_aim_direction(
         }
         ActiveInput::Gamepad => input
             .clamped_axis_pair(&PlayerAction::AimGamepad)
-            .map_or(aim_dir.0, |dir| dir.xy().normalize_or(aim_dir.0)),
+            .normalize_or(aim_dir.0),
     }
 }
 
@@ -131,7 +127,8 @@ fn update_cursor_coords(
     // then convert into world coordinates
     if let Some(world_position) = window
         .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        // todo: handle the error in 0.16 with propagation instead of just ok()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
         .map(|ray| ray.origin.truncate())
     {
         coords.0 = world_position;
