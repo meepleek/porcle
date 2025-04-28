@@ -134,7 +134,7 @@ fn spawn_paddle(
     }
 
     let barrel_e = cmd
-        .spawn(SpatialBundle::default())
+        .spawn((Transform::default(), Visibility::default()))
         .with_children(|b| {
             b.spawn((
                 Name::new("barrel"),
@@ -161,7 +161,7 @@ fn spawn_paddle(
         .id();
 
     let sprite_e = cmd
-        .spawn(SpatialBundle::default())
+        .spawn((Transform::default(), Visibility::default()))
         .with_children(|b| {
             b.spawn((
                 Name::new("base_sprite"),
@@ -204,7 +204,8 @@ fn spawn_paddle(
     let paddle_e = cmd
         .spawn((
             Name::new("paddle"),
-            SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
+            Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
+            Visibility::default(),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
             Paddle {
                 sprite_e,
@@ -222,7 +223,8 @@ fn spawn_paddle(
 
     cmd.spawn((
         Name::new("paddle_rotation"),
-        SpatialBundle::default(),
+        Transform::default(),
+        Visibility::default(),
         PaddleRotation::new(paddle_e),
         AccumulatedRotation::default(),
         StateScoped(Screen::Game),

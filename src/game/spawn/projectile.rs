@@ -48,7 +48,8 @@ fn spawn_projectile(
         .id();
     cmd.spawn((
         Name::new("Projectile"),
-        SpatialBundle::from_transform(ev.transform),
+        ev.transform,
+        Visibility::default(),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
         MovementBundle::new(ev.dir.as_vec2(), 1600.),

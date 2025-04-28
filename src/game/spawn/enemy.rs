@@ -124,11 +124,10 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
 
             cmd.spawn((
                 Name::new("creepinek"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::triangle(a, b, c),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
@@ -152,11 +151,10 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
 
             cmd.spawn((
                 Name::new("shieldy"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::ellipse(75., 60.),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,
@@ -186,11 +184,10 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
 
             cmd.spawn((
                 Name::new("big_boi"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::triangle(a, b, c),
                 MovementBundle::new(-ev.position.normalize_or_zero(), speed),
                 HomingTarget,

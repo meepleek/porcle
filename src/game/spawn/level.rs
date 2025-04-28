@@ -95,7 +95,8 @@ fn spawn_level(
 
     cmd.spawn((
         Name::new("core"),
-        SpatialBundle::default(),
+        Transform::default(),
+        Visibility::default(),
         Collider::circle(CORE_RADIUS),
         RigidBody::Static,
         Core {
@@ -112,7 +113,8 @@ fn spawn_level(
     .add_children(&cog_entity_ids)
     .with_children(|b| {
         b.spawn((
-            SpatialBundle::from_transform(Transform::from_scale(Vec2::ZERO.extend(1.))),
+            Transform::from_scale(Vec2::ZERO.extend(1.)),
+            Visibility::default(),
             AmmoUi,
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
