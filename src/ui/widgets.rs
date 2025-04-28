@@ -20,18 +20,16 @@ impl<T: Spawn> Widgets for T {
     fn button(&mut self, text: impl Into<String>) -> EntityCommands {
         let mut entity = self.spawn((
             Name::new("Button"),
-            ButtonBundle {
-                style: Style {
-                    width: Px(200.0),
-                    height: Px(65.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: BackgroundColor(BUTTON_BG),
-                border_radius: BorderRadius::all(Val::Px(12.)),
+            Button,
+            Node {
+                width: Px(200.0),
+                height: Px(65.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             },
+            BackgroundColor(BUTTON_BG),
+            BorderRadius::all(Val::Px(12.)),
             InteractionPalette {
                 none: BUTTON_BG,
                 hovered: BUTTON_HOVERED_BG,
@@ -39,12 +37,15 @@ impl<T: Spawn> Widgets for T {
             },
         ));
         entity.with_children(|children| {
-            children.spawn((
-                Name::new("Button Text"),
-                Text::new(text),
-                TextFont::from_font_size(40.0),
-                TextColor(BUTTON_TEXT),
-            ));
+            ChildBuild::spawn(
+                children,
+                (
+                    Name::new("Button Text"),
+                    Text::new(text),
+                    TextFont::from_font_size(40.0),
+                    TextColor(BUTTON_TEXT),
+                ),
+            );
         });
         entity
     }
@@ -64,12 +65,15 @@ impl<T: Spawn> Widgets for T {
             BorderRadius::all(Val::Px(12.)),
         ));
         entity.with_children(|children| {
-            children.spawn((
-                Name::new("Header Text"),
-                Text::new(text),
-                TextFont::from_font_size(40.0),
-                TextColor(HEADER_TEXT),
-            ));
+            ChildBuild::spawn(
+                children,
+                (
+                    Name::new("Header Text"),
+                    Text::new(text),
+                    TextFont::from_font_size(40.0),
+                    TextColor(HEADER_TEXT),
+                ),
+            );
         });
         entity
     }
@@ -85,12 +89,15 @@ impl<T: Spawn> Widgets for T {
             },
         ));
         entity.with_children(|children| {
-            children.spawn((
-                Name::new("Label Text"),
-                Text::new(text),
-                TextFont::from_font_size(24.0),
-                TextColor(LABEL_TEXT),
-            ));
+            ChildBuild::spawn(
+                children,
+                (
+                    Name::new("Label Text"),
+                    Text::new(text),
+                    TextFont::from_font_size(24.0),
+                    TextColor(LABEL_TEXT),
+                ),
+            );
         });
         entity
     }
@@ -128,7 +135,6 @@ impl Containers for Commands<'_, '_> {
 trait Spawn {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands;
 }
-
 impl Spawn for Commands<'_, '_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
@@ -137,6 +143,6 @@ impl Spawn for Commands<'_, '_> {
 
 impl Spawn for ChildBuilder<'_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
-        self.spawn(bundle)
+        ChildBuild::spawn(self, bundle)
     }
 }
