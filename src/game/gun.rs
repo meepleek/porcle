@@ -114,7 +114,7 @@ fn fire_gun(
                 let barrel_pos = t.translation() + t.right() * 80.;
                 cmd.spawn((
                     particles.circle_particle_spawner(),
-                    particles.gun.clone(),
+                    ParticleEffectHandle(particles.gun.clone_weak()),
                     Transform::from_translation(barrel_pos)
                         .with_rotation(t.to_scale_rotation_translation().1),
                     OneShot::Despawn,
@@ -194,7 +194,7 @@ fn handle_collisions(
                         DespawnOnTweenCompleted::Entity(hit_e),
                     ));
                     cmd.spawn((
-                        particles.enemy.clone(),
+                        ParticleEffectHandle(particles.enemy.clone_weak()),
                         Transform::from_translation(enemy_t.translation()),
                         OneShot::Despawn,
                     ));

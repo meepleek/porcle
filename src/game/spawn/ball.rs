@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_enoki::ParticleEffectHandle;
 use bevy_tweening::Animator;
 
 use crate::{
@@ -81,7 +82,9 @@ fn spawn_ball(
 
         //particles
 
-        let particles_e = cmd.spawn(particles.ball.clone()).id();
+        let particles_e = cmd
+            .spawn(ParticleEffectHandle(particles.ball.clone_weak()))
+            .id();
 
         let ball_e = cmd
             .spawn((

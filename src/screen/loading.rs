@@ -2,6 +2,7 @@
 //! This reduces stuttering, especially for audio on WASM.
 
 use bevy::prelude::*;
+use bevy_enoki::ParticleEffectHandle;
 
 use super::{NextTransitionedState, Screen};
 use crate::{
@@ -35,6 +36,9 @@ fn on_loaded(
 ) {
     next_screen.set(Screen::Title);
     // bg particles
-    cmd.spawn((particles.circle_particle_spawner(), particles.bg.clone()));
+    cmd.spawn((
+        particles.circle_particle_spawner(),
+        ParticleEffectHandle(particles.bg.clone_weak()),
+    ));
     cmd.trigger(PlayMusic::Track(music.track_1.clone()));
 }

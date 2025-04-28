@@ -2,7 +2,10 @@ use std::cmp::Ordering;
 
 use avian2d::prelude::*;
 use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
-use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
+use bevy_enoki::{
+    ParticleEffectHandle,
+    prelude::{OneShot, ParticleSpawnerState},
+};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
 use bevy_tweening::Animator;
 
@@ -226,7 +229,7 @@ fn handle_ball_collisions(
                     );
                     cmd.spawn((
                         particles.circle_particle_spawner(),
-                        particles.reflection.clone(),
+                        ParticleEffectHandle(particles.reflection.clone_weak()),
                         Transform::from_translation(hit.point1.extend(10.))
                             .with_rotation(paddle_t.up().truncate().to_quat()),
                         OneShot::Despawn,
@@ -303,7 +306,7 @@ fn handle_ball_collisions(
                 shake.add_trauma(0.15);
                 // particles
                 cmd.spawn((
-                    particles.enemy.clone(),
+                    ParticleEffectHandle(particles.enemy.clone_weak()),
                     Transform::from_translation(hit.point1.extend(10.)),
                     OneShot::Despawn,
                 ));

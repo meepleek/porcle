@@ -2,6 +2,7 @@
 
 use avian2d::prelude::*;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy_enoki::ParticleEffectHandle;
 use bevy_tweening::Animator;
 
 use crate::{
@@ -148,7 +149,10 @@ fn spawn_level(
         });
 
         //particles
-        b.spawn((particles.circle_particle_spawner(), particles.core.clone()));
+        b.spawn((
+            particles.circle_particle_spawner(),
+            ParticleEffectHandle(particles.core.clone_weak()),
+        ));
     });
 
     cmd.trigger(SpawnPaddle);

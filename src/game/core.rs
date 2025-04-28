@@ -1,6 +1,6 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_enoki::prelude::OneShot;
+use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_trauma_shake::Shakes;
 
 use crate::{
@@ -65,7 +65,7 @@ fn handle_collisions(
                     DespawnOnTweenCompleted::Entity(*coll_e),
                 ));
                 cmd.spawn((
-                    particles.enemy.clone(),
+                    ParticleEffectHandle(particles.enemy.clone_weak()),
                     Transform::from_translation(enemy_t.translation()),
                     OneShot::Despawn,
                 ));

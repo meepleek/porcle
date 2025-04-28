@@ -85,12 +85,12 @@ pub struct MusicAssets {
 #[reflect(Resource)]
 pub struct ParticleAssets {
     pub circle_mat: Handle<SpriteParticle2dMaterial>,
-    pub gun: ParticleEffectHandle,
-    pub enemy: ParticleEffectHandle,
-    pub reflection: ParticleEffectHandle,
-    pub core: ParticleEffectHandle,
-    pub bg: ParticleEffectHandle,
-    pub ball: ParticleEffectHandle,
+    pub gun: Handle<Particle2dEffect>,
+    pub enemy: Handle<Particle2dEffect>,
+    pub reflection: Handle<Particle2dEffect>,
+    pub core: Handle<Particle2dEffect>,
+    pub bg: Handle<Particle2dEffect>,
+    pub ball: Handle<Particle2dEffect>,
 }
 
 impl ParticleAssets {
@@ -110,11 +110,11 @@ fn setup_particles(
             // if you just want to bind a single texture, leave both at 1.
             SpriteParticle2dMaterial::new(ass.load("particles/circle.png"), 1, 1),
         ),
-        gun: ParticleEffectHandle(ass.load("particles/gun.particle.ron")),
-        enemy: ParticleEffectHandle(ass.load("particles/enemy.particle.ron")),
-        reflection: ParticleEffectHandle(ass.load("particles/reflection.particle.ron")),
-        core: ParticleEffectHandle(ass.load("particles/core.particle.ron")),
-        bg: ParticleEffectHandle(ass.load("particles/bg.particle.ron")),
-        ball: ParticleEffectHandle(ass.load("particles/ball.particle.ron")),
+        gun: ass.load("particles/gun.particle.ron"),
+        enemy: ass.load("particles/enemy.particle.ron"),
+        reflection: ass.load("particles/reflection.particle.ron"),
+        core: ass.load("particles/core.particle.ron"),
+        bg: ass.load("particles/bg.particle.ron"),
+        ball: ass.load("particles/ball.particle.ron"),
     });
 }
