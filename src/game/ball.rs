@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 
 use avian2d::prelude::*;
-use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
+use bevy::{core_pipeline::bloom::Bloom, prelude::*};
 use bevy_enoki::{
     ParticleEffectHandle,
     prelude::{OneShot, ParticleSpawnerState},
@@ -390,7 +390,7 @@ fn update_ball_speed_factor(
 
 fn boost_postprocessing_based_on_ball_speed(
     factor: Res<MaxBallSpeedFactor>,
-    mut bloom_q: Query<&mut BloomSettings>,
+    mut bloom_q: Query<&mut Bloom>,
 ) {
     for mut bloom in &mut bloom_q {
         bloom.intensity = BLOOM_BASE + 0.175 * factor.0;

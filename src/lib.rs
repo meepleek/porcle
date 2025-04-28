@@ -9,7 +9,7 @@ mod ui;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
-    core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
+    core_pipeline::bloom::{Bloom, BloomCompositeMode},
     prelude::*,
     render::camera::ScalingMode,
 };
@@ -124,7 +124,7 @@ fn spawn_camera(mut commands: Commands) {
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
         ShakeSettings::default(),
-        BloomSettings {
+        Bloom {
             intensity: BLOOM_BASE,
             high_pass_frequency: 0.5,
             low_frequency_boost: 0.3,
