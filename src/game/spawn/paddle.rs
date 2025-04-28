@@ -145,15 +145,12 @@ fn spawn_paddle(
         .with_children(|b| {
             b.spawn((
                 Name::new("barrel"),
-                SpriteBundle {
-                    texture: sprites.paddle_barrel.clone(),
-                    sprite: Sprite {
-                        color: COL_PADDLE,
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(0., 55., 0.),
+                Sprite {
+                    image: sprites.paddle_barrel.clone_weak(),
+                    color: COL_PADDLE,
                     ..default()
                 },
+                Transform::from_xyz(0., 55., 0.),
             ));
         })
         .id();
@@ -161,15 +158,12 @@ fn spawn_paddle(
     let reflect_e = cmd
         .spawn((
             Name::new("reflect"),
-            SpriteBundle {
-                texture: sprites.paddle_reflect.clone(),
-                sprite: Sprite {
-                    color: COL_PADDLE_REFLECT,
-                    ..default()
-                },
-                transform: Transform::from_xyz(0., -17.5, 0.5),
+            Sprite {
+                image: sprites.paddle_reflect.clone_weak(),
+                color: COL_PADDLE_REFLECT,
                 ..default()
             },
+            Transform::from_xyz(0., -17.5, 0.5),
         ))
         .id();
 
@@ -178,17 +172,14 @@ fn spawn_paddle(
         .with_children(|b| {
             b.spawn((
                 Name::new("base_sprite"),
-                SpriteBundle {
-                    texture: sprites.paddle_base.clone(),
-                    sprite: Sprite {
-                        color: COL_PADDLE,
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(7., 0., 0.)
-                        .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
-                        .with_scale(Vec2::ZERO.extend(1.)),
+                Sprite {
+                    image: sprites.paddle_base.clone_weak(),
+                    color: COL_PADDLE,
                     ..default()
                 },
+                Transform::from_xyz(7., 0., 0.)
+                    .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
+                    .with_scale(Vec2::ZERO.extend(1.)),
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
                     1200,
@@ -199,15 +190,12 @@ fn spawn_paddle(
                 for sign in [1., -1.] {
                     b.spawn((
                         Name::new("wheel"),
-                        SpriteBundle {
-                            texture: sprites.paddle_wheel.clone(),
-                            sprite: Sprite {
-                                color: COL_PADDLE,
-                                ..default()
-                            },
-                            transform: Transform::from_xyz(98. * sign, -16., 0.),
+                        Sprite {
+                            image: sprites.paddle_wheel.clone_weak(),
+                            color: COL_PADDLE,
                             ..default()
                         },
+                        Transform::from_xyz(98. * sign, -16., 0.),
                         RotateWithPaddle {
                             invert: true,
                             offset: Rot2::default(),

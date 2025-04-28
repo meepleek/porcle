@@ -66,15 +66,12 @@ fn spawn_ball(
         let sprite_e = cmd
             .spawn((
                 Name::new("sprite"),
-                SpriteBundle {
-                    texture: sprites.ball.clone(),
-                    sprite: Sprite {
-                        color: COL_BALL,
-                        ..default()
-                    },
-                    transform: Transform::from_scale(Vec3::Z),
+                Sprite {
+                    image: sprites.ball.clone_weak(),
+                    color: COL_BALL,
                     ..default()
                 },
+                Transform::from_scale(Vec3::Z),
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
                     ev.tween_delay_ms,

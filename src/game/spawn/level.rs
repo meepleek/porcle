@@ -73,17 +73,14 @@ fn spawn_level(
             let angle = rot.as_radians() + 18f32.to_radians();
             cmd.spawn((
                 Name::new("small_gear"),
-                SpriteBundle {
-                    texture: sprites.gear_small.clone(),
-                    sprite: Sprite {
-                        color: COL_GEARS,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
-                        .with_rotation(Quat::from_rotation_z(angle))
-                        .with_scale(Vec2::ZERO.extend(1.)),
+                Sprite {
+                    image: sprites.gear_small.clone_weak(),
+                    color: COL_GEARS,
                     ..default()
                 },
+                Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
+                    .with_rotation(Quat::from_rotation_z(angle))
+                    .with_scale(Vec2::ZERO.extend(1.)),
                 RotateWithPaddle {
                     invert: i % 2 == 0,
                     offset: Rot2::radians(angle),
@@ -128,15 +125,12 @@ fn spawn_level(
             // ammo UI
             b.spawn((
                 Name::new("ammo_sprite"),
-                SpriteBundle {
-                    texture: sprites.ammo_icon.clone(),
-                    sprite: Sprite {
-                        color: COL_AMMO_BG,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::Z * 0.3),
+                Sprite {
+                    image: sprites.ammo_icon.clone_weak(),
+                    color: COL_AMMO_BG,
                     ..default()
                 },
+                Transform::from_translation(Vec3::Z * 0.3),
             ));
 
             b.spawn((

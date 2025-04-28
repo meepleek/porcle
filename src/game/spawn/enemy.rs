@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use rand::{distributions::WeightedIndex, prelude::*};
 
 use crate::{
+    GAME_SIZE,
     game::{
         assets::SpriteAssets,
         movement::{HomingTarget, MovementBundle},
@@ -12,7 +13,6 @@ use crate::{
     },
     screen::Screen,
     ui::palette::COL_ENEMY,
-    GAME_SIZE,
 };
 
 use super::level::Health;
@@ -115,12 +115,9 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             let c = Vec2::new(size, -size);
 
             let mesh_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_creepinek.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_creepinek.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
@@ -146,12 +143,9 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
         }
         EnemyKind::Shieldy => {
             let mesh_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_creepy_shield.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_creepy_shield.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
@@ -183,12 +177,9 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             let c = Vec2::new(size, -size + 10.);
 
             let sprite_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_big_boi.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_big_boi.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();

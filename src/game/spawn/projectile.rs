@@ -37,15 +37,14 @@ fn spawn_projectile(
     let x = 16.;
     let y = 30.;
     let sprite_e = cmd
-        .spawn(SpriteBundle {
-            texture: sprites.bullet.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: sprites.bullet.clone_weak(),
                 color: COL_BULLET,
                 ..default()
             },
-            transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
-            ..default()
-        })
+            Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
+        ))
         .id();
     cmd.spawn((
         Name::new("Projectile"),
