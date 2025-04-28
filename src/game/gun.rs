@@ -161,10 +161,9 @@ fn handle_collisions(
             t.translation().truncate(),
             0.,
             Dir2::new(move_dir.0).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_secs(),
             100,
-            false,
-            SpatialQueryFilter::default(),
+            &ShapeCastConfig::from_max_distance((speed.0 * 1.05) * time.delta_secs()),
+            &SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
             if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse, shielded)) =

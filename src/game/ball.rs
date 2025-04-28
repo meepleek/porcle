@@ -329,10 +329,13 @@ fn handle_ball_collisions(
                     origin,
                     0.,
                     Dir2::new(direction.0).expect("Non zero velocity"),
-                    (speed.0 * 1.05) * time.delta_secs(),
                     100,
-                    true,
-                    SpatialQueryFilter::default(),
+                    &ShapeCastConfig {
+                        max_distance: (speed.0 * 1.05) * time.delta_secs(),
+                        ignore_origin_penetration: true,
+                        ..default()
+                    },
+                    &SpatialQueryFilter::default(),
                 )
                 .iter()
             {
