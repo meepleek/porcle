@@ -163,10 +163,9 @@ fn handle_ball_collisions(
             ball_t.translation().truncate(),
             0.,
             Dir2::new(vel.velocity()).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_secs(),
             100,
-            false,
-            SpatialQueryFilter::default(),
+            &ShapeCastConfig::from_max_distance((speed.0 * 1.05) * time.delta_secs()),
+            &SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
             if let Ok((paddle_e, mut ammo, paddle_t, paddle, mut paddle_mode)) =
