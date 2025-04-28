@@ -136,23 +136,17 @@ fn spawn_level(
             b.spawn((
                 Name::new("ammo_fill"),
                 AmmoFill,
-                MaterialMesh2dBundle {
-                    // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
-                    material: materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
-                    transform: Transform::from_translation(Vec3::Z * 0.2)
-                        .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
-                    ..default()
-                },
+                // Mesh2dHandle(ammo_fill_handle.clone()),
+                materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
+                Transform::from_translation(Vec3::Z * 0.2)
+                    .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
             ));
 
             b.spawn((
                 Name::new("ammo_bg"),
-                MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
-                    material: materials.add(ColorMaterial::from_color(COL_AMMO_OUT)),
-                    transform: Transform::from_translation(Vec3::Z * 0.1),
-                    ..default()
-                },
+                Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
+                materials.add(ColorMaterial::from_color(COL_AMMO_OUT)),
+                Transform::from_translation(Vec3::Z * 0.1),
             ));
         });
 

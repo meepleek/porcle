@@ -126,12 +126,9 @@ fn spawn_paddle(
         annulus_builder.build();
         cmd.spawn((
             Name::new("rail"),
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(annulus_builder.build())),
-                material: materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
-                transform: Transform::zero_scale_2d(),
-                ..default()
-            },
+            Mesh2dHandle(meshes.add(annulus_builder.build())),
+            materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
+            Transform::zero_scale_2d(),
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 600, Some(EaseFunction::BackOut)),
                 950 + i as u64 * 150,
