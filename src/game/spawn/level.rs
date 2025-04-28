@@ -5,7 +5,7 @@ use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 
 use crate::{
     GAME_SIZE,
@@ -163,7 +163,7 @@ fn spawn_level(
         });
 
         //particles
-        b.spawn((particles.particle_spawner(particles.core.clone(), Transform::default()),));
+        b.spawn((particles.circle_particle_spawner(), particles.core.clone()));
     });
 
     cmd.trigger(SpawnPaddle);

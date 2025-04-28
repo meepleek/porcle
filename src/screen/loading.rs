@@ -35,6 +35,6 @@ fn on_loaded(
 ) {
     next_screen.set(Screen::Title);
     // bg particles
-    cmd.spawn((particles.particle_spawner(particles.bg.clone(), Transform::default()),));
+    cmd.spawn((particles.circle_particle_spawner(), particles.bg.clone()));
     cmd.trigger(PlayMusic::Track(music.track_1.clone()));
 }

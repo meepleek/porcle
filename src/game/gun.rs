@@ -23,10 +23,10 @@ use super::{
         paddle::{Paddle, PaddleAmmo},
         projectile::Projectile,
     },
-    time::{process_cooldown, Cooldown},
+    time::{Cooldown, process_cooldown},
     tween::{
-        delay_tween, get_relative_sprite_color_tween, get_relative_translation_tween,
-        DespawnOnTweenCompleted,
+        DespawnOnTweenCompleted, delay_tween, get_relative_sprite_color_tween,
+        get_relative_translation_tween,
     },
 };
 
@@ -113,11 +113,10 @@ fn fire_gun(
 
                 let barrel_pos = t.translation() + t.right() * 80.;
                 cmd.spawn((
-                    particles.particle_spawner(
-                        particles.gun.clone(),
-                        Transform::from_translation(barrel_pos)
-                            .with_rotation(t.to_scale_rotation_translation().1),
-                    ),
+                    particles.circle_particle_spawner(),
+                    particles.gun.clone(),
+                    Transform::from_translation(barrel_pos)
+                        .with_rotation(t.to_scale_rotation_translation().1),
                     OneShot::Despawn,
                 ));
             } else if cooldown.is_none() {
@@ -196,10 +195,8 @@ fn handle_collisions(
                         DespawnOnTweenCompleted::Entity(hit_e),
                     ));
                     cmd.spawn((
-                        particles.square_particle_spawner(
-                            particles.enemy.clone(),
-                            Transform::from_translation(enemy_t.translation()),
-                        ),
+                        particles.enemy.clone(),
+                        Transform::from_translation(enemy_t.translation()),
                         OneShot::Despawn,
                     ));
                 } else {

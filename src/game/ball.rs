@@ -226,11 +226,10 @@ fn handle_ball_collisions(
                         0.15 + 0.15 * speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 2.0),
                     );
                     cmd.spawn((
-                        particles.particle_spawner(
-                            particles.reflection.clone(),
-                            Transform::from_translation(hit.point1.extend(10.))
-                                .with_rotation(paddle_t.up().truncate().to_quat()),
-                        ),
+                        particles.circle_particle_spawner(),
+                        particles.reflection.clone(),
+                        Transform::from_translation(hit.point1.extend(10.))
+                            .with_rotation(paddle_t.up().truncate().to_quat()),
                         OneShot::Despawn,
                     ));
                     // clamp to min speed in case the ball has come back to core
@@ -305,10 +304,8 @@ fn handle_ball_collisions(
                 shake.add_trauma(0.15);
                 // particles
                 cmd.spawn((
-                    particles.square_particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(hit.point1.extend(10.)),
-                    ),
+                    particles.enemy.clone(),
+                    Transform::from_translation(hit.point1.extend(10.)),
                     OneShot::Despawn,
                 ));
                 // freeze

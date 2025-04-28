@@ -72,52 +72,30 @@ pub struct MusicAssets {
 //     #[asset(path = "particles/circle.png")]
 //     pub circle_mat: Handle<SpriteParticle2dMaterial>,
 //     #[asset(path = "particles/gun.particle.ron")]
-//     pub gun: Handle<Particle2dEffect>,
+//     pub gun: ParticleEffectHandle,
 //     #[asset(path = "particles/enemy.particle.ron")]
-//     pub enemy: Handle<Particle2dEffect>,
+//     pub enemy: ParticleEffectHandle,
 //     #[asset(path = "particles/reflection.particle.ron")]
-//     pub reflection: Handle<Particle2dEffect>,
+//     pub reflection: ParticleEffectHandle,
 //     #[asset(path = "particles/core.particle.ron")]
-//     pub core: Handle<Particle2dEffect>,
+//     pub core: ParticleEffectHandle,
 // }
 
 #[derive(Resource, Reflect)]
 #[reflect(Resource)]
 pub struct ParticleAssets {
     pub circle_mat: Handle<SpriteParticle2dMaterial>,
-    pub gun: Handle<Particle2dEffect>,
-    pub enemy: Handle<Particle2dEffect>,
-    pub reflection: Handle<Particle2dEffect>,
-    pub core: Handle<Particle2dEffect>,
-    pub bg: Handle<Particle2dEffect>,
-    pub ball: Handle<Particle2dEffect>,
+    pub gun: ParticleEffectHandle,
+    pub enemy: ParticleEffectHandle,
+    pub reflection: ParticleEffectHandle,
+    pub core: ParticleEffectHandle,
+    pub bg: ParticleEffectHandle,
+    pub ball: ParticleEffectHandle,
 }
 
 impl ParticleAssets {
-    pub fn square_particle_spawner(
-        &self,
-        effect: Handle<Particle2dEffect>,
-        transform: Transform,
-    ) -> ParticleSpawnerBundle<ColorParticle2dMaterial> {
-        ParticleSpawnerBundle {
-            effect,
-            material: DEFAULT_MATERIAL,
-            transform,
-            ..default()
-        }
-    }
-
-    pub fn particle_spawner(
-        &self,
-        effect: Handle<Particle2dEffect>,
-        transform: Transform,
-    ) -> ParticleSpawnerBundle<SpriteParticle2dMaterial> {
-        ParticleSpawnerBundle {
-            effect,
-            material: self.circle_mat.clone(),
-            transform,
-            ..default()
-        }
+    pub fn circle_particle_spawner(&self) -> ParticleSpawner<SpriteParticle2dMaterial> {
+        ParticleSpawner(self.circle_mat.clone_weak())
     }
 }
 
@@ -132,11 +110,11 @@ fn setup_particles(
             // if you just want to bind a single texture, leave both at 1.
             SpriteParticle2dMaterial::new(ass.load("particles/circle.png"), 1, 1),
         ),
-        gun: ass.load("particles/gun.particle.ron"),
-        enemy: ass.load("particles/enemy.particle.ron"),
-        reflection: ass.load("particles/reflection.particle.ron"),
-        core: ass.load("particles/core.particle.ron"),
-        bg: ass.load("particles/bg.particle.ron"),
-        ball: ass.load("particles/ball.particle.ron"),
+        gun: ParticleEffectHandle(ass.load("particles/gun.particle.ron")),
+        enemy: ParticleEffectHandle(ass.load("particles/enemy.particle.ron")),
+        reflection: ParticleEffectHandle(ass.load("particles/reflection.particle.ron")),
+        core: ParticleEffectHandle(ass.load("particles/core.particle.ron")),
+        bg: ParticleEffectHandle(ass.load("particles/bg.particle.ron")),
+        ball: ParticleEffectHandle(ass.load("particles/ball.particle.ron")),
     });
 }

@@ -84,11 +84,7 @@ fn spawn_ball(
 
         //particles
 
-        let particles_e = cmd
-            .spawn((
-                particles.square_particle_spawner(particles.ball.clone(), Transform::default()),
-            ))
-            .id();
+        let particles_e = cmd.spawn((particles.ball.clone())).id();
 
         let ball_e = cmd
             .spawn((

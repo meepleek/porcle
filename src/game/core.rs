@@ -16,7 +16,7 @@ use super::{
     movement::MovementPaused,
     spawn::{
         enemy::Enemy,
-        level::{AmmoFill, Core, Health, RotateWithPaddle, AMMO_FILL_RADIUS},
+        level::{AMMO_FILL_RADIUS, AmmoFill, Core, Health, RotateWithPaddle},
         paddle::{PaddleAmmo, PaddleRotation},
     },
     tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
@@ -66,10 +66,8 @@ fn handle_collisions(
                     DespawnOnTweenCompleted::Entity(*coll_e),
                 ));
                 cmd.spawn((
-                    particles.square_particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(enemy_t.translation()),
-                    ),
+                    particles.enemy.clone(),
+                    Transform::from_translation(enemy_t.translation()),
                     OneShot::Despawn,
                 ));
 
