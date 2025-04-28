@@ -45,7 +45,7 @@ fn enter_playing(
 
     #[cfg(not(target_family = "wasm"))]
     {
-        win.cursor.grab_mode = CursorGrabMode::Confined;
+        win.cursor_options.grab_mode = CursorGrabMode::Confined;
     }
 }
 
@@ -56,7 +56,7 @@ fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<Pr
 
     #[cfg(not(target_family = "wasm"))]
     {
-        win.cursor.grab_mode = CursorGrabMode::None;
+        win.cursor_options.grab_mode = CursorGrabMode::None;
     }
 }
 
