@@ -81,7 +81,7 @@ fn spawn_ball(
 
         //particles
 
-        let particles_e = cmd.spawn((particles.ball.clone())).id();
+        let particles_e = cmd.spawn(particles.ball.clone()).id();
 
         let ball_e = cmd
             .spawn((
