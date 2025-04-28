@@ -4,7 +4,7 @@ use avian2d::prelude::*;
 use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 
 use crate::{
     BLOOM_BASE, GAME_SIZE,

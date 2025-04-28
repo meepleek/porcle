@@ -235,7 +235,7 @@ fn start_transition_anim(
 
     for (i, e) in trans.circle_entity_ids.iter().cloned().enumerate() {
         cmd.entity(e).try_insert(
-            TweenFactor::<TransitionCircle>::new(800, bevy_tweening::EaseFunction::SineInOut)
+            TweenFactor::<TransitionCircle>::new(800, EaseFunction::SineInOut)
                 .with_delay((i * 150) as u64),
         );
     }
@@ -250,7 +250,7 @@ fn transition_out(
         ),
         Changed<TweenFactor<TransitionCircle>>,
     >,
-    mut style_q: Query<&mut Style>,
+    mut style_q: Query<&mut Node>,
     reset_circle_q: Query<Entity, (With<TransitionCircle>, Without<FinalTransitionCircle>)>,
     mut cmd: Commands,
     next_transitioned: Res<NextTransitionedState>,
@@ -273,7 +273,7 @@ fn transition_out(
                 cmd.entity(e)
                     .try_insert(TweenFactor::<FinalTransitionCircle>::new(
                         200,
-                        bevy_tweening::EaseFunction::QuadraticIn,
+                        EaseFunction::QuadraticIn,
                     ));
 
                 // reset size of non-final circles
@@ -292,8 +292,8 @@ fn transition_out(
 fn transition_in(
     mut final_circle_q: Query<(
         Entity,
-        &mut Style,
-        &mut UiImage,
+        &mut Node,
+        &mut ImageNode,
         &TweenFactor<FinalTransitionCircle>,
     )>,
     mut cmd: Commands,

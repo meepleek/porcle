@@ -1,8 +1,8 @@
 //! A splash screen that plays briefly at startup.
 
 use bevy::{
+    image::{ImageLoaderSettings, ImageSampler},
     prelude::*,
-    render::texture::{ImageLoaderSettings, ImageSampler},
 };
 
 use self::ui_palette::COL_BG;
@@ -104,7 +104,7 @@ fn tick_fade_in_out(time: Res<Time>, mut animation_query: Query<&mut UiImageFade
     }
 }
 
-fn apply_fade_in_out(mut animation_query: Query<(&UiImageFadeInOut, &mut UiImage)>) {
+fn apply_fade_in_out(mut animation_query: Query<(&UiImageFadeInOut, &mut ImageNode)>) {
     for (anim, mut image) in &mut animation_query {
         image.color.set_alpha(anim.alpha())
     }

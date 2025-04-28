@@ -1,10 +1,10 @@
 use bevy::prelude::*;
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 use std::f32::consts::TAU;
 
 use crate::{
-    ext::{QuatExt, Vec2Ext},
     AppSet,
+    ext::{QuatExt, Vec2Ext},
 };
 
 use super::{
@@ -16,7 +16,7 @@ use super::{
         level::AmmoUi,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
-    time::{process_cooldown, Cooldown},
+    time::{Cooldown, process_cooldown},
     tween::{get_relative_scale_tween, get_relative_sprite_color_anim},
 };
 

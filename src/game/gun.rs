@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{Animator, Delay, EaseFunction};
+use bevy_tweening::{Animator, Delay};
 use rand::thread_rng;
 use std::time::Duration;
 

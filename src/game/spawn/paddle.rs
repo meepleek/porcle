@@ -6,7 +6,7 @@ use bevy::{
     render::mesh::AnnulusMeshBuilder,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 
 use crate::{
     ext::TransExt,

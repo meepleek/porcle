@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 
 use crate::{
     game::{

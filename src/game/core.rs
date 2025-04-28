@@ -2,7 +2,6 @@ use avian2d::prelude::*;
 use bevy::{prelude::*, sprite::Mesh2dHandle};
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::EaseFunction;
 
 use crate::{
     ext::QuatExt,
@@ -131,7 +130,7 @@ fn disable_gears(
                     get_relative_scale_anim(
                         Vec2::splat(0.7).extend(1.),
                         350,
-                        Some(bevy_tweening::EaseFunction::BackIn),
+                        Some(EaseFunction::BackIn),
                     ),
                     get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
                     MovementPaused,
