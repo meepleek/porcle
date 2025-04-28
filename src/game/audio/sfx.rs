@@ -8,14 +8,14 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn play_sfx(trigger: Trigger<PlaySfx>, mut commands: Commands) {
-    commands.spawn(AudioSourceBundle {
-        source: trigger.event().0.clone(),
-        settings: PlaybackSettings {
+    commands.spawn((
+        AudioPlayer(trigger.event().0.clone()),
+        PlaybackSettings {
             mode: PlaybackMode::Despawn,
             volume: Volume::new(0.175),
             ..default()
         },
-    });
+    ));
 }
 
 #[derive(Event)]

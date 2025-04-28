@@ -22,13 +22,11 @@ fn play_soundtrack(
         PlayMusic::Disable => return,
     };
     commands.spawn((
-        AudioSourceBundle {
-            source: handle,
-            settings: PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                volume: Volume::new(0.275),
-                ..default()
-            },
+        AudioPlayer(handle),
+        PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            volume: Volume::new(0.275),
+            ..default()
         },
         Music,
     ));
