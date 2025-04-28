@@ -95,18 +95,11 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
             let mut builder = cmd.spawn((
                 Name::new("transition_circle"),
                 TransitionCircle,
-                ImageBundle {
-                    image: UiImage {
-                        texture: sprites.transition_circle.clone(),
-                        color: *color,
-                        ..default()
-                    },
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        width: Val::Vw(0.),
-                        height: Val::Vw(0.),
-                        ..default()
-                    },
+                ImageNode::new(sprites.transition_circle.clone_weak()).with_color(*color),
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: Val::Vw(0.),
+                    height: Val::Vw(0.),
                     ..default()
                 },
             ));
