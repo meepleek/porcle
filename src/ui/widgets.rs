@@ -41,14 +41,9 @@ impl<T: Spawn> Widgets for T {
         entity.with_children(|children| {
             children.spawn((
                 Name::new("Button Text"),
-                TextBundle::from_section(
-                    text,
-                    TextStyle {
-                        font_size: 40.0,
-                        color: BUTTON_TEXT,
-                        ..default()
-                    },
-                ),
+                Text::new(text),
+                TextFont::from_font_size(40.0),
+                TextColor(BUTTON_TEXT),
             ));
         });
         entity
@@ -74,14 +69,9 @@ impl<T: Spawn> Widgets for T {
         entity.with_children(|children| {
             children.spawn((
                 Name::new("Header Text"),
-                TextBundle::from_section(
-                    text,
-                    TextStyle {
-                        font_size: 40.0,
-                        color: HEADER_TEXT,
-                        ..default()
-                    },
-                ),
+                Text::new(text),
+                TextFont::from_font_size(40.0),
+                TextColor(HEADER_TEXT),
             ));
         });
         entity
@@ -103,14 +93,9 @@ impl<T: Spawn> Widgets for T {
         entity.with_children(|children| {
             children.spawn((
                 Name::new("Label Text"),
-                TextBundle::from_section(
-                    text,
-                    TextStyle {
-                        font_size: 24.0,
-                        color: LABEL_TEXT,
-                        ..default()
-                    },
-                ),
+                Text::new(text),
+                TextFont::from_font_size(24.0),
+                TextColor(LABEL_TEXT),
             ));
         });
         entity
