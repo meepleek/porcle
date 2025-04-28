@@ -1,5 +1,5 @@
 use avian2d::prelude::*;
-use bevy::{prelude::*, sprite::Mesh2dHandle};
+use bevy::prelude::*;
 use bevy_enoki::prelude::OneShot;
 use bevy_trauma_shake::Shakes;
 
@@ -108,7 +108,7 @@ fn update_ammo_fill(
     if let Some(ammo) = ammo_q.iter().next() {
         for e in &ammo_fill_q {
             cmd.entity(e)
-                .try_insert(Mesh2dHandle(meshes.add(CircularSegment::from_turns(
+                .try_insert(Mesh2d(meshes.add(CircularSegment::from_turns(
                     AMMO_FILL_RADIUS,
                     // not sure why, but the segments fills at 95% already
                     ammo.factor() * 0.95,

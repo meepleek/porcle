@@ -1,10 +1,7 @@
 //! Spawn the main level by triggering other observers.
 
 use avian2d::prelude::*;
-use bevy::{
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_tweening::Animator;
 
 use crate::{
@@ -144,8 +141,8 @@ fn spawn_level(
 
             b.spawn((
                 Name::new("ammo_bg"),
-                Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
-                materials.add(ColorMaterial::from_color(COL_AMMO_OUT)),
+                Mesh2d(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_AMMO_OUT))),
                 Transform::from_translation(Vec3::Z * 0.1),
             ));
         });

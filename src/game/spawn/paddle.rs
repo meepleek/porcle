@@ -1,11 +1,7 @@
 use std::time::Duration;
 
 use avian2d::prelude::*;
-use bevy::{
-    prelude::*,
-    render::mesh::AnnulusMeshBuilder,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::{prelude::*, render::mesh::AnnulusMeshBuilder, sprite::MaterialMesh2dBundle};
 use bevy_tweening::Animator;
 
 use crate::{
@@ -126,8 +122,8 @@ fn spawn_paddle(
         annulus_builder.build();
         cmd.spawn((
             Name::new("rail"),
-            Mesh2dHandle(meshes.add(annulus_builder.build())),
-            materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
+            Mesh2d(meshes.add(annulus_builder.build())),
+            MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS))),
             Transform::zero_scale_2d(),
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 600, Some(EaseFunction::BackOut)),
