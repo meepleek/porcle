@@ -6,8 +6,8 @@ use bevy::window::PrimaryWindow;
 use leafwing_input_manager::plugin::InputManagerSystem;
 use leafwing_input_manager::prelude::*;
 
-use crate::AppSet;
 use crate::math::asymptotic_smoothing_with_delta_time;
+use crate::AppSet;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CursorCoords>()
@@ -33,6 +33,7 @@ pub(super) fn plugin(app: &mut App) {
 pub enum PlayerAction {
     Shoot,
     TogglePaddleMode,
+    #[actionlike(DualAxis)]
     AimGamepad,
     Quit,
     Restart,
