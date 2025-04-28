@@ -137,7 +137,7 @@ fn spawn_level(
                 Name::new("ammo_fill"),
                 AmmoFill,
                 // Mesh2dHandle(ammo_fill_handle.clone()),
-                materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_AMMO_FILL))),
                 Transform::from_translation(Vec3::Z * 0.2)
                     .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
             ));

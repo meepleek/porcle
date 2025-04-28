@@ -35,7 +35,8 @@ impl<T: Send + Sync> TweenFactor<T> {
     }
 
     pub fn factor(&self) -> f32 {
-        self.timer.fraction().calc(self.ease)
+        // todo: check that updated code is valid
+        self.timer.fraction()
     }
 }
 
@@ -113,20 +114,13 @@ relative_tween_fns!(
     Quat
 );
 
-relative_tween_fns!(
-    text_color,
-    Animator,
-    Text,
-    TextRelativeColorLens,
-    Vec<Color>,
-    Color
-);
+relative_tween_fns!(text_color, Animator, TextColor, TextColorLens, Color, Color);
 
 relative_tween_fns!(
     ui_bg_color,
     Animator,
     BackgroundColor,
-    UiBackgroundColorLens,
+    BackgroundColorLens,
     Color,
     Color
 );
@@ -134,8 +128,8 @@ relative_tween_fns!(
 relative_tween_fns!(
     ui_image_color,
     Animator,
-    UiImage,
-    UiImageColorLens,
+    ImageNode,
+    ImageNodeColorLens,
     Color,
     Color
 );
@@ -188,39 +182,6 @@ impl Lens<Transform> for TransformRelativeByPositionLens {
     }
 }
 
-#[derive(Default)]
-pub struct TextRelativeColorLens {
-    pub start: Option<Vec<Color>>,
-    pub end: Color,
-}
-
-impl TextRelativeColorLens {
-    #[allow(dead_code)]
-    pub fn relative(end: Color) -> Self {
-        Self { start: None, end }
-    }
-}
-
-impl Lens<Text> for TextRelativeColorLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<Text>, ratio: f32) {
-        for i in 0..target.sections.len() {
-            if let Some(col) = self.start.as_ref().unwrap().get(i) {
-                target.sections[i].style.color = lerp_color(*col, self.end, ratio);
-            }
-        }
-    }
-
-    fn update_on_tween_start(
-        &mut self,
-        target: &mut dyn Targetable<Text>,
-        _direction: TweeningDirection,
-        _times_completed: i32,
-    ) {
-        self.start
-            .get_or_insert_with(|| target.sections.iter().map(|s| s.style.color).collect());
-    }
-}
-
 color_lens!(Sprite, SpriteRelativeColorLens, color);
 relative_tween_fns!(
     sprite_color,
@@ -230,8 +191,9 @@ relative_tween_fns!(
     Color,
     Color
 );
-color_lens!(BackgroundColor, UiBackgroundColorLens, 0);
-color_lens!(UiImage, UiImageColorLens, color);
+color_lens!(TextColor, TextColorLens, 0);
+color_lens!(BackgroundColor, BackgroundColorLens, 0);
+color_lens!(ImageNode, ImageNodeColorLens, color);
 color_lens!(ColorMaterial, ColorMaterialRelativeColorLens, color);
 
 pub fn lerp_color(from: Color, to: Color, ratio: f32) -> Color {
