@@ -176,7 +176,7 @@ fn handle_ball_collisions(
                     continue;
                 }
 
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.2 {
+                if time.elapsed_secs() < ball.last_reflection_time + 0.2 {
                     // ignore consecutive hits
                     continue;
                 }
@@ -244,7 +244,7 @@ fn handle_ball_collisions(
                         0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
                     cmd.entity(ball_e)
                         .insert(MovementPaused::cooldown(cooldown));
-                    ball.last_reflection_time = time.elapsed_seconds() + cooldown;
+                    ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
                     // tween
                     cmd.entity(paddle.sprite_e).insert(Animator::new(
@@ -261,7 +261,7 @@ fn handle_ball_collisions(
                     ));
                 }
             } else if wall_q.contains(hit_e) {
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
+                if time.elapsed_secs() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits
                     continue;
                 }
@@ -275,7 +275,7 @@ fn handle_ball_collisions(
                 let cooldown = 0.085 + speed_factor * 0.125;
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
-                ball.last_reflection_time = time.elapsed_seconds() + cooldown;
+                ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
                 // todo: need to fix
                 // // particles
