@@ -3,9 +3,9 @@ use std::ops::Range;
 use avian2d::math::Vector2;
 use bevy::prelude::*;
 
-use crate::{ext::QuatExt, GAME_SIZE};
+use crate::{GAME_SIZE, ext::QuatExt};
 
-use super::time::{process_cooldown, Cooldown};
+use super::time::{Cooldown, process_cooldown};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MoveDirection>()
@@ -200,7 +200,7 @@ fn home(
                 let target_dir = (target_t.translation() - homing_t.translation)
                     .normalize()
                     .truncate();
-                let angle = move_dir.angle_between(target_dir).to_degrees().abs();
+                let angle = move_dir.angle_to(target_dir).to_degrees().abs();
 
                 if angle > homing.max_angle {
                     continue;
@@ -257,7 +257,7 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
     for (mut acc, t) in &mut acc_q {
         let rot = t.rotation.to_rot2();
         if let Some(prev) = acc.prev {
-            acc.rotation += prev.angle_between(rot);
+            acc.rotation += prev.angle_to(rot);
         }
         acc.prev = Some(rot);
     }

@@ -87,7 +87,7 @@ fn rotate_paddle(
         let current_angle = t.rotation.to_rot2();
         let target_angle = aim_dir.0.to_rot2();
         let max_delta = (time.delta_secs() / PADDLE_REVOLUTION_DURATION_MIN) * TAU;
-        let target_delta = current_angle.angle_between(target_angle);
+        let target_delta = current_angle.angle_to(target_angle);
         let clamped_angle =
             current_angle * Rot2::radians(target_delta.clamp(-max_delta, max_delta));
         t.rotation = Quat::from_rotation_z(clamped_angle.as_radians());
