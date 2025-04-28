@@ -1,7 +1,7 @@
 //! Spawn the main level by triggering other observers.
 
 use avian2d::prelude::*;
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::prelude::*;
 use bevy_enoki::ParticleEffectHandle;
 use bevy_tweening::Animator;
 

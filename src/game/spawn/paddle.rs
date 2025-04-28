@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use avian2d::prelude::*;
-use bevy::{prelude::*, render::mesh::AnnulusMeshBuilder, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, render::mesh::AnnulusMeshBuilder};
 use bevy_tweening::Animator;
 
 use crate::{
