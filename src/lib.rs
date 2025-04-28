@@ -14,7 +14,7 @@ use bevy::{
         tonemapping::Tonemapping,
     },
     prelude::*,
-    render::camera::{CameraProjection, ScalingMode},
+    render::camera::ScalingMode,
 };
 use bevy_trauma_shake::ShakeSettings;
 

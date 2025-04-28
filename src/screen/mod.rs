@@ -39,8 +39,8 @@ pub(super) fn plugin(app: &mut App) {
                 resize_letterbox,
                 start_transition_anim.run_if(
                     assets_exist
-                        .and_then(resource_exists::<Transition>)
-                        .and_then(resource_changed::<NextTransitionedState>),
+                        .and(resource_exists::<Transition>)
+                        .and(resource_changed::<NextTransitionedState>),
                 ),
                 transition_out,
                 transition_in,

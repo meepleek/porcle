@@ -22,12 +22,10 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(
             Update,
             (
-                return_to_title_screen.run_if(
-                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Quit)),
-                ),
-                restart_game.run_if(
-                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Restart)),
-                ),
+                return_to_title_screen
+                    .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Quit))),
+                restart_game
+                    .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Restart))),
             ),
         );
 }
