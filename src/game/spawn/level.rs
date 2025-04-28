@@ -111,7 +111,7 @@ fn spawn_level(
         Health(GEAR_COUNT),
         StateScoped(Screen::Game),
     ))
-    .push_children(&cog_entity_ids)
+    .add_children(&cog_entity_ids)
     .with_children(|b| {
         b.spawn((
             SpatialBundle::from_transform(Transform::from_scale(Vec2::ZERO.extend(1.))),

@@ -128,7 +128,7 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
         },
         GlobalZIndex(1000),
     ))
-    .push_children(&circle_entity_ids);
+    .add_children(&circle_entity_ids);
 
     cmd.insert_resource(Transition { circle_entity_ids });
 }
