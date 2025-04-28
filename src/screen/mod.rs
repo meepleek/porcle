@@ -12,8 +12,8 @@ use bevy::{prelude::*, window::WindowResized};
 
 use crate::{
     game::{
-        assets::{assets_exist, SpriteAssets},
-        tween::{tween_factor, TweenFactor},
+        assets::{SpriteAssets, assets_exist},
+        tween::{TweenFactor, tween_factor},
     },
     ui::palette::{COL_BG, COL_LETTERBOX, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
 };
@@ -119,17 +119,14 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
 
     cmd.spawn((
         Name::new("Transition"),
-        NodeBundle {
-            z_index: ZIndex::Global(1000),
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                ..default()
-            },
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
             ..default()
         },
+        GlobalZIndex(1000),
     ))
     .push_children(&circle_entity_ids);
 
@@ -145,78 +142,63 @@ enum LetterboxAxis {
 fn setup_letterbox(mut cmd: Commands) {
     cmd.spawn((
         Name::new("letterbox"),
-        NodeBundle {
-            z_index: ZIndex::Global(1500),
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                ..default()
-            },
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
             ..default()
         },
+        GlobalZIndex(1500),
     ))
     .with_children(|b| {
-        let color: BackgroundColor = COL_LETTERBOX.into();
+        let bg_color: BackgroundColor = COL_LETTERBOX.into();
         b.spawn((
             Name::new("letterbox_left"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::ZERO,
-                    height: Val::Vh(100.),
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::ZERO,
+                height: Val::Vh(100.),
                 ..default()
             },
             LetterboxAxis::Vertical,
         ));
         b.spawn((
             Name::new("letterbox_right"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    right: Val::ZERO,
-                    width: Val::ZERO,
-                    height: Val::Vh(100.),
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                right: Val::ZERO,
+                width: Val::ZERO,
+                height: Val::Vh(100.),
                 ..default()
             },
             LetterboxAxis::Vertical,
         ));
         b.spawn((
             Name::new("letterbox_top"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::Vw(100.),
-                    height: Val::ZERO,
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::Vw(100.),
+                height: Val::ZERO,
                 ..default()
             },
             LetterboxAxis::Horizontal,
         ));
         b.spawn((
             Name::new("letterbox_bottom"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    bottom: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::Vw(100.),
-                    height: Val::ZERO,
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                bottom: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::Vw(100.),
+                height: Val::ZERO,
                 ..default()
             },
             LetterboxAxis::Horizontal,
@@ -225,7 +207,7 @@ fn setup_letterbox(mut cmd: Commands) {
 }
 
 fn resize_letterbox(
-    mut letterbox_q: Query<(&LetterboxAxis, &mut Style)>,
+    mut letterbox_q: Query<(&LetterboxAxis, &mut Node)>,
     mut resize_evr: EventReader<WindowResized>,
 ) {
     if let Some(ev) = resize_evr.read().next() {

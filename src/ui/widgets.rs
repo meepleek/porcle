@@ -52,19 +52,16 @@ impl<T: Spawn> Widgets for T {
     fn header(&mut self, text: impl Into<String>) -> EntityCommands {
         let mut entity = self.spawn((
             Name::new("Header"),
-            NodeBundle {
-                style: Style {
-                    width: Px(500.0),
-                    height: Px(65.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    margin: UiRect::top(Val::Px(24.)).with_bottom(Val::Px(12.)),
-                    ..default()
-                },
-                border_radius: BorderRadius::all(Val::Px(12.)),
-                background_color: BackgroundColor(NODE_BG),
+            BackgroundColor(NODE_BG),
+            Node {
+                width: Px(500.0),
+                height: Px(65.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                margin: UiRect::top(Val::Px(24.)).with_bottom(Val::Px(12.)),
                 ..default()
             },
+            BorderRadius::all(Val::Px(12.)),
         ));
         entity.with_children(|children| {
             children.spawn((
@@ -80,13 +77,10 @@ impl<T: Spawn> Widgets for T {
     fn label(&mut self, text: impl Into<String>) -> EntityCommands {
         let mut entity = self.spawn((
             Name::new("Label"),
-            NodeBundle {
-                style: Style {
-                    width: Percent(85.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
+            Node {
+                width: Percent(85.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
                 ..default()
             },
         ));
@@ -113,17 +107,14 @@ impl Containers for Commands<'_, '_> {
     fn ui_root(&mut self) -> EntityCommands {
         self.spawn((
             Name::new("UI Root"),
-            NodeBundle {
-                style: Style {
-                    width: Percent(100.0),
-                    height: Percent(100.0),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::Column,
-                    row_gap: Px(12.0),
-                    position_type: PositionType::Absolute,
-                    ..default()
-                },
+            Node {
+                width: Percent(100.0),
+                height: Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                flex_direction: FlexDirection::Column,
+                row_gap: Px(12.0),
+                position_type: PositionType::Absolute,
                 ..default()
             },
         ))
