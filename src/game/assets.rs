@@ -72,13 +72,13 @@ pub struct MusicAssets {
 //     #[asset(path = "particles/circle.png")]
 //     pub circle_mat: Handle<SpriteParticle2dMaterial>,
 //     #[asset(path = "particles/gun.particle.ron")]
-//     pub gun: Handle<Particle2dEffect>,
+//     pub gun: ParticleEffectHandle,
 //     #[asset(path = "particles/enemy.particle.ron")]
-//     pub enemy: Handle<Particle2dEffect>,
+//     pub enemy: ParticleEffectHandle,
 //     #[asset(path = "particles/reflection.particle.ron")]
-//     pub reflection: Handle<Particle2dEffect>,
+//     pub reflection: ParticleEffectHandle,
 //     #[asset(path = "particles/core.particle.ron")]
-//     pub core: Handle<Particle2dEffect>,
+//     pub core: ParticleEffectHandle,
 // }
 
 #[derive(Resource, Reflect)]
@@ -94,30 +94,12 @@ pub struct ParticleAssets {
 }
 
 impl ParticleAssets {
-    pub fn square_particle_spawner(
-        &self,
-        effect: Handle<Particle2dEffect>,
-        transform: Transform,
-    ) -> ParticleSpawnerBundle<ColorParticle2dMaterial> {
-        ParticleSpawnerBundle {
-            effect,
-            material: DEFAULT_MATERIAL,
-            transform,
-            ..default()
-        }
+    pub fn square_particle_spawner(&self) -> ParticleSpawner<ColorParticle2dMaterial> {
+        ParticleSpawner::default()
     }
 
-    pub fn particle_spawner(
-        &self,
-        effect: Handle<Particle2dEffect>,
-        transform: Transform,
-    ) -> ParticleSpawnerBundle<SpriteParticle2dMaterial> {
-        ParticleSpawnerBundle {
-            effect,
-            material: self.circle_mat.clone(),
-            transform,
-            ..default()
-        }
+    pub fn circle_particle_spawner(&self) -> ParticleSpawner<SpriteParticle2dMaterial> {
+        ParticleSpawner(self.circle_mat.clone_weak())
     }
 }
 

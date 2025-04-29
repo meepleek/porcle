@@ -1,20 +1,18 @@
 //! Spawn the main level by triggering other observers.
 
 use avian2d::prelude::*;
-use bevy::{
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
-use bevy_tweening::{Animator, EaseFunction};
+use bevy::prelude::*;
+use bevy_enoki::ParticleEffectHandle;
+use bevy_tweening::Animator;
 
 use crate::{
+    GAME_SIZE,
     game::{
         assets::{ParticleAssets, SpriteAssets},
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
     ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_AMMO_OUT, COL_GEARS},
-    GAME_SIZE,
 };
 
 use super::{
@@ -23,7 +21,7 @@ use super::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_level)
+    app.add_observer(spawn_level)
         .add_systems(Update, (add_ball_to_paddle,));
 }
 
@@ -73,17 +71,14 @@ fn spawn_level(
             let angle = rot.as_radians() + 18f32.to_radians();
             cmd.spawn((
                 Name::new("small_gear"),
-                SpriteBundle {
-                    texture: sprites.gear_small.clone(),
-                    sprite: Sprite {
-                        color: COL_GEARS,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
-                        .with_rotation(Quat::from_rotation_z(angle))
-                        .with_scale(Vec2::ZERO.extend(1.)),
+                Sprite {
+                    image: sprites.gear_small.clone_weak(),
+                    color: COL_GEARS,
                     ..default()
                 },
+                Transform::from_translation(((rot * Vec2::X) * 71.).extend(0.1))
+                    .with_rotation(Quat::from_rotation_z(angle))
+                    .with_scale(Vec2::ZERO.extend(1.)),
                 RotateWithPaddle {
                     invert: i % 2 == 0,
                     offset: Rot2::radians(angle),
@@ -100,8 +95,10 @@ fn spawn_level(
 
     cmd.spawn((
         Name::new("core"),
-        SpatialBundle::default(),
+        Transform::default(),
+        Visibility::default(),
         Collider::circle(CORE_RADIUS),
+        CollidingEntities::default(),
         RigidBody::Static,
         Core {
             gear_entity_ids: cog_entity_ids
@@ -114,10 +111,11 @@ fn spawn_level(
         Health(GEAR_COUNT),
         StateScoped(Screen::Game),
     ))
-    .push_children(&cog_entity_ids)
+    .add_children(&cog_entity_ids)
     .with_children(|b| {
         b.spawn((
-            SpatialBundle::from_transform(Transform::from_scale(Vec2::ZERO.extend(1.))),
+            Transform::from_scale(Vec2::ZERO.extend(1.)),
+            Visibility::default(),
             AmmoUi,
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 400, Some(EaseFunction::BackOut)),
@@ -128,42 +126,36 @@ fn spawn_level(
             // ammo UI
             b.spawn((
                 Name::new("ammo_sprite"),
-                SpriteBundle {
-                    texture: sprites.ammo_icon.clone(),
-                    sprite: Sprite {
-                        color: COL_AMMO_BG,
-                        ..default()
-                    },
-                    transform: Transform::from_translation(Vec3::Z * 0.3),
+                Sprite {
+                    image: sprites.ammo_icon.clone_weak(),
+                    color: COL_AMMO_BG,
                     ..default()
                 },
+                Transform::from_translation(Vec3::Z * 0.3),
             ));
 
             b.spawn((
                 Name::new("ammo_fill"),
                 AmmoFill,
-                MaterialMesh2dBundle {
-                    // mesh: Mesh2dHandle(ammo_fill_handle.clone()),
-                    material: materials.add(ColorMaterial::from_color(COL_AMMO_FILL)),
-                    transform: Transform::from_translation(Vec3::Z * 0.2)
-                        .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
-                    ..default()
-                },
+                // Mesh2dHandle(ammo_fill_handle.clone()),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_AMMO_FILL))),
+                Transform::from_translation(Vec3::Z * 0.2)
+                    .with_rotation(Quat::from_rotation_z(180f32.to_radians())),
             ));
 
             b.spawn((
                 Name::new("ammo_bg"),
-                MaterialMesh2dBundle {
-                    mesh: Mesh2dHandle(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
-                    material: materials.add(ColorMaterial::from_color(COL_AMMO_OUT)),
-                    transform: Transform::from_translation(Vec3::Z * 0.1),
-                    ..default()
-                },
+                Mesh2d(meshes.add(Circle::new(AMMO_FILL_RADIUS + 2.))),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_AMMO_OUT))),
+                Transform::from_translation(Vec3::Z * 0.1),
             ));
         });
 
         //particles
-        b.spawn((particles.particle_spawner(particles.core.clone(), Transform::default()),));
+        b.spawn((
+            particles.circle_particle_spawner(),
+            ParticleEffectHandle(particles.core.clone_weak()),
+        ));
     });
 
     cmd.trigger(SpawnPaddle);

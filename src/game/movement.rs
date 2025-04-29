@@ -1,11 +1,10 @@
 use std::ops::Range;
 
-use avian2d::math::Vector2;
 use bevy::prelude::*;
 
-use crate::{ext::QuatExt, GAME_SIZE};
+use crate::{GAME_SIZE, ext::QuatExt};
 
-use super::time::{process_cooldown, Cooldown};
+use super::time::{Cooldown, process_cooldown};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MoveDirection>()
@@ -33,23 +32,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct ApplyVelocitySet;
 
-#[derive(Bundle, Default)]
-pub struct MovementBundle {
-    direction: MoveDirection,
-    speed: Speed,
-    impulse: Impulse,
-}
-
-impl MovementBundle {
-    pub fn new(dir: Vec2, speed: f32) -> Self {
-        Self {
-            direction: MoveDirection(dir),
-            speed: Speed(speed),
-            impulse: Impulse(Vector2::ZERO),
-        }
-    }
-}
-
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Velocity(Vec2);
 
@@ -60,6 +42,7 @@ impl Velocity {
 }
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+#[require(Impulse)]
 pub struct MoveDirection(pub Vec2);
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
@@ -136,7 +119,7 @@ fn compute_velocity(
     time: Res<Time>,
 ) {
     for (dir, speed, speed_mult, mut vel) in &mut move_q {
-        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_seconds();
+        vel.0 = dir.0 * speed.0 * speed_mult.map_or(1.0, |m| m.0) * time.delta_secs();
     }
 }
 
@@ -148,7 +131,7 @@ fn apply_impulse(
     time: Res<Time>,
 ) {
     for (mut impulse, mut vel) in &mut impulse_q {
-        let mult_delta = time.delta_seconds() * 6.5;
+        let mult_delta = time.delta_secs() * 6.5;
         vel.0 += impulse.0 * mult_delta;
         // fixme: this is incorrect, but that can wait after the jam
         impulse.0 *= 1. - mult_delta;
@@ -200,7 +183,7 @@ fn home(
                 let target_dir = (target_t.translation() - homing_t.translation)
                     .normalize()
                     .truncate();
-                let angle = move_dir.angle_between(target_dir).to_degrees().abs();
+                let angle = move_dir.angle_to(target_dir).to_degrees().abs();
 
                 if angle > homing.max_angle {
                     continue;
@@ -217,7 +200,7 @@ fn home(
                 .powf(homing.factor_decay)
                 * homing.max_factor
                 * speed_factor
-                * time.delta_seconds();
+                * time.delta_secs();
             let homing_dir = (move_dir.0 * (1.0 - distance_factor) + target_dir * distance_factor)
                 .normalize_or_zero();
             let speed = vel.0.length();
@@ -237,7 +220,7 @@ fn apply_damping(
     time: Res<Time>,
 ) {
     for (mut vel, damping, speed) in &mut damping_q {
-        let mult = 1. - (damping.0 * time.delta_seconds());
+        let mult = 1. - (damping.0 * time.delta_secs());
         vel.0 *= mult;
         if let Some(mut speed) = speed {
             speed.0 *= mult;
@@ -257,7 +240,7 @@ fn accumulate_angle(mut acc_q: Query<(&mut AccumulatedRotation, &Transform), Cha
     for (mut acc, t) in &mut acc_q {
         let rot = t.rotation.to_rot2();
         if let Some(prev) = acc.prev {
-            acc.rotation += prev.angle_between(rot);
+            acc.rotation += prev.angle_to(rot);
         }
         acc.prev = Some(rot);
     }

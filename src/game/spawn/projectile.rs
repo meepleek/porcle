@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use crate::{
     game::{
         assets::SpriteAssets,
-        movement::{Damping, MovementBundle},
+        movement::{Damping, MoveDirection, Speed},
     },
     screen::Screen,
     ui::palette::COL_BULLET,
@@ -13,7 +13,7 @@ use crate::{
 use super::despawn::DespawnOutOfBounds;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_projectile);
+    app.add_observer(spawn_projectile);
 }
 
 #[derive(Event, Debug)]
@@ -37,22 +37,23 @@ fn spawn_projectile(
     let x = 16.;
     let y = 30.;
     let sprite_e = cmd
-        .spawn(SpriteBundle {
-            texture: sprites.bullet.clone(),
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: sprites.bullet.clone_weak(),
                 color: COL_BULLET,
                 ..default()
             },
-            transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
-            ..default()
-        })
+            Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
+        ))
         .id();
     cmd.spawn((
         Name::new("Projectile"),
-        SpatialBundle::from_transform(ev.transform),
+        ev.transform,
+        Visibility::default(),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        MovementBundle::new(ev.dir.as_vec2(), 1600.),
+        MoveDirection(ev.dir.as_vec2()),
+        Speed(1600.),
         Damping(0.8),
         Projectile {
             size: Vec2::new(x, y),

@@ -1,8 +1,7 @@
 use avian2d::prelude::*;
-use bevy::{prelude::*, sprite::Mesh2dHandle};
-use bevy_enoki::prelude::OneShot;
+use bevy::prelude::*;
+use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::EaseFunction;
 
 use crate::{
     ext::QuatExt,
@@ -16,7 +15,7 @@ use super::{
     movement::MovementPaused,
     spawn::{
         enemy::Enemy,
-        level::{AmmoFill, Core, Health, RotateWithPaddle, AMMO_FILL_RADIUS},
+        level::{AMMO_FILL_RADIUS, AmmoFill, Core, Health, RotateWithPaddle},
         paddle::{PaddleAmmo, PaddleRotation},
     },
     tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
@@ -66,10 +65,9 @@ fn handle_collisions(
                     DespawnOnTweenCompleted::Entity(*coll_e),
                 ));
                 cmd.spawn((
-                    particles.square_particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(enemy_t.translation()),
-                    ),
+                    particles.square_particle_spawner(),
+                    ParticleEffectHandle(particles.enemy.clone_weak()),
+                    Transform::from_translation(enemy_t.translation()),
                     OneShot::Despawn,
                 ));
 
@@ -111,7 +109,7 @@ fn update_ammo_fill(
     if let Some(ammo) = ammo_q.iter().next() {
         for e in &ammo_fill_q {
             cmd.entity(e)
-                .try_insert(Mesh2dHandle(meshes.add(CircularSegment::from_turns(
+                .try_insert(Mesh2d(meshes.add(CircularSegment::from_turns(
                     AMMO_FILL_RADIUS,
                     // not sure why, but the segments fills at 95% already
                     ammo.factor() * 0.95,
@@ -133,7 +131,7 @@ fn disable_gears(
                     get_relative_scale_anim(
                         Vec2::splat(0.7).extend(1.),
                         350,
-                        Some(bevy_tweening::EaseFunction::BackIn),
+                        Some(EaseFunction::BackIn),
                     ),
                     get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
                     MovementPaused,

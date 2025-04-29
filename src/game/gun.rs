@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{Animator, Delay, EaseFunction};
+use bevy_tweening::{Animator, Delay};
 use rand::thread_rng;
 use std::time::Duration;
 
@@ -23,10 +23,10 @@ use super::{
         paddle::{Paddle, PaddleAmmo},
         projectile::Projectile,
     },
-    time::{process_cooldown, Cooldown},
+    time::{Cooldown, process_cooldown},
     tween::{
-        delay_tween, get_relative_sprite_color_tween, get_relative_translation_tween,
-        DespawnOnTweenCompleted,
+        DespawnOnTweenCompleted, delay_tween, get_relative_sprite_color_tween,
+        get_relative_translation_tween,
     },
 };
 
@@ -113,11 +113,10 @@ fn fire_gun(
 
                 let barrel_pos = t.translation() + t.right() * 80.;
                 cmd.spawn((
-                    particles.particle_spawner(
-                        particles.gun.clone(),
-                        Transform::from_translation(barrel_pos)
-                            .with_rotation(t.to_scale_rotation_translation().1),
-                    ),
+                    particles.circle_particle_spawner(),
+                    ParticleEffectHandle(particles.gun.clone_weak()),
+                    Transform::from_translation(barrel_pos)
+                        .with_rotation(t.to_scale_rotation_translation().1),
                     OneShot::Despawn,
                 ));
             } else if cooldown.is_none() {
@@ -162,10 +161,9 @@ fn handle_collisions(
             t.translation().truncate(),
             0.,
             Dir2::new(move_dir.0).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
             100,
-            false,
-            SpatialQueryFilter::default(),
+            &ShapeCastConfig::from_max_distance((speed.0 * 1.05) * time.delta_secs()),
+            &SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
             if let Ok((enemy_t, enemy, mut enemy_hp, mut impulse, shielded)) =
@@ -196,10 +194,9 @@ fn handle_collisions(
                         DespawnOnTweenCompleted::Entity(hit_e),
                     ));
                     cmd.spawn((
-                        particles.square_particle_spawner(
-                            particles.enemy.clone(),
-                            Transform::from_translation(enemy_t.translation()),
-                        ),
+                        particles.square_particle_spawner(),
+                        ParticleEffectHandle(particles.enemy.clone_weak()),
+                        Transform::from_translation(enemy_t.translation()),
                         OneShot::Despawn,
                     ));
                 } else {
