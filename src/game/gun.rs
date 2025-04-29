@@ -194,6 +194,7 @@ fn handle_collisions(
                         DespawnOnTweenCompleted::Entity(hit_e),
                     ));
                     cmd.spawn((
+                        particles.square_particle_spawner(),
                         ParticleEffectHandle(particles.enemy.clone_weak()),
                         Transform::from_translation(enemy_t.translation()),
                         OneShot::Despawn,

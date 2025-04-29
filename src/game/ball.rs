@@ -306,6 +306,7 @@ fn handle_ball_collisions(
                 shake.add_trauma(0.15);
                 // particles
                 cmd.spawn((
+                    particles.square_particle_spawner(),
                     ParticleEffectHandle(particles.enemy.clone_weak()),
                     Transform::from_translation(hit.point1.extend(10.)),
                     OneShot::Despawn,
