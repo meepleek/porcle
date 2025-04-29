@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use crate::{
     game::{
         assets::SpriteAssets,
-        movement::{Damping, MovementBundle},
+        movement::{Damping, MoveDirection, Speed},
     },
     screen::Screen,
     ui::palette::COL_BULLET,
@@ -52,7 +52,8 @@ fn spawn_projectile(
         Visibility::default(),
         RigidBody::Kinematic,
         Collider::rectangle(x, y),
-        MovementBundle::new(ev.dir.as_vec2(), 1600.),
+        MoveDirection(ev.dir.as_vec2()),
+        Speed(1600.),
         Damping(0.8),
         Projectile {
             size: Vec2::new(x, y),

@@ -1,6 +1,5 @@
 use std::ops::Range;
 
-use avian2d::math::Vector2;
 use bevy::prelude::*;
 
 use crate::{GAME_SIZE, ext::QuatExt};
@@ -33,23 +32,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(SystemSet, Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub struct ApplyVelocitySet;
 
-#[derive(Bundle, Default)]
-pub struct MovementBundle {
-    direction: MoveDirection,
-    speed: Speed,
-    impulse: Impulse,
-}
-
-impl MovementBundle {
-    pub fn new(dir: Vec2, speed: f32) -> Self {
-        Self {
-            direction: MoveDirection(dir),
-            speed: Speed(speed),
-            impulse: Impulse(Vector2::ZERO),
-        }
-    }
-}
-
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Velocity(Vec2);
 
@@ -60,6 +42,7 @@ impl Velocity {
 }
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+#[require(Impulse)]
 pub struct MoveDirection(pub Vec2);
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]

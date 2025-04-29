@@ -6,7 +6,7 @@ use crate::{
     game::{
         assets::{ParticleAssets, SpriteAssets},
         ball::{BALL_BASE_SPEED, BallSpeed},
-        movement::{MovementBundle, MovementPaused},
+        movement::{MoveDirection, MovementPaused, Speed},
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
@@ -94,7 +94,8 @@ fn spawn_ball(
                 Transform::from_xyz(BALL_BASE_RADIUS * -1.1, 0., 0.9),
                 Visibility::default(),
                 BallSpeed::default(),
-                MovementBundle::new(Vec2::X, BALL_BASE_SPEED),
+                MoveDirection(Vec2::X),
+                Speed(BALL_BASE_SPEED),
                 MovementPaused,
                 Ball::new(sprite_e, particles_e),
                 InsidePaddleRadius,

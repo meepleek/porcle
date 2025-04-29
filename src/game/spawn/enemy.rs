@@ -8,7 +8,7 @@ use crate::{
     GAME_SIZE,
     game::{
         assets::SpriteAssets,
-        movement::{HomingTarget, MovementBundle},
+        movement::{HomingTarget, MoveDirection, Speed},
         score::Score,
     },
     screen::Screen,
@@ -129,7 +129,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 ),
                 Visibility::default(),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy {
                     sprite_e: mesh_e,
@@ -156,7 +157,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 ),
                 Visibility::default(),
                 Collider::ellipse(75., 60.),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy {
                     sprite_e: mesh_e,
@@ -189,7 +191,8 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
                 ),
                 Visibility::default(),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy {
                     sprite_e,
