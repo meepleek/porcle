@@ -98,6 +98,7 @@ fn spawn_level(
         Transform::default(),
         Visibility::default(),
         Collider::circle(CORE_RADIUS),
+        CollidingEntities::default(),
         RigidBody::Static,
         Core {
             gear_entity_ids: cog_entity_ids
