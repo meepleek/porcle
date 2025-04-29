@@ -35,7 +35,6 @@ impl<T: Send + Sync> TweenFactor<T> {
     }
 
     pub fn factor(&self) -> f32 {
-        // todo: check that updated code is valid
         self.timer.fraction()
     }
 }

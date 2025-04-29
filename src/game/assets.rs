@@ -94,6 +94,10 @@ pub struct ParticleAssets {
 }
 
 impl ParticleAssets {
+    pub fn square_particle_spawner(&self) -> ParticleSpawner<ColorParticle2dMaterial> {
+        ParticleSpawner::default()
+    }
+
     pub fn circle_particle_spawner(&self) -> ParticleSpawner<SpriteParticle2dMaterial> {
         ParticleSpawner(self.circle_mat.clone_weak())
     }

@@ -81,9 +81,11 @@ fn spawn_ball(
             .id();
 
         //particles
-
         let particles_e = cmd
-            .spawn(ParticleEffectHandle(particles.ball.clone_weak()))
+            .spawn((
+                particles.square_particle_spawner(),
+                ParticleEffectHandle(particles.ball.clone_weak()),
+            ))
             .id();
 
         let ball_e = cmd
