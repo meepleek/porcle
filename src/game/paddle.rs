@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bevy_tweening::Animator;
 use std::f32::consts::TAU;
+use tiny_bail::{or_return, or_return_quiet};
 
 use crate::{
+    event::send_delayed_event,
+    ext::{EventReaderExt, QuatExt, Vec2Ext},
+    screen::Screen,
     AppSet,
-    ext::{QuatExt, Vec2Ext},
 };
 
 use super::{
@@ -16,24 +19,31 @@ use super::{
         level::AmmoUi,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
-    time::{Cooldown, process_cooldown},
-    tween::{get_relative_scale_tween, get_relative_sprite_color_anim},
+    time::{process_cooldown, Cooldown},
+    tween::{
+        get_relative_scale_tween, get_relative_sprite_color_anim, get_relative_translation_tween,
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
-    // Record directional input as movement controls.
-    app.add_systems(
+    app.add_event::<PaddleKnockback>().add_systems(
         Update,
         (
             process_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
             apply_cycle_effects,
+            knockback_paddle,
             process_cooldown::<PaddleMode>,
-        ),
+            send_delayed_event::<PaddleKnockback>,
+        )
+            .run_if(in_state(Screen::Game)),
     );
 }
 
 pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.45;
+
+#[derive(Event, Debug)]
+pub struct PaddleKnockback(pub f32);
 
 fn process_input(
     input: PlayerInput,
@@ -149,4 +159,26 @@ fn apply_cycle_effects(
 
         paddle_rot.prev_rot = angle.rotation;
     }
+}
+
+// todo: should be used by bullets, ball & captured projectiles
+fn knockback_paddle(
+    mut ev_r: EventReader<PaddleKnockback>,
+    mut cmd: Commands,
+    paddle_q: Query<(&Paddle, &Transform), With<Paddle>>,
+) {
+    let ev = or_return_quiet!(ev_r.read_only_last());
+    let (paddle, t) = or_return!(paddle_q.get_single());
+    cmd.entity(paddle.sprite_e).insert(Animator::new(
+        get_relative_translation_tween(
+            (Vec2::X * ev.0).extend(t.translation.z),
+            60,
+            Some(EaseFunction::QuadraticOut),
+        )
+        .then(get_relative_translation_tween(
+            Vec3::ZERO,
+            110,
+            Some(EaseFunction::BackOut),
+        )),
+    ));
 }

@@ -7,29 +7,31 @@ use bevy_enoki::{
     prelude::{OneShot, ParticleSpawnerState},
 };
 use bevy_trauma_shake::{ShakeSettings, Shakes};
-use bevy_tweening::Animator;
 
 use crate::{
     BLOOM_BASE, GAME_SIZE,
     ext::Vec2Ext,
     game::{
-        movement::MovementPaused,
-        spawn::paddle::PADDLE_COLL_HEIGHT,
-        tween::{get_relative_sprite_color_anim, get_relative_translation_tween},
+        movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
+        tween::get_relative_sprite_color_anim,
     },
     math::asymptotic_smoothing_with_delta_time,
+    screen::in_game_state,
     ui::palette::{COL_BALL, COL_BALL_FAST},
 };
 
 use super::{
     assets::ParticleAssets,
+    gun::ProjectileDespawn,
     movement::{Homing, MoveDirection, Speed, Velocity, speed_factor},
+    paddle::PaddleKnockback,
     score::Score,
     spawn::{
         ball::{Ball, InsidePaddleRadius},
         enemy::Enemy,
         level::Wall,
         paddle::{PADDLE_RADIUS, Paddle, PaddleAmmo, PaddleMode},
+        projectile::Projectile,
     },
     time::Cooldown,
     tween::lerp_color,
@@ -49,7 +51,8 @@ pub(super) fn plugin(app: &mut App) {
             boost_postprocessing_based_on_ball_speed,
             update_ball_speed_factor,
             update_trauma_based_on_ball_speed,
-        ),
+        )
+            .run_if(in_game_state),
     );
 }
 
@@ -148,6 +151,7 @@ fn handle_ball_collisions(
         &mut PaddleMode,
     )>,
     enemy_q: Query<&GlobalTransform, With<Enemy>>,
+    projectile_q: Query<(), With<Projectile>>,
     wall_q: Query<(), With<Wall>>,
     mut cmd: Commands,
     time: Res<Time>,
@@ -155,6 +159,8 @@ fn handle_ball_collisions(
     particles: Res<ParticleAssets>,
     ball_speed_factor: Res<MaxBallSpeedFactor>,
     mut score: ResMut<Score>,
+    mut knockback_paddle_ev_w: EventWriter<PaddleKnockback>,
+    mut projectile_hit_w: EventWriter<ProjectileDespawn>,
 ) {
     for (ball_e, ball_t, mut ball, vel, mut direction, speed, mut ball_speed) in &mut ball_q {
         if (vel.velocity() - Vec2::ZERO).length() < f32::EPSILON {
@@ -197,7 +203,8 @@ fn handle_ball_collisions(
                 // aim the ball based on where it landed on the paddle
                 // the further it lands from the center, the greater the reflection angle
                 // if x is positive, then the hit is from outside => reflect it back outside
-                let origit_rot = if hit_point_local.x > 0. { 180. } else { 0. };
+                let hit_from_outside = hit_point_local.x > 0.;
+                let origit_rot = if hit_from_outside { 180. } else { 0. };
                 let max_reflection_angle = 20.0;
                 let angle = angle_factor
                     * ratio.signum()
@@ -248,19 +255,11 @@ fn handle_ball_collisions(
                         .insert(MovementPaused::cooldown(cooldown));
                     ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
-                    // tween
-                    cmd.entity(paddle.sprite_e).insert(Animator::new(
-                        get_relative_translation_tween(
-                            ((rot / 3.) * Vec3::X) * 50.,
-                            60,
-                            Some(EaseFunction::QuadraticOut),
-                        )
-                        .then(get_relative_translation_tween(
-                            Vec3::ZERO,
-                            110,
-                            Some(EaseFunction::BackOut),
-                        )),
-                    ));
+                    knockback_paddle_ev_w.send(PaddleKnockback(if hit_from_outside {
+                        -15.
+                    } else {
+                        15.
+                    }));
                 }
             } else if wall_q.contains(hit_e) {
                 if time.elapsed_secs() < ball.last_reflection_time + 0.1 {
@@ -318,6 +317,8 @@ fn handle_ball_collisions(
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 score.0 += 1;
+            } else if projectile_q.contains(hit_e) {
+                projectile_hit_w.send(ProjectileDespawn(hit_e));
             }
         }
 

@@ -46,6 +46,16 @@ impl Rot2Ext for Rot2 {
     }
 }
 
+pub trait Dir2Ext {
+    fn to_quat(self) -> Quat;
+}
+
+impl Rot2Ext for Dir2 {
+    fn to_quat(self) -> Quat {
+        Quat::from_rotation_z(self.to_angle())
+    }
+}
+
 pub trait TransExt {
     fn zero_scale_2d() -> Transform;
 }
@@ -73,5 +83,29 @@ impl RandExt for ThreadRng {
 
     fn direction(&mut self) -> Dir2 {
         Dir2::new(self.rotation() * Vec2::X).expect("Non-zero direction")
+    }
+}
+
+pub trait EventReaderExt<T> {
+    fn read_only_last(&mut self) -> Option<&T>;
+    fn clear_any(&mut self) -> bool;
+}
+
+impl<'w, 's, T: Event> EventReaderExt<T> for EventReader<'w, 's, T> {
+    fn read_only_last(&mut self) -> Option<&T> {
+        let mut res = None;
+        for ev in self.read() {
+            res = Some(ev)
+        }
+        res
+    }
+
+    fn clear_any(&mut self) -> bool {
+        if !self.is_empty() {
+            self.clear();
+            true
+        } else {
+            false
+        }
     }
 }

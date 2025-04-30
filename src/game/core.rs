@@ -2,82 +2,59 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_trauma_shake::Shakes;
+use bevy_tweening::AssetAnimator;
+use tiny_bail::prelude::*;
 
 use crate::{
-    ext::QuatExt,
-    game::{movement::Damping, tween::DespawnOnTweenCompleted},
-    screen::{NextTransitionedState, Screen},
-    ui::palette::COL_GEARS_DISABLED,
+    ext::{EventReaderExt, QuatExt},
+    screen::{NextTransitionedState, Screen, in_game_state},
+    ui::palette::{COL_ENEMY_FLASH, COL_GEARS_DISABLED},
 };
 
 use super::{
     assets::ParticleAssets,
+    gun::ProjectileDespawn,
     movement::MovementPaused,
     spawn::{
-        enemy::Enemy,
+        enemy::{DespawnEnemy, Enemy},
         level::{AMMO_FILL_RADIUS, AmmoFill, Core, Health, RotateWithPaddle},
-        paddle::{PaddleAmmo, PaddleRotation},
+        paddle::{PADDLE_RADIUS, PaddleAmmo, PaddleRotation},
+        projectile::{Projectile, ProjectileTarget},
     },
-    tween::{get_relative_scale_anim, get_relative_sprite_color_anim},
+    tween::{
+        get_relative_color_material_color_tween, get_relative_scale_anim,
+        get_relative_sprite_color_anim,
+    },
 };
 
 pub(super) fn plugin(app: &mut App) {
     // Record directional input as movement controls.
-    app.add_event::<TakenDamage>().add_systems(
+    app.add_event::<TakeDamage>().add_systems(
         Update,
         (
             handle_collisions,
             rotate_gears,
-            disable_gears,
+            take_damage,
             update_ammo_fill,
-        ),
+            clear_paddle_radius_on_dmg,
+        )
+            .run_if(in_game_state),
     );
 }
 
 #[derive(Event, Default)]
-pub struct TakenDamage;
+pub struct TakeDamage;
 
 fn handle_collisions(
-    mut core_q: Query<(&mut Health, &CollidingEntities), With<Core>>,
+    core_q: Query<&CollidingEntities, With<Core>>,
     enemy_q: Query<(&Enemy, &GlobalTransform)>,
-    mut cmd: Commands,
-    mut next: ResMut<NextTransitionedState>,
-    mut shake: Shakes,
-    mut taken_dmg_w: EventWriter<TakenDamage>,
-    particles: Res<ParticleAssets>,
+    mut taken_dmg_w: EventWriter<TakeDamage>,
+    mut despawn_enemy_w: EventWriter<DespawnEnemy>,
 ) {
-    for (mut hp, coll) in &mut core_q {
-        for coll_e in coll.iter() {
-            if let Ok((enemy, enemy_t)) = enemy_q.get(*coll_e) {
-                cmd.entity(*coll_e).despawn_recursive();
-                hp.0 = hp.0.saturating_sub(1);
-                taken_dmg_w.send_default();
-                debug!("ouch!");
-                cmd.entity(*coll_e)
-                    .remove::<Enemy>()
-                    .try_insert(Damping(5.));
-                cmd.entity(enemy.sprite_e).try_insert((
-                    get_relative_scale_anim(
-                        Vec2::ZERO.extend(1.),
-                        150,
-                        Some(EaseFunction::BounceIn),
-                    ),
-                    DespawnOnTweenCompleted::Entity(*coll_e),
-                ));
-                cmd.spawn((
-                    particles.square_particle_spawner(),
-                    ParticleEffectHandle(particles.enemy.clone_weak()),
-                    Transform::from_translation(enemy_t.translation()),
-                    OneShot::Despawn,
-                ));
-
-                if hp.0 == 0 {
-                    next.set(Screen::GameOver);
-                    shake.add_trauma(0.6);
-                } else {
-                    shake.add_trauma(0.6);
-                }
-            }
+    for coll in &core_q {
+        for coll_e in coll.iter().filter(|e| enemy_q.contains(**e)) {
+            taken_dmg_w.send_default();
+            despawn_enemy_w.send(DespawnEnemy(*coll_e));
         }
     }
 }
@@ -118,25 +95,78 @@ fn update_ammo_fill(
     }
 }
 
-fn disable_gears(
-    mut ev_r: EventReader<TakenDamage>,
-    mut core_q: Query<&mut Core>,
+fn take_damage(
+    mut ev_r: EventReader<TakeDamage>,
+    mut core_q: Query<(&mut Core, &mut Health)>,
     mut cmd: Commands,
+    mut next: ResMut<NextTransitionedState>,
+    mut shake: Shakes,
 ) {
-    if let Ok(mut core) = core_q.get_single_mut() {
-        for _ in ev_r.read() {
-            if let Some((e, active)) = core.gear_entity_ids.iter_mut().find(|(_, active)| *active) {
-                *active = false;
-                cmd.entity(*e).try_insert((
-                    get_relative_scale_anim(
-                        Vec2::splat(0.7).extend(1.),
-                        350,
-                        Some(EaseFunction::BackIn),
-                    ),
-                    get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
-                    MovementPaused,
-                ));
-            }
+    let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
+    if !ev_r.is_empty() {
+        ev_r.clear();
+        shake.add_trauma(0.9);
+
+        let (e, active) = or_return!(core.gear_entities.iter_mut().find(|(_, active)| *active));
+        *active = false;
+        cmd.entity(*e).try_insert((
+            get_relative_scale_anim(Vec2::splat(0.7).extend(1.), 350, Some(EaseFunction::BackIn)),
+            get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
+            MovementPaused,
+        ));
+
+        hp.0 -= 1;
+        if hp.0 == 0 {
+            next.set(Screen::GameOver);
         }
+    }
+}
+
+fn clear_paddle_radius_on_dmg(
+    mut ev_r: EventReader<TakeDamage>,
+    projectile_q: Query<(Entity, &Projectile, &GlobalTransform)>,
+    enemy_q: Query<(Entity, &GlobalTransform), With<Enemy>>,
+    core_q: Query<(&Core, &GlobalTransform)>,
+    mut projectile_despawn_w: EventWriter<ProjectileDespawn>,
+    mut despawn_enemy_w: EventWriter<DespawnEnemy>,
+    mut cmd: Commands,
+    particles: Res<ParticleAssets>,
+) {
+    let (core, core_t) = or_return_quiet!(core_q.get_single());
+    if ev_r.clear_any() {
+        for (projectile_e, ..) in projectile_q.iter().filter(|(_, p, t, ..)| {
+            p.target == ProjectileTarget::Core && t.translation().length() < PADDLE_RADIUS
+        }) {
+            projectile_despawn_w.send(ProjectileDespawn(projectile_e));
+        }
+
+        for (enemy_e, ..) in enemy_q
+            .iter()
+            .filter(|(_, t, ..)| t.translation().length() < PADDLE_RADIUS)
+        {
+            despawn_enemy_w.send(DespawnEnemy(enemy_e));
+        }
+
+        // flash
+        cmd.entity(core.clear_mesh_e).insert(AssetAnimator::new(
+            get_relative_color_material_color_tween(
+                COL_ENEMY_FLASH,
+                170,
+                Some(EaseFunction::QuadraticOut),
+            )
+            .then(get_relative_color_material_color_tween(
+                Color::NONE,
+                320,
+                Some(EaseFunction::QuadraticIn),
+            )),
+        ));
+
+        // particles
+        cmd.spawn((
+            particles.circle_particle_spawner(),
+            ParticleEffectHandle(particles.core_clear.clone_weak()),
+            Transform::from_translation(core_t.translation().with_z(0.51)),
+            OneShot::Despawn,
+        ));
     }
 }

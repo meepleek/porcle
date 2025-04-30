@@ -1,5 +1,6 @@
 #[cfg(feature = "dev")]
 mod dev_tools;
+mod event;
 mod ext;
 mod game;
 mod math;

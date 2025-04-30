@@ -51,8 +51,14 @@ pub struct Damping(pub f32);
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Speed(pub f32);
 
-#[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
+#[derive(Component, Debug, Deref, DerefMut, Reflect)]
 pub struct SpeedMultiplier(pub f32);
+
+impl Default for SpeedMultiplier {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
 
 #[derive(Component, Debug, Default, Deref, DerefMut, Reflect)]
 pub struct Impulse(pub Vec2);
