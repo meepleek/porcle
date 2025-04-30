@@ -12,8 +12,8 @@ use bevy::{prelude::*, window::WindowResized};
 
 use crate::{
     game::{
-        assets::{assets_exist, SpriteAssets},
-        tween::{tween_factor, TweenFactor},
+        assets::{SpriteAssets, assets_exist},
+        tween::{TweenFactor, tween_factor},
     },
     ui::palette::{COL_BG, COL_LETTERBOX, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
 };
@@ -39,8 +39,8 @@ pub(super) fn plugin(app: &mut App) {
                 resize_letterbox,
                 start_transition_anim.run_if(
                     assets_exist
-                        .and_then(resource_exists::<Transition>)
-                        .and_then(resource_changed::<NextTransitionedState>),
+                        .and(resource_exists::<Transition>)
+                        .and(resource_changed::<NextTransitionedState>),
                 ),
                 transition_out,
                 transition_in,
@@ -102,18 +102,11 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
             let mut builder = cmd.spawn((
                 Name::new("transition_circle"),
                 TransitionCircle,
-                ImageBundle {
-                    image: UiImage {
-                        texture: sprites.transition_circle.clone(),
-                        color: *color,
-                        ..default()
-                    },
-                    style: Style {
-                        position_type: PositionType::Absolute,
-                        width: Val::Vw(0.),
-                        height: Val::Vw(0.),
-                        ..default()
-                    },
+                ImageNode::new(sprites.transition_circle.clone_weak()).with_color(*color),
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: Val::Vw(0.),
+                    height: Val::Vw(0.),
                     ..default()
                 },
             ));
@@ -126,19 +119,16 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
 
     cmd.spawn((
         Name::new("Transition"),
-        NodeBundle {
-            z_index: ZIndex::Global(1000),
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                ..default()
-            },
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
             ..default()
         },
+        GlobalZIndex(1000),
     ))
-    .push_children(&circle_entity_ids);
+    .add_children(&circle_entity_ids);
 
     cmd.insert_resource(Transition { circle_entity_ids });
 }
@@ -152,78 +142,63 @@ enum LetterboxAxis {
 fn setup_letterbox(mut cmd: Commands) {
     cmd.spawn((
         Name::new("letterbox"),
-        NodeBundle {
-            z_index: ZIndex::Global(1500),
-            style: Style {
-                width: Val::Percent(100.0),
-                height: Val::Percent(100.0),
-                ..default()
-            },
+        Node {
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
             ..default()
         },
+        GlobalZIndex(1500),
     ))
     .with_children(|b| {
-        let color: BackgroundColor = COL_LETTERBOX.into();
+        let bg_color: BackgroundColor = COL_LETTERBOX.into();
         b.spawn((
             Name::new("letterbox_left"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::ZERO,
-                    height: Val::Vh(100.),
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::ZERO,
+                height: Val::Vh(100.),
                 ..default()
             },
             LetterboxAxis::Vertical,
         ));
         b.spawn((
             Name::new("letterbox_right"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    right: Val::ZERO,
-                    width: Val::ZERO,
-                    height: Val::Vh(100.),
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                right: Val::ZERO,
+                width: Val::ZERO,
+                height: Val::Vh(100.),
                 ..default()
             },
             LetterboxAxis::Vertical,
         ));
         b.spawn((
             Name::new("letterbox_top"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    top: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::Vw(100.),
-                    height: Val::ZERO,
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::Vw(100.),
+                height: Val::ZERO,
                 ..default()
             },
             LetterboxAxis::Horizontal,
         ));
         b.spawn((
             Name::new("letterbox_bottom"),
-            NodeBundle {
-                background_color: color,
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    bottom: Val::ZERO,
-                    left: Val::ZERO,
-                    width: Val::Vw(100.),
-                    height: Val::ZERO,
-                    ..default()
-                },
+            bg_color,
+            Node {
+                position_type: PositionType::Absolute,
+                bottom: Val::ZERO,
+                left: Val::ZERO,
+                width: Val::Vw(100.),
+                height: Val::ZERO,
                 ..default()
             },
             LetterboxAxis::Horizontal,
@@ -232,7 +207,7 @@ fn setup_letterbox(mut cmd: Commands) {
 }
 
 fn resize_letterbox(
-    mut letterbox_q: Query<(&LetterboxAxis, &mut Style)>,
+    mut letterbox_q: Query<(&LetterboxAxis, &mut Node)>,
     mut resize_evr: EventReader<WindowResized>,
 ) {
     if let Some(ev) = resize_evr.read().next() {
@@ -267,7 +242,7 @@ fn start_transition_anim(
 
     for (i, e) in trans.circle_entity_ids.iter().cloned().enumerate() {
         cmd.entity(e).try_insert(
-            TweenFactor::<TransitionCircle>::new(800, bevy_tweening::EaseFunction::SineInOut)
+            TweenFactor::<TransitionCircle>::new(800, EaseFunction::SineInOut)
                 .with_delay((i * 150) as u64),
         );
     }
@@ -282,7 +257,7 @@ fn transition_out(
         ),
         Changed<TweenFactor<TransitionCircle>>,
     >,
-    mut style_q: Query<&mut Style>,
+    mut style_q: Query<&mut Node>,
     reset_circle_q: Query<Entity, (With<TransitionCircle>, Without<FinalTransitionCircle>)>,
     mut cmd: Commands,
     next_transitioned: Res<NextTransitionedState>,
@@ -305,7 +280,7 @@ fn transition_out(
                 cmd.entity(e)
                     .try_insert(TweenFactor::<FinalTransitionCircle>::new(
                         200,
-                        bevy_tweening::EaseFunction::QuadraticIn,
+                        EaseFunction::QuadraticIn,
                     ));
 
                 // reset size of non-final circles
@@ -324,8 +299,8 @@ fn transition_out(
 fn transition_in(
     mut final_circle_q: Query<(
         Entity,
-        &mut Style,
-        &mut UiImage,
+        &mut Node,
+        &mut ImageNode,
         &TweenFactor<FinalTransitionCircle>,
     )>,
     mut cmd: Commands,

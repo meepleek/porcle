@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{Animator, Delay, EaseFunction};
+use bevy_tweening::{Animator, Delay};
 use std::time::Duration;
 use tiny_bail::or_continue;
 
@@ -25,8 +25,8 @@ use super::{
         paddle::{Paddle, PaddleAmmo},
         projectile::{Projectile, ProjectileTarget},
     },
-    time::{process_cooldown, Cooldown},
-    tween::{get_relative_translation_tween, DespawnOnTweenCompleted},
+    time::{Cooldown, process_cooldown},
+    tween::{DespawnOnTweenCompleted, get_relative_translation_tween},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -117,11 +117,10 @@ fn fire_player_gun(
                 ));
 
                 cmd.spawn((
-                    particles.particle_spawner(
-                        particles.gun.clone(),
-                        Transform::from_translation(barrel_pos)
-                            .with_rotation(t.to_scale_rotation_translation().1),
-                    ),
+                    particles.circle_particle_spawner(),
+                    ParticleEffectHandle(particles.gun.clone_weak()),
+                    Transform::from_translation(barrel_pos)
+                        .with_rotation(t.to_scale_rotation_translation().1),
                     OneShot::Despawn,
                 ));
             } else if cooldown.is_none() {
@@ -225,10 +224,9 @@ fn handle_collisions(
             t.translation().truncate(),
             0.,
             Dir2::new(move_dir.0).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
             100,
-            false,
-            SpatialQueryFilter::default(),
+            &ShapeCastConfig::from_max_distance((speed.0 * 1.05) * time.delta_secs()),
+            &SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
             let mut despawn = false;

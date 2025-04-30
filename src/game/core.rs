@@ -1,13 +1,13 @@
 use avian2d::prelude::*;
-use bevy::{prelude::*, sprite::Mesh2dHandle};
-use bevy_enoki::prelude::OneShot;
+use bevy::prelude::*;
+use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_trauma_shake::Shakes;
-use bevy_tweening::{AssetAnimator, EaseFunction};
+use bevy_tweening::AssetAnimator;
 use tiny_bail::prelude::*;
 
 use crate::{
     ext::{EventReaderExt, QuatExt},
-    screen::{in_game_state, NextTransitionedState, Screen},
+    screen::{NextTransitionedState, Screen, in_game_state},
     ui::palette::{COL_ENEMY_FLASH, COL_GEARS_DISABLED},
 };
 
@@ -17,8 +17,8 @@ use super::{
     movement::MovementPaused,
     spawn::{
         enemy::{DespawnEnemy, Enemy},
-        level::{AmmoFill, Core, Health, RotateWithPaddle, AMMO_FILL_RADIUS},
-        paddle::{PaddleAmmo, PaddleRotation, PADDLE_RADIUS},
+        level::{AMMO_FILL_RADIUS, AmmoFill, Core, Health, RotateWithPaddle},
+        paddle::{PADDLE_RADIUS, PaddleAmmo, PaddleRotation},
         projectile::{Projectile, ProjectileTarget},
     },
     tween::{
@@ -86,7 +86,7 @@ fn update_ammo_fill(
     if let Some(ammo) = ammo_q.iter().next() {
         for e in &ammo_fill_q {
             cmd.entity(e)
-                .try_insert(Mesh2dHandle(meshes.add(CircularSegment::from_turns(
+                .try_insert(Mesh2d(meshes.add(CircularSegment::from_turns(
                     AMMO_FILL_RADIUS,
                     // not sure why, but the segments fills at 95% already
                     ammo.factor() * 0.95,
@@ -110,11 +110,7 @@ fn take_damage(
         let (e, active) = or_return!(core.gear_entities.iter_mut().find(|(_, active)| *active));
         *active = false;
         cmd.entity(*e).try_insert((
-            get_relative_scale_anim(
-                Vec2::splat(0.7).extend(1.),
-                350,
-                Some(bevy_tweening::EaseFunction::BackIn),
-            ),
+            get_relative_scale_anim(Vec2::splat(0.7).extend(1.), 350, Some(EaseFunction::BackIn)),
             get_relative_sprite_color_anim(COL_GEARS_DISABLED, 350, None),
             MovementPaused,
         ));
@@ -167,10 +163,9 @@ fn clear_paddle_radius_on_dmg(
 
         // particles
         cmd.spawn((
-            particles.particle_spawner(
-                particles.core_clear.clone(),
-                Transform::from_translation(core_t.translation().with_z(0.51)),
-            ),
+            particles.circle_particle_spawner(),
+            ParticleEffectHandle(particles.core_clear.clone_weak()),
+            Transform::from_translation(core_t.translation().with_z(0.51)),
             OneShot::Despawn,
         ));
     }

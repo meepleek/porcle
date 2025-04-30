@@ -10,7 +10,10 @@ mod ui;
 use bevy::{
     asset::AssetMetaCheck,
     audio::{AudioPlugin, Volume},
-    core_pipeline::bloom::{BloomCompositeMode, BloomSettings},
+    core_pipeline::{
+        bloom::{Bloom, BloomCompositeMode},
+        tonemapping::Tonemapping,
+    },
     prelude::*,
     render::camera::ScalingMode,
 };
@@ -100,22 +103,21 @@ enum AppSet {
 }
 
 fn spawn_camera(mut commands: Commands) {
-    let mut cam_bundle = Camera2dBundle {
-        camera: Camera {
-            hdr: true,
-            ..default()
-        },
-        tonemapping: bevy::core_pipeline::tonemapping::Tonemapping::TonyMcMapface,
-        ..default()
-    };
-    cam_bundle.projection.scaling_mode = ScalingMode::AutoMin {
+    let mut ortho_projection = OrthographicProjection::default_2d();
+    ortho_projection.scaling_mode = ScalingMode::AutoMin {
         min_width: GAME_SIZE,
         min_height: GAME_SIZE,
     };
 
     commands.spawn((
         Name::new("Camera"),
-        cam_bundle,
+        Camera2d,
+        Camera {
+            hdr: true,
+            ..default()
+        },
+        ortho_projection,
+        Tonemapping::TonyMcMapface,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
         // but if we don't use this component, our UI will disappear as soon
@@ -125,7 +127,7 @@ fn spawn_camera(mut commands: Commands) {
         IsDefaultUiCamera,
         bevy_trauma_shake::Shake::default(),
         ShakeSettings::default(),
-        BloomSettings {
+        Bloom {
             intensity: BLOOM_BASE,
             high_pass_frequency: 0.5,
             low_frequency_boost: 0.3,

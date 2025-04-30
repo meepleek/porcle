@@ -6,7 +6,7 @@ use crate::{
     ext::{RandExt, Vec2Ext},
     game::{
         assets::SpriteAssets,
-        movement::{Damping, MovementBundle},
+        movement::{Damping, MoveDirection, Speed},
     },
     screen::Screen,
     ui::palette::{COL_BULLET, COL_ENEMY_PROJECTILE},
@@ -15,7 +15,7 @@ use crate::{
 use super::despawn::DespawnOutOfBounds;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_projectile);
+    app.add_observer(spawn_projectile);
 }
 
 #[derive(Event, Debug)]
@@ -52,13 +52,13 @@ fn spawn_projectile(
     let dir = dir_spread * ev.dir;
     let targets_enemy = ev.target == ProjectileTarget::Enemy;
     let sprite_e = cmd
-        .spawn(SpriteBundle {
-            texture: if targets_enemy {
-                sprites.bullet.clone_weak()
-            } else {
-                sprites.enemy_projectile.clone_weak()
-            },
-            sprite: Sprite {
+        .spawn((
+            Sprite {
+                image: if targets_enemy {
+                    sprites.bullet.clone_weak()
+                } else {
+                    sprites.enemy_projectile.clone_weak()
+                },
                 color: if targets_enemy {
                     COL_BULLET
                 } else {
@@ -66,23 +66,22 @@ fn spawn_projectile(
                 },
                 ..default()
             },
-            transform: Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
-            ..default()
-        })
+            Transform::from_rotation(Quat::from_rotation_z(180f32.to_radians())),
+        ))
         .id();
     cmd.spawn((
         Name::new("Projectile"),
-        SpatialBundle::from_transform(
-            Transform::from_translation(ev.position.extend(0.1))
-                .with_rotation(dir.rotate(Vec2::Y).to_quat()),
-        ),
+        Transform::from_translation(ev.position.extend(0.1))
+            .with_rotation(dir.rotate(Vec2::Y).to_quat()),
+        Visibility::default(),
         RigidBody::Kinematic,
         if targets_enemy {
             Collider::rectangle(x, y)
         } else {
             Collider::circle(25.)
         },
-        MovementBundle::new(dir.as_vec2(), if targets_enemy { 1600. } else { 250. }),
+        MoveDirection(dir.as_vec2()),
+        Speed(if targets_enemy { 1600. } else { 250. }),
         Damping(if targets_enemy { 0.8 } else { 0.1 }),
         Projectile {
             target: ev.target,

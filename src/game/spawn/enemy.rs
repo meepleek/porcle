@@ -2,31 +2,31 @@ use std::time::Duration;
 
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_enoki::prelude::OneShot;
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
+use bevy_tweening::Animator;
 use rand::{distributions::WeightedIndex, prelude::*};
 use tiny_bail::{c, or_continue};
 
 use crate::{
+    GAME_SIZE,
     game::{
         assets::{ParticleAssets, SpriteAssets},
-        movement::{Damping, HomingTarget, MovementBundle, SpeedMultiplier},
+        movement::{Damping, HomingTarget, MoveDirection, Speed, SpeedMultiplier},
         score::Score,
         tween::{
-            delay_tween, get_relative_scale_anim, get_relative_sprite_color_tween,
-            DespawnOnTweenCompleted,
+            DespawnOnTweenCompleted, delay_tween, get_relative_scale_anim,
+            get_relative_sprite_color_tween,
         },
     },
     math::inverse_lerp_clamped,
     screen::Screen,
     ui::palette::{COL_ENEMY, COL_ENEMY_FLASH},
-    GAME_SIZE,
 };
 
 use super::{level::Health, paddle::PADDLE_RADIUS};
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_enemy);
+    app.add_observer(spawn_enemy);
     app.add_event::<DespawnEnemy>()
         .add_systems(Last, despawn_enemy)
         .add_systems(
@@ -167,25 +167,22 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             let c = Vec2::new(size, -size);
 
             let mesh_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_creepinek.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_creepinek.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
 
             cmd.spawn((
                 Name::new("creepinek"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy { sprite_e: mesh_e },
                 Health(3),
@@ -195,25 +192,22 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
         }
         EnemyKind::Shieldy => {
             let mesh_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_creepy_shield.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_creepy_shield.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
 
             cmd.spawn((
                 Name::new("shieldy"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::ellipse(75., 60.),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy { sprite_e: mesh_e },
                 Health(3),
@@ -229,25 +223,22 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             let c = Vec2::new(size, -size + 10.);
 
             let sprite_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_big_boi.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_big_boi.clone_weak(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
 
             cmd.spawn((
                 Name::new("big_boi"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy { sprite_e },
                 Health(8),
@@ -262,40 +253,34 @@ fn spawn_enemy(trigger: Trigger<SpawnEnemy>, mut cmd: Commands, sprites: Res<Spr
             let c = Vec2::new(size, -size);
 
             let sprite_e = cmd
-                .spawn(SpriteBundle {
-                    texture: sprites.enemy_bang.clone(),
-                    sprite: Sprite {
-                        color: COL_ENEMY,
-                        ..default()
-                    },
+                .spawn(Sprite {
+                    image: sprites.enemy_bang.clone(),
+                    color: COL_ENEMY,
                     ..default()
                 })
                 .id();
 
             let barrel_e = cmd
                 .spawn((
-                    SpriteBundle {
-                        texture: sprites.enemy_bang_barrel.clone(),
-                        sprite: Sprite {
-                            color: COL_ENEMY,
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec3::Y * (size + 10.)),
+                    Sprite {
+                        image: sprites.enemy_bang_barrel.clone(),
+                        color: COL_ENEMY,
                         ..default()
                     },
+                    Transform::from_translation(Vec3::Y * (size + 10.)),
                     EnemyGunBarrel::Inactive,
                 ))
                 .id();
 
             cmd.spawn((
                 Name::new("bang_bang"),
-                SpatialBundle::from_transform(
-                    Transform::from_translation(ev.position.extend(0.1)).with_rotation(
-                        Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
-                    ),
+                Transform::from_translation(ev.position.extend(0.1)).with_rotation(
+                    Quat::from_rotation_z(ev.position.to_angle() + 90f32.to_radians()),
                 ),
+                Visibility::default(),
                 Collider::triangle(a, b, c),
-                MovementBundle::new(-ev.position.normalize_or_zero(), speed),
+                MoveDirection(-ev.position.normalize_or_zero()),
+                Speed(speed),
                 HomingTarget,
                 Enemy { sprite_e },
                 Health(5),
@@ -387,10 +372,9 @@ fn despawn_enemy(
             DespawnOnTweenCompleted::Entity(ev.0),
         ));
         cmd.spawn((
-            particles.square_particle_spawner(
-                particles.enemy.clone(),
-                Transform::from_translation(t.translation()),
-            ),
+            particles.square_particle_spawner(),
+            ParticleEffectHandle(particles.enemy.clone_weak()),
+            Transform::from_translation(t.translation()),
             OneShot::Despawn,
         ));
     }

@@ -1,11 +1,12 @@
 use bevy::prelude::*;
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_enoki::ParticleEffectHandle;
+use bevy_tweening::Animator;
 
 use crate::{
     game::{
         assets::{ParticleAssets, SpriteAssets},
-        ball::{BallSpeed, BALL_BASE_SPEED},
-        movement::{MovementBundle, MovementPaused},
+        ball::{BALL_BASE_SPEED, BallSpeed},
+        movement::{MoveDirection, MovementPaused, Speed},
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
@@ -15,7 +16,7 @@ use crate::{
 use super::paddle::PaddleMode;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_ball);
+    app.add_observer(spawn_ball);
 }
 
 pub const BALL_BASE_RADIUS: f32 = 40.;
@@ -66,15 +67,12 @@ fn spawn_ball(
         let sprite_e = cmd
             .spawn((
                 Name::new("sprite"),
-                SpriteBundle {
-                    texture: sprites.ball.clone(),
-                    sprite: Sprite {
-                        color: COL_BALL,
-                        ..default()
-                    },
-                    transform: Transform::from_scale(Vec3::Z),
+                Sprite {
+                    image: sprites.ball.clone_weak(),
+                    color: COL_BALL,
                     ..default()
                 },
+                Transform::from_scale(Vec3::Z),
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
                     ev.tween_delay_ms,
@@ -83,23 +81,21 @@ fn spawn_ball(
             .id();
 
         //particles
-
         let particles_e = cmd
             .spawn((
-                particles.square_particle_spawner(particles.ball.clone(), Transform::default()),
+                particles.square_particle_spawner(),
+                ParticleEffectHandle(particles.ball.clone_weak()),
             ))
             .id();
 
         let ball_e = cmd
             .spawn((
                 Name::new("Ball"),
-                SpatialBundle::from_transform(Transform::from_xyz(
-                    BALL_BASE_RADIUS * -1.1,
-                    0.,
-                    0.9,
-                )),
+                Transform::from_xyz(BALL_BASE_RADIUS * -1.1, 0., 0.9),
+                Visibility::default(),
                 BallSpeed::default(),
-                MovementBundle::new(Vec2::X, BALL_BASE_SPEED),
+                MoveDirection(Vec2::X),
+                Speed(BALL_BASE_SPEED),
                 MovementPaused,
                 Ball::new(sprite_e, particles_e),
                 InsidePaddleRadius,

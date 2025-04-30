@@ -31,7 +31,7 @@
                 observer.disconnect();
             }
         });
-        observer.observe(bevy, { attributeFilter: ['height'] });
+        observer.add_observer(bevy, { attributeFilter: ['height'] });
     </script>
 </body>
 

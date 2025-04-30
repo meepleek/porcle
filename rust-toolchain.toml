@@ -1,9 +1,3 @@
 [toolchain]
-channel = "nightly-2024-08-14"
-components = [
-  "clippy",
-  "rustfmt",
-  "rust-analyzer",
-  "rust-docs",
-  "rustc-codegen-cranelift",
-]
+channel = "beta"
+components = ["clippy", "rustfmt", "rust-analyzer", "rust-docs"]

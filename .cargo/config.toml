@@ -1,24 +1,14 @@
-#cranelift
-[unstable]
-codegen-backend = true
-
-[profile.dev]
-codegen-backend = "cranelift"
-
-[profile.dev.package."*"]
-codegen-backend = "llvm"
-
 [target.x86_64-unknown-linux-gnu]
 linker = "clang"
 rustflags = [
-  # Mold linker
-  # - Arch: `sudo pacman -S mold clang`
-  "-Clink-arg=-fuse-ld=mold",
+    # Mold linker
+    # - Arch: `sudo pacman -S mold clang`
+    "-Clink-arg=-fuse-ld=mold",
 
-  # # Nightly
-  "-Zshare-generics=y",
-  # actually seeing a slight slowdown when using this
-  # "-Zthreads=0",
+    # # Nightly
+    # "-Zshare-generics=y",
+    # actually seeing a slight slowdown when using this
+    # "-Zthreads=0",
 ]
 
 [target.x86_64-pc-windows-msvc]
@@ -33,9 +23,9 @@ rustflags = [
 linker = "rust-lld.exe"
 rustdocflags = ["-Clinker=rust-lld.exe"]
 rustflags = [
-  # Nightly
-  # "-Zshare-generics=n", # This needs to be off if you use dynamic linking on Windows.
-  # "-Zthreads=0",
+    # Nightly
+    # "-Zshare-generics=n", # This needs to be off if you use dynamic linking on Windows.
+    # "-Zthreads=0",
 ]
 
 # Uncommenting the following improves compile times, but reduces the amount of debug info to 'line number tables only'

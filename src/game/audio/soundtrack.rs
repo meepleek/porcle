@@ -5,7 +5,7 @@ use bevy::{
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<Music>();
-    app.observe(play_soundtrack);
+    app.add_observer(play_soundtrack);
 }
 
 fn play_soundtrack(
@@ -22,13 +22,11 @@ fn play_soundtrack(
         PlayMusic::Disable => return,
     };
     commands.spawn((
-        AudioSourceBundle {
-            source: handle,
-            settings: PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                volume: Volume::new(0.275),
-                ..default()
-            },
+        AudioPlayer(handle),
+        PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            volume: Volume::new(0.275),
+            ..default()
         },
         Music,
     ));

@@ -1,12 +1,15 @@
 use std::cmp::Ordering;
 
 use avian2d::prelude::*;
-use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
-use bevy_enoki::prelude::{OneShot, ParticleSpawnerState};
+use bevy::{core_pipeline::bloom::Bloom, prelude::*};
+use bevy_enoki::{
+    ParticleEffectHandle,
+    prelude::{OneShot, ParticleSpawnerState},
+};
 use bevy_trauma_shake::{ShakeSettings, Shakes};
-use bevy_tweening::EaseFunction;
 
 use crate::{
+    BLOOM_BASE, GAME_SIZE,
     ext::Vec2Ext,
     game::{
         movement::MovementPaused, spawn::paddle::PADDLE_COLL_HEIGHT,
@@ -15,20 +18,19 @@ use crate::{
     math::asymptotic_smoothing_with_delta_time,
     screen::in_game_state,
     ui::palette::{COL_BALL, COL_BALL_FAST},
-    BLOOM_BASE, GAME_SIZE,
 };
 
 use super::{
     assets::ParticleAssets,
     gun::ProjectileDespawn,
-    movement::{speed_factor, Homing, MoveDirection, Speed, Velocity},
+    movement::{Homing, MoveDirection, Speed, Velocity, speed_factor},
     paddle::PaddleKnockback,
     score::Score,
     spawn::{
         ball::{Ball, InsidePaddleRadius},
         enemy::Enemy,
         level::Wall,
-        paddle::{Paddle, PaddleAmmo, PaddleMode, PADDLE_RADIUS},
+        paddle::{PADDLE_RADIUS, Paddle, PaddleAmmo, PaddleMode},
         projectile::Projectile,
     },
     time::Cooldown,
@@ -112,7 +114,7 @@ fn update_ball_speed(
         if ball_captured {
             // slow down captured ball
             ball_speed.0 =
-                (speed.0 - (BALL_BASE_SPEED * time.delta_seconds() * 0.4)).max(BALL_BASE_SPEED);
+                (speed.0 - (BALL_BASE_SPEED * time.delta_secs() * 0.4)).max(BALL_BASE_SPEED);
             debug!(speed = speed.0, "captured ball");
         }
 
@@ -170,10 +172,9 @@ fn handle_ball_collisions(
             ball_t.translation().truncate(),
             0.,
             Dir2::new(vel.velocity()).expect("Non zero velocity"),
-            (speed.0 * 1.05) * time.delta_seconds(),
             100,
-            false,
-            SpatialQueryFilter::default(),
+            &ShapeCastConfig::from_max_distance((speed.0 * 1.05) * time.delta_secs()),
+            &SpatialQueryFilter::default(),
         ) {
             let hit_e = hit.entity;
             if let Ok((paddle_e, mut ammo, paddle_t, paddle, mut paddle_mode)) =
@@ -183,7 +184,7 @@ fn handle_ball_collisions(
                     continue;
                 }
 
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.2 {
+                if time.elapsed_secs() < ball.last_reflection_time + 0.2 {
                     // ignore consecutive hits
                     continue;
                 }
@@ -234,11 +235,10 @@ fn handle_ball_collisions(
                         0.15 + 0.15 * speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 2.0),
                     );
                     cmd.spawn((
-                        particles.particle_spawner(
-                            particles.reflection.clone(),
-                            Transform::from_translation(hit.point1.extend(10.))
-                                .with_rotation(paddle_t.up().truncate().to_quat()),
-                        ),
+                        particles.circle_particle_spawner(),
+                        ParticleEffectHandle(particles.reflection.clone_weak()),
+                        Transform::from_translation(hit.point1.extend(10.))
+                            .with_rotation(paddle_t.up().truncate().to_quat()),
                         OneShot::Despawn,
                     ));
                     // clamp to min speed in case the ball has come back to core
@@ -253,7 +253,7 @@ fn handle_ball_collisions(
                         0.1 + speed.speed_factor(BALL_BASE_SPEED, BALL_BASE_SPEED * 1.5) * 0.2;
                     cmd.entity(ball_e)
                         .insert(MovementPaused::cooldown(cooldown));
-                    ball.last_reflection_time = time.elapsed_seconds() + cooldown;
+                    ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
                     knockback_paddle_ev_w.send(PaddleKnockback(if hit_from_outside {
                         -15.
@@ -262,7 +262,7 @@ fn handle_ball_collisions(
                     }));
                 }
             } else if wall_q.contains(hit_e) {
-                if time.elapsed_seconds() < ball.last_reflection_time + 0.1 {
+                if time.elapsed_secs() < ball.last_reflection_time + 0.1 {
                     // ignore consecutive hits
                     continue;
                 }
@@ -276,7 +276,7 @@ fn handle_ball_collisions(
                 let cooldown = 0.085 + speed_factor * 0.125;
                 cmd.entity(ball_e)
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
-                ball.last_reflection_time = time.elapsed_seconds() + cooldown;
+                ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
                 // todo: need to fix
                 // // particles
@@ -305,10 +305,9 @@ fn handle_ball_collisions(
                 shake.add_trauma(0.15);
                 // particles
                 cmd.spawn((
-                    particles.square_particle_spawner(
-                        particles.enemy.clone(),
-                        Transform::from_translation(hit.point1.extend(10.)),
-                    ),
+                    particles.square_particle_spawner(),
+                    ParticleEffectHandle(particles.enemy.clone_weak()),
+                    Transform::from_translation(hit.point1.extend(10.)),
                     OneShot::Despawn,
                 ));
                 // freeze
@@ -334,10 +333,13 @@ fn handle_ball_collisions(
                     origin,
                     0.,
                     Dir2::new(direction.0).expect("Non zero velocity"),
-                    (speed.0 * 1.05) * time.delta_seconds(),
                     100,
-                    true,
-                    SpatialQueryFilter::default(),
+                    &ShapeCastConfig {
+                        max_distance: (speed.0 * 1.05) * time.delta_secs(),
+                        ignore_origin_penetration: true,
+                        ..default()
+                    },
+                    &SpatialQueryFilter::default(),
                 )
                 .iter()
             {
@@ -384,13 +386,13 @@ fn update_ball_speed_factor(
             .max_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal))
             .unwrap_or_default(),
         0.1,
-        time.delta_seconds(),
+        time.delta_secs(),
     );
 }
 
 fn boost_postprocessing_based_on_ball_speed(
     factor: Res<MaxBallSpeedFactor>,
-    mut bloom_q: Query<&mut BloomSettings>,
+    mut bloom_q: Query<&mut Bloom>,
 ) {
     for mut bloom in &mut bloom_q {
         bloom.intensity = BLOOM_BASE + 0.175 * factor.0;
@@ -417,7 +419,7 @@ fn rotate_ball(
     let factor = 1.0 + factor.0 * 1.5;
     for ball in &ball_q {
         if let Ok(mut t) = trans_q.get_mut(ball.sprite_e) {
-            t.rotate_z(base_speed * factor * time.delta_seconds());
+            t.rotate_z(base_speed * factor * time.delta_secs());
         }
     }
 }

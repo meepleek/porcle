@@ -33,6 +33,7 @@ pub(super) fn plugin(app: &mut App) {
 pub enum PlayerAction {
     Shoot,
     TogglePaddleMode,
+    #[actionlike(DualAxis)]
     AimGamepad,
     Quit,
     Restart,
@@ -47,26 +48,22 @@ impl PlayerAction {
 
         // Gamepad
         let deadzone_radius = 0.15;
-        let deadzone = DeadZoneShape::Ellipse {
-            radius_x: deadzone_radius,
-            radius_y: deadzone_radius,
-        };
-        input_map.insert(
+        input_map.insert_dual_axis(
             Self::AimGamepad,
-            DualAxis::left_stick().with_deadzone(deadzone),
+            GamepadStick::LEFT.with_circle_deadzone(deadzone_radius),
         );
-        input_map.insert(
+        input_map.insert_dual_axis(
             Self::AimGamepad,
-            DualAxis::right_stick().with_deadzone(deadzone),
+            GamepadStick::RIGHT.with_circle_deadzone(deadzone_radius),
         );
-        input_map.insert(Self::Shoot, GamepadButtonType::RightTrigger);
-        input_map.insert(Self::Shoot, GamepadButtonType::RightTrigger2);
-        input_map.insert(Self::Shoot, GamepadButtonType::South);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::LeftTrigger);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::LeftTrigger2);
-        input_map.insert(Self::TogglePaddleMode, GamepadButtonType::West);
-        input_map.insert(Self::Restart, GamepadButtonType::Start);
-        input_map.insert(Self::Quit, GamepadButtonType::Select);
+        input_map.insert(Self::Shoot, GamepadButton::RightTrigger);
+        input_map.insert(Self::Shoot, GamepadButton::RightTrigger2);
+        input_map.insert(Self::Shoot, GamepadButton::South);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::LeftTrigger);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::LeftTrigger2);
+        input_map.insert(Self::TogglePaddleMode, GamepadButton::West);
+        input_map.insert(Self::Restart, GamepadButton::Start);
+        input_map.insert(Self::Quit, GamepadButton::Select);
 
         // KB & Mouse
         input_map.insert(Self::Shoot, MouseButton::Left);
@@ -108,14 +105,14 @@ fn update_aim_direction(
                     aim_dir.0,
                     cursor.0,
                     (dist / deadzone_radius).powi(3),
-                    time.delta_seconds(),
+                    time.delta_secs(),
                 )
                 // aim_dir.0
             }
         }
         ActiveInput::Gamepad => input
             .clamped_axis_pair(&PlayerAction::AimGamepad)
-            .map_or(aim_dir.0, |dir| dir.xy().normalize_or(aim_dir.0)),
+            .normalize_or(aim_dir.0),
     }
 }
 
@@ -131,7 +128,8 @@ fn update_cursor_coords(
     // then convert into world coordinates
     if let Some(world_position) = window
         .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        // todo: handle the error in 0.16 with propagation instead of just ok()
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
         .map(|ray| ray.origin.truncate())
     {
         coords.0 = world_position;

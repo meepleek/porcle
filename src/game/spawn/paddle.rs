@@ -1,12 +1,8 @@
 use std::time::Duration;
 
 use avian2d::prelude::*;
-use bevy::{
-    prelude::*,
-    render::mesh::AnnulusMeshBuilder,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
-use bevy_tweening::{Animator, EaseFunction};
+use bevy::{prelude::*, render::mesh::AnnulusMeshBuilder};
+use bevy_tweening::Animator;
 
 use crate::{
     ext::TransExt,
@@ -24,7 +20,7 @@ use crate::{
 use super::level::RotateWithPaddle;
 
 pub(super) fn plugin(app: &mut App) {
-    app.observe(spawn_paddle);
+    app.add_observer(spawn_paddle);
 }
 
 pub const PADDLE_RADIUS: f32 = 350.0;
@@ -126,12 +122,9 @@ fn spawn_paddle(
         annulus_builder.build();
         cmd.spawn((
             Name::new("rail"),
-            MaterialMesh2dBundle {
-                mesh: Mesh2dHandle(meshes.add(annulus_builder.build())),
-                material: materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS)),
-                transform: Transform::zero_scale_2d(),
-                ..default()
-            },
+            Mesh2d(meshes.add(annulus_builder.build())),
+            MeshMaterial2d(materials.add(ColorMaterial::from_color(COL_PADDLE_TRACKS))),
+            Transform::zero_scale_2d(),
             Animator::new(delay_tween(
                 get_relative_scale_tween(Vec3::ONE, 600, Some(EaseFunction::BackOut)),
                 950 + i as u64 * 150,
@@ -141,19 +134,16 @@ fn spawn_paddle(
     }
 
     let barrel_e = cmd
-        .spawn(SpatialBundle::default())
+        .spawn((Transform::default(), Visibility::default()))
         .with_children(|b| {
             b.spawn((
                 Name::new("barrel"),
-                SpriteBundle {
-                    texture: sprites.paddle_barrel.clone(),
-                    sprite: Sprite {
-                        color: COL_PADDLE,
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(0., 55., 0.),
+                Sprite {
+                    image: sprites.paddle_barrel.clone_weak(),
+                    color: COL_PADDLE,
                     ..default()
                 },
+                Transform::from_xyz(0., 55., 0.),
             ));
         })
         .id();
@@ -161,34 +151,28 @@ fn spawn_paddle(
     let reflect_e = cmd
         .spawn((
             Name::new("reflect"),
-            SpriteBundle {
-                texture: sprites.paddle_reflect.clone(),
-                sprite: Sprite {
-                    color: COL_PADDLE_REFLECT,
-                    ..default()
-                },
-                transform: Transform::from_xyz(0., -17.5, 0.5),
+            Sprite {
+                image: sprites.paddle_reflect.clone_weak(),
+                color: COL_PADDLE_REFLECT,
                 ..default()
             },
+            Transform::from_xyz(0., -17.5, 0.5),
         ))
         .id();
 
     let sprite_e = cmd
-        .spawn(SpatialBundle::default())
+        .spawn((Transform::default(), Visibility::default()))
         .with_children(|b| {
             b.spawn((
                 Name::new("base_sprite"),
-                SpriteBundle {
-                    texture: sprites.paddle_base.clone(),
-                    sprite: Sprite {
-                        color: COL_PADDLE,
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(7., 0., 0.)
-                        .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
-                        .with_scale(Vec2::ZERO.extend(1.)),
+                Sprite {
+                    image: sprites.paddle_base.clone_weak(),
+                    color: COL_PADDLE,
                     ..default()
                 },
+                Transform::from_xyz(7., 0., 0.)
+                    .with_rotation(Quat::from_rotation_z(-90f32.to_radians()))
+                    .with_scale(Vec2::ZERO.extend(1.)),
                 Animator::new(delay_tween(
                     get_relative_scale_tween(Vec3::ONE, 500, Some(EaseFunction::BackOut)),
                     1200,
@@ -199,15 +183,12 @@ fn spawn_paddle(
                 for sign in [1., -1.] {
                     b.spawn((
                         Name::new("wheel"),
-                        SpriteBundle {
-                            texture: sprites.paddle_wheel.clone(),
-                            sprite: Sprite {
-                                color: COL_PADDLE,
-                                ..default()
-                            },
-                            transform: Transform::from_xyz(98. * sign, -16., 0.),
+                        Sprite {
+                            image: sprites.paddle_wheel.clone_weak(),
+                            color: COL_PADDLE,
                             ..default()
                         },
+                        Transform::from_xyz(98. * sign, -16., 0.),
                         RotateWithPaddle {
                             invert: true,
                             offset: Rot2::default(),
@@ -223,7 +204,8 @@ fn spawn_paddle(
     let paddle_e = cmd
         .spawn((
             Name::new("paddle"),
-            SpatialBundle::from_transform(Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0)),
+            Transform::from_xyz(PADDLE_RADIUS, 0.0, 1.0),
+            Visibility::default(),
             Collider::capsule(23.0, PADDLE_COLL_HEIGHT),
             Paddle {
                 sprite_e,
@@ -241,7 +223,8 @@ fn spawn_paddle(
 
     cmd.spawn((
         Name::new("paddle_rotation"),
-        SpatialBundle::default(),
+        Transform::default(),
+        Visibility::default(),
         PaddleRotation::new(paddle_e),
         AccumulatedRotation::default(),
         StateScoped(Screen::Game),

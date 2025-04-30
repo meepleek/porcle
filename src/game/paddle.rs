@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tweening::{Animator, EaseFunction};
+use bevy_tweening::Animator;
 use std::f32::consts::TAU;
 use tiny_bail::{or_return, or_return_quiet};
 
@@ -96,8 +96,8 @@ fn rotate_paddle(
     for mut t in rot_q.iter_mut() {
         let current_angle = t.rotation.to_rot2();
         let target_angle = aim_dir.0.to_rot2();
-        let max_delta = (time.delta_seconds() / PADDLE_REVOLUTION_DURATION_MIN) * TAU;
-        let target_delta = current_angle.angle_between(target_angle);
+        let max_delta = (time.delta_secs() / PADDLE_REVOLUTION_DURATION_MIN) * TAU;
+        let target_delta = current_angle.angle_to(target_angle);
         let clamped_angle =
             current_angle * Rot2::radians(target_delta.clamp(-max_delta, max_delta));
         t.rotation = Quat::from_rotation_z(clamped_angle.as_radians());
@@ -146,7 +146,7 @@ fn apply_cycle_effects(
             paddle_rot.ccw_start = angle.rotation;
         }
 
-        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_seconds();
+        let delta = (paddle_rot.prev_rot - angle.rotation).abs() / time.delta_secs();
         if delta < 3. {
             // reset if rotation doesn't change for a while
             paddle_rot.timer.tick(time.delta());

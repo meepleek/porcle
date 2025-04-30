@@ -22,12 +22,10 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(
             Update,
             (
-                return_to_title_screen.run_if(
-                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Quit)),
-                ),
-                restart_game.run_if(
-                    in_state(Screen::Game).and_then(action_just_pressed(PlayerAction::Restart)),
-                ),
+                return_to_title_screen
+                    .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Quit))),
+                restart_game
+                    .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Restart))),
             ),
         );
 }
@@ -45,7 +43,7 @@ fn enter_playing(
 
     #[cfg(not(target_family = "wasm"))]
     {
-        win.cursor.grab_mode = CursorGrabMode::Confined;
+        win.cursor_options.grab_mode = CursorGrabMode::Confined;
     }
 }
 
@@ -56,7 +54,7 @@ fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<Pr
 
     #[cfg(not(target_family = "wasm"))]
     {
-        win.cursor.grab_mode = CursorGrabMode::None;
+        win.cursor_options.grab_mode = CursorGrabMode::None;
     }
 }
 
