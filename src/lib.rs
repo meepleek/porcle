@@ -5,7 +5,7 @@ mod ext;
 mod game;
 mod math;
 mod screen;
-mod ui;
+mod theme;
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -74,7 +74,7 @@ impl Plugin for AppPlugin {
         );
 
         // Add project plugins.
-        app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+        app.add_plugins((game::plugin, screen::plugin, theme::plugin));
 
         // Add external plugins
         app.add_plugins((
