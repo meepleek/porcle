@@ -25,7 +25,7 @@ fn play_soundtrack(
         AudioPlayer(handle),
         PlaybackSettings {
             mode: PlaybackMode::Loop,
-            volume: Volume::new(0.275),
+            volume: Volume::Linear(0.275),
             ..default()
         },
         Music,
