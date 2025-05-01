@@ -67,7 +67,7 @@ impl Plugin for AppPlugin {
                 .set(ImagePlugin::default_linear())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.3),
+                        volume: Volume::Linear(0.3),
                     },
                     ..default()
                 }),
@@ -116,7 +116,7 @@ fn spawn_camera(mut commands: Commands) {
             hdr: true,
             ..default()
         },
-        ortho_projection,
+        Projection::Orthographic(ortho_projection),
         Tonemapping::TonyMcMapface,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,
