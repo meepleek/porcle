@@ -2,15 +2,11 @@
 
 use bevy::prelude::*;
 
-use super::{NextTransitionedState, Screen};
-use crate::{game::score::Score, ui::prelude::*};
+use super::Screen;
+use crate::{game::score::Score, theme::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::GameOver), enter_game_over)
-        .add_systems(
-            Update,
-            handle_title_action.run_if(in_state(Screen::GameOver)),
-        );
+    app.add_systems(OnEnter(Screen::GameOver), enter_game_over);
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
@@ -20,25 +16,13 @@ enum BtnAction {
 }
 
 fn enter_game_over(mut commands: Commands, score: Res<Score>) {
-    commands
-        .ui_root()
-        .insert(StateScoped(Screen::GameOver))
-        .with_children(|children| {
-            children.label("GAME OVER");
-            children.label(format!("SCORE: {}", score.0));
-            children.button("TRY AGAIN").insert(BtnAction::Play);
-        });
-}
-
-fn handle_title_action(
-    mut next_screen: ResMut<NextTransitionedState>,
-    mut button_query: InteractionQuery<&BtnAction>,
-) {
-    for (interaction, action) in &mut button_query {
-        if matches!(interaction, Interaction::Pressed) {
-            match action {
-                BtnAction::Play => next_screen.set(Screen::Game),
-            }
-        }
-    }
+    commands.spawn((
+        StateScoped(Screen::GameOver),
+        widget::ui_root("game_over"),
+        children![
+            widget::label("GAME OVER"),
+            widget::label(format!("SCORE: {}", score.0)),
+            widget::button("TRY AGAIN", super::enter_screen_click_trigger(Screen::Game))
+        ],
+    ));
 }

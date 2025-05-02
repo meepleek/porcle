@@ -10,7 +10,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    ui::palette::COL_BALL,
+    theme::palette::COL_BALL,
 };
 
 use super::paddle::PaddleMode;

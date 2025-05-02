@@ -20,7 +20,7 @@ use crate::{
     },
     math::inverse_lerp_clamped,
     screen::Screen,
-    ui::palette::{COL_ENEMY, COL_ENEMY_FLASH},
+    theme::palette::{COL_ENEMY, COL_ENEMY_FLASH},
 };
 
 use super::{level::Health, paddle::PADDLE_RADIUS};

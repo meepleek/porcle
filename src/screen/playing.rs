@@ -37,7 +37,7 @@ fn enter_playing(
 ) {
     cmd.trigger(SpawnLevel);
     // commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
-    let mut win = window_q.single_mut();
+    let mut win = window_q.single_mut().expect("window exists");
     // reset score
     score.0 = 0;
 
@@ -50,7 +50,7 @@ fn enter_playing(
 fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
     // We could use [`StateScoped`] on the sound playing entites instead.
     commands.trigger(PlayMusic::Disable);
-    let mut win = window_q.single_mut();
+    let mut win = window_q.single_mut().expect("window exists");
 
     #[cfg(not(target_family = "wasm"))]
     {

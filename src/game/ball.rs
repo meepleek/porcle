@@ -17,7 +17,7 @@ use crate::{
     },
     math::asymptotic_smoothing_with_delta_time,
     screen::in_game_state,
-    ui::palette::{COL_BALL, COL_BALL_FAST},
+    theme::palette::{COL_BALL, COL_BALL_FAST},
 };
 
 use super::{

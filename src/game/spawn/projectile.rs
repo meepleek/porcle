@@ -9,7 +9,7 @@ use crate::{
         movement::{Damping, MoveDirection, Speed},
     },
     screen::Screen,
-    ui::palette::{COL_BULLET, COL_ENEMY_PROJECTILE},
+    theme::palette::{COL_BULLET, COL_ENEMY_PROJECTILE},
 };
 
 use super::despawn::DespawnOutOfBounds;

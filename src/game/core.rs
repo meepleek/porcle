@@ -8,7 +8,7 @@ use tiny_bail::prelude::*;
 use crate::{
     ext::{EventReaderExt, QuatExt},
     screen::{NextTransitionedState, Screen, in_game_state},
-    ui::palette::{COL_ENEMY_FLASH, COL_GEARS_DISABLED},
+    theme::palette::{COL_ENEMY_FLASH, COL_GEARS_DISABLED},
 };
 
 use super::{

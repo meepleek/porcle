@@ -8,7 +8,7 @@ use bevy::{
 use self::ui_palette::COL_BG;
 
 use super::Screen;
-use crate::{AppSet, ui::prelude::*};
+use crate::{AppSet, theme::prelude::*};
 
 pub(super) fn plugin(app: &mut App) {
     app.insert_resource(ClearColor(COL_BG));
@@ -42,38 +42,34 @@ const SPLASH_DURATION_SECS: f32 = 1.8;
 const SPLASH_FADE_DURATION_SECS: f32 = 0.6;
 
 fn spawn_splash(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .ui_root()
-        .insert((
-            Name::new("Splash screen"),
-            BackgroundColor(COL_BG),
-            StateScoped(Screen::Splash),
-        ))
-        .with_children(|children| {
-            children.spawn((
-                Name::new("Splash image"),
-                Node {
-                    margin: UiRect::all(Val::Auto),
-                    width: Val::Percent(70.0),
-                    ..default()
+    commands.spawn((
+        widget::ui_root("splash_screen"),
+        BackgroundColor(COL_BG),
+        StateScoped(Screen::Splash),
+        children![(
+            Name::new("Splash image"),
+            Node {
+                margin: UiRect::all(Val::Auto),
+                width: Val::Percent(70.0),
+                ..default()
+            },
+            ImageNode::new(asset_server.load_with_settings(
+                // This should be an embedded asset for instant loading, but that is
+                // currently [broken on Windows Wasm builds](https://github.com/bevyengine/bevy/issues/14246).
+                "images/splash.png",
+                |settings: &mut ImageLoaderSettings| {
+                    // Make an exception for the splash image in case
+                    // `ImagePlugin::default_nearest()` is used for pixel art.
+                    settings.sampler = ImageSampler::linear();
                 },
-                ImageNode::new(asset_server.load_with_settings(
-                    // This should be an embedded asset for instant loading, but that is
-                    // currently [broken on Windows Wasm builds](https://github.com/bevyengine/bevy/issues/14246).
-                    "images/splash.png",
-                    |settings: &mut ImageLoaderSettings| {
-                        // Make an exception for the splash image in case
-                        // `ImagePlugin::default_nearest()` is used for pixel art.
-                        settings.sampler = ImageSampler::linear();
-                    },
-                )),
-                UiImageFadeInOut {
-                    total_duration: SPLASH_DURATION_SECS,
-                    fade_duration: SPLASH_FADE_DURATION_SECS,
-                    t: 0.0,
-                },
-            ));
-        });
+            )),
+            UiImageFadeInOut {
+                total_duration: SPLASH_DURATION_SECS,
+                fade_duration: SPLASH_FADE_DURATION_SECS,
+                t: 0.0,
+            },
+        )],
+    ));
 }
 
 #[derive(Component, Reflect)]

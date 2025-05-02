@@ -4,12 +4,13 @@ use bevy::{
     dev_tools::states::log_transitions, input::common_conditions::input_toggle_active, prelude::*,
 };
 
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::{
     game::{
-        ball::{BallSpeed, BALL_BASE_SPEED},
+        ball::{BALL_BASE_SPEED, BallSpeed},
         spawn::paddle::PaddleAmmo,
     },
     screen::Screen,
@@ -22,9 +23,12 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins(avian2d::debug_render::PhysicsDebugPlugin::default());
 
     #[cfg(feature = "dev")]
-    app.add_plugins(
+    app.add_plugins((
+        EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        },
         WorldInspectorPlugin::new().run_if(input_toggle_active(false, MouseButton::Middle)),
-    );
+    ));
 }
 
 fn process_debug_input(

@@ -39,12 +39,12 @@ pub fn header(text: impl Into<String>) -> impl Bundle {
             ..default()
         },
         BorderRadius::all(Val::Px(12.)),
-        children![
+        children![(
             Name::new("Header Text"),
             Text(text.into()),
             TextFont::from_font_size(40.0),
             TextColor(HEADER_TEXT),
-        ],
+        )],
     )
 }
 

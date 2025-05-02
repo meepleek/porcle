@@ -12,7 +12,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    ui::palette::{
+    theme::palette::{
         COL_PADDLE, COL_PADDLE_CAPTURE, COL_PADDLE_CAPTURED, COL_PADDLE_REFLECT, COL_PADDLE_TRACKS,
     },
 };

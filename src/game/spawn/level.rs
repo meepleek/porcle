@@ -12,7 +12,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    ui::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_AMMO_OUT, COL_GEARS},
+    theme::palette::{COL_AMMO_BG, COL_AMMO_FILL, COL_AMMO_OUT, COL_GEARS},
 };
 
 use super::{
