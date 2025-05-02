@@ -77,16 +77,13 @@ where
     button_base(
         text,
         action,
-        (
-            Node {
-                width: Px(300.0),
-                height: Px(80.0),
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                ..default()
-            },
-            BorderRadius::MAX,
-        ),
+        (Node {
+            width: Px(300.0),
+            height: Px(80.0),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        },),
     )
 }
 
