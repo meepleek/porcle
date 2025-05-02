@@ -14,7 +14,7 @@ fn play_soundtrack(
     soundtrack_query: Query<Entity, With<Music>>,
 ) {
     for entity in &soundtrack_query {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 
     let handle = match trigger.event() {

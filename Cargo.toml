@@ -30,7 +30,6 @@ tracing = { version = "0.1", features = [
 ] }
 paste = "1.0.15"
 rand = "0.8"
-tiny_bail = "0.1.2"
 
 [features]
 default = [

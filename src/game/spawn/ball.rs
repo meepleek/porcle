@@ -59,7 +59,7 @@ fn spawn_ball(
     particles: Res<ParticleAssets>,
 ) {
     for e in &ball_q {
-        cmd.entity(e).despawn_recursive();
+        cmd.entity(e).despawn();
     }
 
     let ev = trigger.event();

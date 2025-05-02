@@ -255,7 +255,7 @@ fn handle_ball_collisions(
                         .insert(MovementPaused::cooldown(cooldown));
                     ball.last_reflection_time = time.elapsed_secs() + cooldown;
 
-                    knockback_paddle_ev_w.send(PaddleKnockback(if hit_from_outside {
+                    knockback_paddle_ev_w.write(PaddleKnockback(if hit_from_outside {
                         -15.
                     } else {
                         15.
@@ -301,7 +301,7 @@ fn handle_ball_collisions(
                     }
                 }
 
-                cmd.entity(hit_e).despawn_recursive();
+                cmd.entity(hit_e).despawn();
                 shake.add_trauma(0.15);
                 // particles
                 cmd.spawn((
@@ -318,7 +318,7 @@ fn handle_ball_collisions(
                     .insert((MovementPaused::cooldown(cooldown), ShapecastNearestEnemy));
                 score.0 += 1;
             } else if projectile_q.contains(hit_e) {
-                projectile_hit_w.send(ProjectileDespawn(hit_e));
+                projectile_hit_w.write(ProjectileDespawn(hit_e));
             }
         }
 

@@ -36,7 +36,7 @@ pub fn send_delayed_event<T: Event>(
         delayed.timer.tick(time.delta());
         if delayed.timer.just_finished() {
             if let Some(ev) = delayed.event.take() {
-                ev_w.send(ev);
+                ev_w.write(ev);
             }
             cmd.entity(e).remove::<DelayedEvent<T>>();
         }

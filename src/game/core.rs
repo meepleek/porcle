@@ -3,7 +3,6 @@ use bevy::prelude::*;
 use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::AssetAnimator;
-use tiny_bail::prelude::*;
 
 use crate::{
     ext::{EventReaderExt, QuatExt},
@@ -53,8 +52,8 @@ fn handle_collisions(
 ) {
     for coll in &core_q {
         for coll_e in coll.iter().filter(|e| enemy_q.contains(**e)) {
-            taken_dmg_w.send_default();
-            despawn_enemy_w.send(DespawnEnemy(*coll_e));
+            taken_dmg_w.write_default();
+            despawn_enemy_w.write(DespawnEnemy(*coll_e));
         }
     }
 }
@@ -101,13 +100,17 @@ fn take_damage(
     mut cmd: Commands,
     mut next: ResMut<NextTransitionedState>,
     mut shake: Shakes,
-) {
-    let (mut core, mut hp) = or_return_quiet!(core_q.get_single_mut());
+) -> Result {
+    let (mut core, mut hp) = core_q.single_mut()?;
     if !ev_r.is_empty() {
         ev_r.clear();
         shake.add_trauma(0.9);
 
-        let (e, active) = or_return!(core.gear_entities.iter_mut().find(|(_, active)| *active));
+        let (e, active) = core
+            .gear_entities
+            .iter_mut()
+            .find(|(_, active)| *active)
+            .ok_or("Failed to find gear to damage")?;
         *active = false;
         cmd.entity(*e).try_insert((
             get_relative_scale_anim(Vec2::splat(0.7).extend(1.), 350, Some(EaseFunction::BackIn)),
@@ -120,6 +123,7 @@ fn take_damage(
             next.set(Screen::GameOver);
         }
     }
+    Ok(())
 }
 
 fn clear_paddle_radius_on_dmg(
@@ -131,20 +135,20 @@ fn clear_paddle_radius_on_dmg(
     mut despawn_enemy_w: EventWriter<DespawnEnemy>,
     mut cmd: Commands,
     particles: Res<ParticleAssets>,
-) {
-    let (core, core_t) = or_return_quiet!(core_q.get_single());
+) -> Result {
+    let (core, core_t) = core_q.single()?;
     if ev_r.clear_any() {
         for (projectile_e, ..) in projectile_q.iter().filter(|(_, p, t, ..)| {
             p.target == ProjectileTarget::Core && t.translation().length() < PADDLE_RADIUS
         }) {
-            projectile_despawn_w.send(ProjectileDespawn(projectile_e));
+            projectile_despawn_w.write(ProjectileDespawn(projectile_e));
         }
 
         for (enemy_e, ..) in enemy_q
             .iter()
             .filter(|(_, t, ..)| t.translation().length() < PADDLE_RADIUS)
         {
-            despawn_enemy_w.send(DespawnEnemy(enemy_e));
+            despawn_enemy_w.write(DespawnEnemy(enemy_e));
         }
 
         // flash
@@ -169,4 +173,5 @@ fn clear_paddle_radius_on_dmg(
             OneShot::Despawn,
         ));
     }
+    Ok(())
 }

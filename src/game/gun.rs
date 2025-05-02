@@ -4,7 +4,6 @@ use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, Delay};
 use std::time::Duration;
-use tiny_bail::or_continue;
 
 use crate::{
     event::SendDelayedEventExt,
@@ -240,7 +239,7 @@ fn handle_collisions(
                         }
 
                         if enemy_hp.0 == 0 && shielded.is_none() {
-                            despawn_enemy_w.send(DespawnEnemy(hit_e));
+                            despawn_enemy_w.write(DespawnEnemy(hit_e));
                         } else {
                             // knockback
                             impulse.0 += move_dir.0 * 30.;
@@ -252,14 +251,14 @@ fn handle_collisions(
                         despawn = true;
                         taken_dmg_w.send_default();
                     } else if paddle_q.contains(hit_e) {
-                        knockback_paddle_w.send(PaddleKnockback(-12.));
+                        knockback_paddle_w.write(PaddleKnockback(-12.));
                         despawn = true;
                     }
                 }
             }
 
             if despawn {
-                projectile_hit_w.send(ProjectileDespawn(e));
+                projectile_hit_w.write(ProjectileDespawn(e));
             }
         }
     }
