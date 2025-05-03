@@ -281,7 +281,7 @@ fn transition_out(
 
         if factor >= 1. {
             if let Some(new_state) = &next_transitioned.0 {
-                next_state.set(new_state.clone());
+                next_state.set(*new_state);
             }
             cmd.entity(e).remove::<TweenFactor<TransitionCircle>>();
             if final_circle.is_some() {
@@ -313,7 +313,7 @@ fn transition_in(
     )>,
     mut cmd: Commands,
 ) {
-    if let Ok((e, mut style, mut image, factor)) = final_circle_q.get_single_mut() {
+    if let Ok((e, mut style, mut image, factor)) = final_circle_q.single_mut() {
         let factor = factor.factor();
         image.color.set_alpha(1.0 - factor);
         if factor >= 1. {

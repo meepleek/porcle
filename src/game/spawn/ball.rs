@@ -103,7 +103,7 @@ fn spawn_ball(
             ))
             .add_child(sprite_e)
             .add_child(particles_e)
-            .set_parent(ev.paddle_e)
+            .insert(ChildOf(ev.paddle_e))
             .id();
         *paddle_mode = PaddleMode::Captured {
             ball_e,

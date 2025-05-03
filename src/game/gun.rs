@@ -249,7 +249,7 @@ fn handle_collisions(
                 ProjectileTarget::Core => {
                     if core_q.contains(hit_e) {
                         despawn = true;
-                        taken_dmg_w.send_default();
+                        taken_dmg_w.write_default();
                     } else if paddle_q.contains(hit_e) {
                         knockback_paddle_w.write(PaddleKnockback(-12.));
                         despawn = true;
@@ -270,9 +270,10 @@ fn despawn_projectile_on_hit(
     projectile_q: Query<&Projectile>,
 ) {
     for ev in ev_r.read() {
-        let mut e_cmd = or_continue!(cmd.get_entity(ev.0));
+        let (Ok(mut e_cmd), Ok(projectile)) = (cmd.get_entity(ev.0), projectile_q.get(ev.0)) else {
+            continue;
+        };
         e_cmd.remove::<Projectile>().try_insert(Damping(30.));
-        let projectile = or_continue!(projectile_q.get(ev.0));
         cmd.entity(projectile.sprite_e).insert((
             get_relative_scale_anim(Vec2::ZERO.extend(1.), 80, Some(EaseFunction::QuadraticOut)),
             DespawnOnTweenCompleted::Entity(ev.0),

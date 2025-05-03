@@ -5,7 +5,6 @@ use bevy::prelude::*;
 use bevy_enoki::{ParticleEffectHandle, prelude::OneShot};
 use bevy_tweening::Animator;
 use rand::{distributions::WeightedIndex, prelude::*};
-use tiny_bail::{c, or_continue};
 
 use crate::{
     GAME_SIZE,
@@ -347,7 +346,9 @@ fn slow_down_near_core(
 
         if has_stopped || has_started {
             for child_e in child_q.iter_descendants(e) {
-                let mut barrel = c!(barrel_q.get_mut(child_e));
+                let Ok(mut barrel) = barrel_q.get_mut(child_e) else {
+                    continue;
+                };
                 *barrel = if has_stopped {
                     EnemyGunBarrel::Active
                 } else {
@@ -363,9 +364,9 @@ fn despawn_enemy(
     mut cmd: Commands,
     enemy_q: Query<(&Enemy, &GlobalTransform)>,
     particles: Res<ParticleAssets>,
-) {
+) -> Result {
     for ev in ev_r.read() {
-        let (enemy, t) = or_continue!(enemy_q.get(ev.0));
+        let (enemy, t) = enemy_q.get(ev.0)?;
         cmd.entity(ev.0).remove::<Enemy>().try_insert(Damping(5.));
         cmd.entity(enemy.sprite_e).try_insert((
             get_relative_scale_anim(Vec2::ZERO.extend(1.), 150, Some(EaseFunction::BounceIn)),
@@ -378,4 +379,5 @@ fn despawn_enemy(
             OneShot::Despawn,
         ));
     }
+    Ok(())
 }
