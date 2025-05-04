@@ -13,12 +13,18 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CursorCoords>()
         .add_systems(
             Update,
-            ((update_cursor_coords, update_aim_direction).chain(),)
+            ((
+                update_cursor_coords,
+                update_aim_direction,
+                update_move_direction,
+            )
+                .chain(),)
                 .in_set(AppSet::ProcessInput)
                 .after(InputManagerSystem::ManualControl),
         )
         .add_plugins(InputManagerPlugin::<PlayerAction>::default())
-        .init_resource::<AimDirection>()
+        .init_resource::<InputAimDirection>()
+        .init_resource::<InputMoveDirection>()
         .init_resource::<ActionState<PlayerAction>>()
         .insert_resource(PlayerAction::input_map())
         .init_state::<ActiveInput>()
@@ -42,7 +48,10 @@ pub enum PlayerAction {
 }
 
 #[derive(Resource, Debug, Default, Reflect)]
-pub struct AimDirection(pub Vec2);
+pub struct InputAimDirection(pub Vec2);
+
+#[derive(Resource, Debug, Default, Reflect)]
+pub struct InputMoveDirection(pub Vec2);
 
 impl PlayerAction {
     fn input_map() -> InputMap<Self> {
@@ -93,7 +102,7 @@ pub type PlayerInput<'w> = Res<'w, ActionState<PlayerAction>>;
 struct CursorCoords(pub Vec2);
 
 fn update_aim_direction(
-    mut aim_dir: ResMut<AimDirection>,
+    mut aim_dir: ResMut<InputAimDirection>,
     input_state: Res<State<ActiveInput>>,
     cursor: Res<CursorCoords>,
     input: PlayerInput,
@@ -119,6 +128,12 @@ fn update_aim_direction(
             .clamped_axis_pair(&PlayerAction::AimGamepad)
             .normalize_or(aim_dir.0),
     }
+}
+
+fn update_move_direction(mut move_dir: ResMut<InputMoveDirection>, input: PlayerInput) {
+    move_dir.0 = input
+        .clamped_axis_pair(&PlayerAction::Move)
+        .normalize_or_zero();
 }
 
 fn update_cursor_coords(

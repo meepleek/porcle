@@ -11,7 +11,7 @@ use crate::{
 
 use super::{
     ball::MaxBallSpeedFactor,
-    input::{AimDirection, PlayerAction, PlayerInput},
+    input::{InputAimDirection, PlayerAction, PlayerInput},
     movement::{AccumulatedRotation, MoveDirection, MovementPaused},
     spawn::{
         ball::{Ball, SpawnBall},
@@ -89,7 +89,7 @@ fn process_input(
 
 fn rotate_paddle(
     mut rot_q: Query<&mut Transform, With<PaddleRotation>>,
-    aim_dir: Res<AimDirection>,
+    aim_dir: Res<InputAimDirection>,
     time: Res<Time<Real>>,
 ) {
     for mut t in rot_q.iter_mut() {
