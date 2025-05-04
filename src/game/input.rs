@@ -139,21 +139,20 @@ fn update_cursor_coords(
     mut coords: ResMut<CursorCoords>,
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<IsDefaultUiCamera>>,
-) -> Result {
+) {
     let (camera, camera_transform) = q_camera.single().expect("Camera exists");
     let window = q_window.single().expect("Window exists");
-    let Some(world_position) = window.cursor_position() else {
-        return Ok(());
+    let Some(cursor_pos) = window.cursor_position() else {
+        return;
     };
     // check the cursor is inside the window and get its position
     // then convert into world coordinates
-    camera
-        .viewport_to_world(camera_transform, world_position)
-        .map(|ray| ray.origin.truncate())?;
+    if let Ok(world_position) = camera
+        .viewport_to_world(camera_transform, cursor_pos)
+        .map(|ray| ray.origin.truncate())
     {
         coords.0 = world_position;
     }
-    Ok(())
 }
 
 fn activate_gamepad(
