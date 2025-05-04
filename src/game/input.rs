@@ -34,6 +34,8 @@ pub enum PlayerAction {
     Shoot,
     TogglePaddleMode,
     #[actionlike(DualAxis)]
+    Move,
+    #[actionlike(DualAxis)]
     AimGamepad,
     Quit,
     Restart,
@@ -48,8 +50,9 @@ impl PlayerAction {
 
         // Gamepad
         let deadzone_radius = 0.15;
+        input_map.insert_dual_axis(Self::Move, VirtualDPad::dpad());
         input_map.insert_dual_axis(
-            Self::AimGamepad,
+            Self::Move,
             GamepadStick::LEFT.with_circle_deadzone(deadzone_radius),
         );
         input_map.insert_dual_axis(
@@ -66,6 +69,8 @@ impl PlayerAction {
         input_map.insert(Self::Quit, GamepadButton::Select);
 
         // KB & Mouse
+        input_map.insert_dual_axis(Self::Move, VirtualDPad::wasd());
+        input_map.insert_dual_axis(Self::Move, VirtualDPad::arrow_keys());
         input_map.insert(Self::Shoot, MouseButton::Left);
         input_map.insert(Self::TogglePaddleMode, MouseButton::Right);
         input_map.insert(Self::Quit, KeyCode::Escape);
