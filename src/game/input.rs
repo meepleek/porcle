@@ -121,7 +121,6 @@ fn update_aim_direction(
                     (dist / deadzone_radius).powi(3),
                     time.delta_secs(),
                 )
-                // aim_dir.0
             }
         }
         ActiveInput::Gamepad => input
