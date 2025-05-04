@@ -135,6 +135,7 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
             ..default()
         },
         GlobalZIndex(1000),
+        Pickable::IGNORE,
     ))
     .add_children(&circle_entity_ids);
 
@@ -156,6 +157,7 @@ fn setup_letterbox(mut cmd: Commands) {
             ..default()
         },
         GlobalZIndex(1500),
+        Pickable::IGNORE,
     ))
     .with_children(|b| {
         let bg_color: BackgroundColor = COL_LETTERBOX.into();
