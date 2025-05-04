@@ -19,6 +19,7 @@ fn enter(mut commands: Commands) {
     commands.spawn((
         StateScoped(Screen::Tutorial),
         widget::ui_root("tutorial"),
+        // fixme: this has multiple Children components and causes a panic
         children![
             widget::header("HOW TO PLAY"),
             widget::label("Use your good ol' trusty Porcle to protect the core as long as you can!"),
