@@ -31,6 +31,7 @@ fn enter_title(mut commands: Commands) {
     ));
 }
 
+#[cfg(not(target_family = "wasm"))]
 fn exit_app(mut app_exit: EventWriter<AppExit>) {
     app_exit.write(AppExit::Success);
 }
