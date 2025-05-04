@@ -4,7 +4,6 @@ use bevy_enoki::prelude::*;
 use bevy_trauma_shake::Shakes;
 use bevy_tweening::{Animator, Delay};
 use std::time::Duration;
-use tiny_bail::or_continue;
 
 use crate::{
     event::SendDelayedEventExt,
@@ -240,7 +239,7 @@ fn handle_collisions(
                         }
 
                         if enemy_hp.0 == 0 && shielded.is_none() {
-                            despawn_enemy_w.send(DespawnEnemy(hit_e));
+                            despawn_enemy_w.write(DespawnEnemy(hit_e));
                         } else {
                             // knockback
                             impulse.0 += move_dir.0 * 30.;
@@ -250,16 +249,16 @@ fn handle_collisions(
                 ProjectileTarget::Core => {
                     if core_q.contains(hit_e) {
                         despawn = true;
-                        taken_dmg_w.send_default();
+                        taken_dmg_w.write_default();
                     } else if paddle_q.contains(hit_e) {
-                        knockback_paddle_w.send(PaddleKnockback(-12.));
+                        knockback_paddle_w.write(PaddleKnockback(-12.));
                         despawn = true;
                     }
                 }
             }
 
             if despawn {
-                projectile_hit_w.send(ProjectileDespawn(e));
+                projectile_hit_w.write(ProjectileDespawn(e));
             }
         }
     }
@@ -271,9 +270,10 @@ fn despawn_projectile_on_hit(
     projectile_q: Query<&Projectile>,
 ) {
     for ev in ev_r.read() {
-        let mut e_cmd = or_continue!(cmd.get_entity(ev.0));
+        let (Ok(mut e_cmd), Ok(projectile)) = (cmd.get_entity(ev.0), projectile_q.get(ev.0)) else {
+            continue;
+        };
         e_cmd.remove::<Projectile>().try_insert(Damping(30.));
-        let projectile = or_continue!(projectile_q.get(ev.0));
         cmd.entity(projectile.sprite_e).insert((
             get_relative_scale_anim(Vec2::ZERO.extend(1.), 80, Some(EaseFunction::QuadraticOut)),
             DespawnOnTweenCompleted::Entity(ev.0),

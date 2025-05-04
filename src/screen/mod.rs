@@ -15,7 +15,7 @@ use crate::{
         assets::{SpriteAssets, assets_exist},
         tween::{TweenFactor, tween_factor},
     },
-    ui::palette::{COL_BG, COL_LETTERBOX, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
+    theme::palette::{COL_BG, COL_LETTERBOX, COL_TRANSITION_1, COL_TRANSITION_2, COL_TRANSITION_3},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -51,7 +51,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 /// The game's main screen states.
-#[derive(States, Debug, Hash, PartialEq, Eq, Clone, Default)]
+#[derive(States, Debug, Hash, PartialEq, Eq, Copy, Clone, Default)]
 pub enum Screen {
     #[default]
     Splash,
@@ -70,6 +70,14 @@ pub fn in_game_state(current_state: Option<Res<State<Screen>>>) -> bool {
     match current_state {
         Some(current_state) => *current_state == Screen::Game,
         None => false,
+    }
+}
+
+pub fn enter_screen_on_pointer_click(
+    screen: Screen,
+) -> impl FnMut(Trigger<Pointer<Click>>, ResMut<NextTransitionedState>) {
+    move |_, mut next_screen| {
+        next_screen.set(screen);
     }
 }
 
@@ -127,6 +135,7 @@ fn setup_transition_overlay(mut cmd: Commands, sprites: ResMut<SpriteAssets>) {
             ..default()
         },
         GlobalZIndex(1000),
+        Pickable::IGNORE,
     ))
     .add_children(&circle_entity_ids);
 
@@ -148,6 +157,7 @@ fn setup_letterbox(mut cmd: Commands) {
             ..default()
         },
         GlobalZIndex(1500),
+        Pickable::IGNORE,
     ))
     .with_children(|b| {
         let bg_color: BackgroundColor = COL_LETTERBOX.into();
@@ -273,7 +283,7 @@ fn transition_out(
 
         if factor >= 1. {
             if let Some(new_state) = &next_transitioned.0 {
-                next_state.set(new_state.clone());
+                next_state.set(*new_state);
             }
             cmd.entity(e).remove::<TweenFactor<TransitionCircle>>();
             if final_circle.is_some() {
@@ -305,7 +315,7 @@ fn transition_in(
     )>,
     mut cmd: Commands,
 ) {
-    if let Ok((e, mut style, mut image, factor)) = final_circle_q.get_single_mut() {
+    if let Ok((e, mut style, mut image, factor)) = final_circle_q.single_mut() {
         let factor = factor.factor();
         image.color.set_alpha(1.0 - factor);
         if factor >= 1. {

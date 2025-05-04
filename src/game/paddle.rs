@@ -1,13 +1,12 @@
 use bevy::prelude::*;
 use bevy_tweening::Animator;
 use std::f32::consts::TAU;
-use tiny_bail::{or_return, or_return_quiet};
 
 use crate::{
+    AppSet,
     event::send_delayed_event,
     ext::{EventReaderExt, QuatExt, Vec2Ext},
     screen::Screen,
-    AppSet,
 };
 
 use super::{
@@ -19,7 +18,7 @@ use super::{
         level::AmmoUi,
         paddle::{Paddle, PaddleAmmo, PaddleMode, PaddleRotation},
     },
-    time::{process_cooldown, Cooldown},
+    time::{Cooldown, process_cooldown},
     tween::{
         get_relative_scale_tween, get_relative_sprite_color_anim, get_relative_translation_tween,
     },
@@ -166,9 +165,11 @@ fn knockback_paddle(
     mut ev_r: EventReader<PaddleKnockback>,
     mut cmd: Commands,
     paddle_q: Query<(&Paddle, &Transform), With<Paddle>>,
-) {
-    let ev = or_return_quiet!(ev_r.read_only_last());
-    let (paddle, t) = or_return!(paddle_q.get_single());
+) -> Result {
+    let Some(ev) = ev_r.read_only_last() else {
+        return Ok(());
+    };
+    let (paddle, t) = paddle_q.single()?;
     cmd.entity(paddle.sprite_e).insert(Animator::new(
         get_relative_translation_tween(
             (Vec2::X * ev.0).extend(t.translation.z),
@@ -181,4 +182,5 @@ fn knockback_paddle(
             Some(EaseFunction::BackOut),
         )),
     ));
+    Ok(())
 }

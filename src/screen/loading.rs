@@ -10,7 +10,7 @@ use crate::{
         assets::{MusicAssets, ParticleAssets},
         audio::soundtrack::PlayMusic,
     },
-    ui::prelude::*,
+    theme::widget,
 };
 
 // todo: use transition
@@ -20,12 +20,11 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 fn enter_loading(mut commands: Commands) {
-    commands
-        .ui_root()
-        .insert(StateScoped(Screen::Loaded))
-        .with_children(|children| {
-            children.label("Loading...");
-        });
+    commands.spawn((
+        StateScoped(Screen::Loaded),
+        widget::ui_root("loading"),
+        children![widget::label("Loading...")],
+    ));
 }
 
 fn on_loaded(

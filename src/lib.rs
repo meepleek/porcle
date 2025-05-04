@@ -5,7 +5,7 @@ mod ext;
 mod game;
 mod math;
 mod screen;
-mod ui;
+mod theme;
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -67,14 +67,14 @@ impl Plugin for AppPlugin {
                 .set(ImagePlugin::default_linear())
                 .set(AudioPlugin {
                     global_volume: GlobalVolume {
-                        volume: Volume::new(0.3),
+                        volume: Volume::Linear(0.3),
                     },
                     ..default()
                 }),
         );
 
         // Add project plugins.
-        app.add_plugins((game::plugin, screen::plugin, ui::plugin));
+        app.add_plugins((game::plugin, screen::plugin, theme::plugin));
 
         // Add external plugins
         app.add_plugins((
@@ -116,7 +116,7 @@ fn spawn_camera(mut commands: Commands) {
             hdr: true,
             ..default()
         },
-        ortho_projection,
+        Projection::Orthographic(ortho_projection),
         Tonemapping::TonyMcMapface,
         // Render all UI to this camera.
         // Not strictly necessary since we only use one camera,

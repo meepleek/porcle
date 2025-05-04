@@ -37,23 +37,21 @@ fn enter_playing(
 ) {
     cmd.trigger(SpawnLevel);
     // commands.trigger(PlaySoundtrack::Key(SoundtrackKey::Gameplay));
-    let mut win = window_q.single_mut();
     // reset score
     score.0 = 0;
 
-    #[cfg(not(target_family = "wasm"))]
-    {
-        win.cursor_options.grab_mode = CursorGrabMode::Confined;
+    if cfg!(not(any(target_family = "wasm", target_os = "macos"))) {
+        let mut win = window_q.single_mut().expect("window exists");
+        win.cursor_options.grab_mode = CursorGrabMode::Locked;
     }
 }
 
 fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<PrimaryWindow>>) {
     // We could use [`StateScoped`] on the sound playing entites instead.
     commands.trigger(PlayMusic::Disable);
-    let mut win = window_q.single_mut();
 
-    #[cfg(not(target_family = "wasm"))]
-    {
+    if cfg!(not(any(target_family = "wasm", target_os = "macos"))) {
+        let mut win: Mut<'_, Window> = window_q.single_mut().expect("window exists");
         win.cursor_options.grab_mode = CursorGrabMode::None;
     }
 }

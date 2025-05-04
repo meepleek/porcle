@@ -12,7 +12,7 @@ fn play_sfx(trigger: Trigger<PlaySfx>, mut commands: Commands) {
         AudioPlayer(trigger.event().0.clone()),
         PlaybackSettings {
             mode: PlaybackMode::Despawn,
-            volume: Volume::new(0.175),
+            volume: Volume::Linear(0.175),
             ..default()
         },
     ));

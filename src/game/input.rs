@@ -6,8 +6,8 @@ use bevy::window::PrimaryWindow;
 use leafwing_input_manager::plugin::InputManagerSystem;
 use leafwing_input_manager::prelude::*;
 
-use crate::math::asymptotic_smoothing_with_delta_time;
 use crate::AppSet;
+use crate::math::asymptotic_smoothing_with_delta_time;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CursorCoords>()
@@ -121,8 +121,8 @@ fn update_cursor_coords(
     q_window: Query<&Window, With<PrimaryWindow>>,
     q_camera: Query<(&Camera, &GlobalTransform), With<IsDefaultUiCamera>>,
 ) {
-    let (camera, camera_transform) = q_camera.single();
-    let window = q_window.single();
+    let (camera, camera_transform) = q_camera.single().expect("Camera exists");
+    let window = q_window.single().expect("Window exists");
 
     // check the cursor is inside the window and get its position
     // then convert into world coordinates

@@ -73,7 +73,7 @@ fn despawn_after_tween(
                 DespawnOnTweenCompleted::Itself => ev.entity,
                 DespawnOnTweenCompleted::Entity(e) => *e,
             };
-            cmd.entity(e).despawn_recursive();
+            cmd.entity(e).despawn();
         }
     }
 }

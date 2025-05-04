@@ -10,7 +10,7 @@ use crate::{
         tween::{delay_tween, get_relative_scale_tween},
     },
     screen::Screen,
-    ui::palette::COL_BALL,
+    theme::palette::COL_BALL,
 };
 
 use super::paddle::PaddleMode;
@@ -59,7 +59,7 @@ fn spawn_ball(
     particles: Res<ParticleAssets>,
 ) {
     for e in &ball_q {
-        cmd.entity(e).despawn_recursive();
+        cmd.entity(e).despawn();
     }
 
     let ev = trigger.event();
@@ -103,7 +103,7 @@ fn spawn_ball(
             ))
             .add_child(sprite_e)
             .add_child(particles_e)
-            .set_parent(ev.paddle_e)
+            .insert(ChildOf(ev.paddle_e))
             .id();
         *paddle_mode = PaddleMode::Captured {
             ball_e,

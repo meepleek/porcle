@@ -14,7 +14,7 @@ fn play_soundtrack(
     soundtrack_query: Query<Entity, With<Music>>,
 ) {
     for entity in &soundtrack_query {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 
     let handle = match trigger.event() {
@@ -25,7 +25,7 @@ fn play_soundtrack(
         AudioPlayer(handle),
         PlaybackSettings {
             mode: PlaybackMode::Loop,
-            volume: Volume::new(0.275),
+            volume: Volume::Linear(0.275),
             ..default()
         },
         Music,
