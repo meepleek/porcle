@@ -73,7 +73,7 @@ pub fn in_game_state(current_state: Option<Res<State<Screen>>>) -> bool {
     }
 }
 
-pub fn enter_screen_click_trigger(
+pub fn enter_screen_on_pointer_click(
     screen: Screen,
 ) -> impl FnMut(Trigger<Pointer<Click>>, ResMut<NextTransitionedState>) {
     move |_, mut next_screen| {

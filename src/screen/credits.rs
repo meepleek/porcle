@@ -16,6 +16,6 @@ fn enter_credits(mut commands: Commands) {
         children![
             widget::header("CREDITS"),
             widget::label("Didn't have time to put in game, sorry.\n Check the game's github page. I'll put it there a couple days after release."),
-            widget::button("BACK", super::enter_screen_click_trigger(Screen::Title)),
+            widget::button("BACK", super::enter_screen_on_pointer_click(Screen::Title)),
         ]));
 }

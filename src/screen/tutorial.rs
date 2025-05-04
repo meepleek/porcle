@@ -41,7 +41,7 @@ fn enter(mut commands: Commands) {
                 widget::label("Cycle 1x counter-clockwise: gain ammo based on current sawblade speed"),
             ),
 
-            widget::button("PLAY", super::enter_screen_click_trigger(Screen::Game)),
+            widget::button("PLAY", super::enter_screen_on_pointer_click(Screen::Game)),
         ]
     ));
 }

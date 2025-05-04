@@ -16,17 +16,17 @@ fn enter_title(mut commands: Commands) {
         widget::ui_root("menu"),
         children![
             widget::header("PORCLE"),
-            widget::button("PLAY", super::enter_screen_click_trigger(Screen::Game)),
+            widget::button("PLAY", super::enter_screen_on_pointer_click(Screen::Game)),
             widget::button(
                 "TUTORIAL",
-                super::enter_screen_click_trigger(Screen::Tutorial)
+                super::enter_screen_on_pointer_click(Screen::Tutorial)
             ),
             widget::button(
                 "CREDITS",
-                super::enter_screen_click_trigger(Screen::Credits)
+                super::enter_screen_on_pointer_click(Screen::Credits)
             ),
             #[cfg(not(target_family = "wasm"))]
-            widget::button("EXIT", super::enter_screen_click_trigger(Screen::Exit)),
+            widget::button("EXIT", super::enter_screen_on_pointer_click(Screen::Exit)),
         ],
     ));
 }

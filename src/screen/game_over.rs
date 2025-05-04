@@ -22,7 +22,10 @@ fn enter_game_over(mut commands: Commands, score: Res<Score>) {
         children![
             widget::label("GAME OVER"),
             widget::label(format!("SCORE: {}", score.0)),
-            widget::button("TRY AGAIN", super::enter_screen_click_trigger(Screen::Game))
+            widget::button(
+                "TRY AGAIN",
+                super::enter_screen_on_pointer_click(Screen::Game)
+            )
         ],
     ));
 }
