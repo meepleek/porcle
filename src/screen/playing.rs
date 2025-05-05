@@ -18,13 +18,16 @@ use crate::game::{
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Game), enter_playing)
         .add_systems(OnExit(Screen::Game), exit_playing)
-        .add_systems(OnEnter(Screen::RestartGame), enter_restart)
+        .add_systems(
+            OnEnter(Screen::RestartGame),
+            super::enter_screen(Screen::Game),
+        )
         .add_systems(
             Update,
             (
-                return_to_title_screen
+                super::enter_screen(Screen::Title)
                     .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Quit))),
-                restart_game
+                super::enter_screen(Screen::RestartGame)
                     .run_if(in_state(Screen::Game).and(action_just_pressed(PlayerAction::Restart))),
             ),
         );
@@ -54,16 +57,4 @@ fn exit_playing(mut commands: Commands, mut window_q: Query<&mut Window, With<Pr
         let mut win: Mut<'_, Window> = window_q.single_mut().expect("window exists");
         win.cursor_options.grab_mode = CursorGrabMode::None;
     }
-}
-
-fn return_to_title_screen(mut next_screen: ResMut<NextTransitionedState>) {
-    next_screen.set(Screen::Title);
-}
-
-fn restart_game(mut next_screen: ResMut<NextTransitionedState>) {
-    next_screen.set(Screen::RestartGame);
-}
-
-fn enter_restart(mut next_screen: ResMut<NextState<Screen>>) {
-    next_screen.set(Screen::Game);
 }
