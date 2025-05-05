@@ -6,7 +6,7 @@ use bevy::{
 };
 use leafwing_input_manager::common_conditions::action_just_pressed;
 
-use super::{NextTransitionedState, Screen};
+use super::Screen;
 use crate::game::{
     // assets::SoundtrackKey,
     audio::soundtrack::PlayMusic,
