@@ -42,7 +42,7 @@ fn enter_playing(
 
     if cfg!(not(any(target_family = "wasm", target_os = "macos"))) {
         let mut win = window_q.single_mut().expect("window exists");
-        win.cursor_options.grab_mode = CursorGrabMode::Locked;
+        win.cursor_options.grab_mode = CursorGrabMode::Confined;
     }
 }
 
