@@ -13,11 +13,12 @@ use crate::{
 use super::{
     assets::ParticleAssets,
     gun::ProjectileDespawn,
+    input::InputMoveDirection,
     movement::MovementPaused,
     spawn::{
         enemy::{DespawnEnemy, Enemy},
-        level::{AMMO_FILL_RADIUS, AmmoFill, Core, Health, RotateWithPaddle},
-        paddle::{PADDLE_RADIUS, PaddleAmmo, PaddleRotation},
+        level::{AmmoFill, Core, Health, RotateWithPaddle},
+        paddle::{AMMO_FILL_RADIUS, PADDLE_RADIUS, PaddleAmmo, PaddleRotation},
         projectile::{Projectile, ProjectileTarget},
     },
     tween::{
@@ -31,6 +32,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_event::<TakeDamage>().add_systems(
         Update,
         (
+            move_core,
             handle_collisions,
             rotate_gears,
             take_damage,
@@ -39,6 +41,16 @@ pub(super) fn plugin(app: &mut App) {
         )
             .run_if(in_game_state),
     );
+}
+
+fn move_core(
+    mut move_q: Query<&mut Transform, With<Core>>,
+    move_dir: Res<InputMoveDirection>,
+    time: Res<Time<Real>>,
+) {
+    for mut t in move_q.iter_mut() {
+        t.translation += (move_dir.0 * 500. * time.delta_secs()).extend(0.);
+    }
 }
 
 #[derive(Event, Default)]

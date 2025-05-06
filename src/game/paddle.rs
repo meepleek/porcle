@@ -28,7 +28,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_event::<PaddleKnockback>().add_systems(
         Update,
         (
-            process_input.in_set(AppSet::ProcessInput),
+            process_paddle_mode_input.in_set(AppSet::ProcessInput),
             rotate_paddle,
             apply_cycle_effects,
             knockback_paddle,
@@ -44,7 +44,7 @@ pub const PADDLE_REVOLUTION_DURATION_MIN: f32 = 0.45;
 #[derive(Event, Debug)]
 pub struct PaddleKnockback(pub f32);
 
-fn process_input(
+fn process_paddle_mode_input(
     input: PlayerInput,
     mut paddle_mode_q: Query<
         (Entity, &Paddle, &mut PaddleMode, &GlobalTransform),
