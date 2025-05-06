@@ -9,6 +9,8 @@ use leafwing_input_manager::prelude::*;
 use crate::AppSet;
 use crate::math::asymptotic_smoothing_with_delta_time;
 
+use super::spawn::level::Core;
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<CursorCoords>()
         .add_systems(
@@ -106,15 +108,18 @@ fn update_aim_direction(
     input_state: Res<State<ActiveInput>>,
     cursor: Res<CursorCoords>,
     input: PlayerInput,
+    core: Single<&Transform, With<Core>>,
     time: Res<Time>,
 ) {
     aim_dir.0 = match input_state.get() {
         ActiveInput::MouseKeyboard => {
             let deadzone_radius = 70.0;
-            let dist = cursor.0.length();
+            let dir = cursor.0 - core.translation.truncate();
+            let dist = dir.length();
             if dist >= deadzone_radius {
-                cursor.0.normalize_or(aim_dir.0)
+                dir.normalize_or(aim_dir.0)
             } else {
+                // FIXME: this's pretty wonky now
                 asymptotic_smoothing_with_delta_time(
                     aim_dir.0,
                     cursor.0,
